@@ -6,6 +6,10 @@ import hx3ds.Console;
 import hx3ds.GFX;
 import hx3ds.APT;
 
+/**
+ * this is like a really example code i guess
+ */
+
 function main() {
 	untyped __include__("3ds.h");
 	

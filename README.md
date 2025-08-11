@@ -17,3 +17,7 @@ truly inspired from [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) 
 reflaxe.cpp and reflaxe library is kept cause it's only the specific version that currently works
 
 that's all yeah it's boring
+
+## KNOWN BUGS:
+
+building in cia pops up the ROMFS Error
