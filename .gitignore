@@ -1,2 +1,3 @@
 output/*
 3dsSettings.json
+.haxelib/reflaxe,cpp/git
