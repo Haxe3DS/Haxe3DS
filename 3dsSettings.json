@@ -1,0 +1,12 @@
+{
+    "settings": {
+        "3dsIP": "0.0.0.0",
+        "deleteTempFiles": false,
+        "makeAs": "cia"
+    },
+    "metadata": {
+        "title": "Haxe3DS",
+        "description": "Made with <3 using Haxe!",
+        "author": "Author"
+    }
+}

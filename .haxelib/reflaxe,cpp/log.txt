@@ -1,0 +1,54 @@
+./assets\Makefile
+./assets\resources\AppInfo
+./assets\resources\audio.wav
+./assets\resources\banner.png
+./assets\resources\icon.png
+./assets\resources\template.rsf
+./assets\romfs\hi.txt
+7 File(s) copied
+Main.cpp
+In file included from C:/devkitPro/devkitARM/arm-none-eabi/include/wctype.h:8,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/cwctype:55,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/bits/locale_facets.h:41,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/bits/basic_ios.h:39,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/ios:48,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/bits/ostream.h:43,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/ostream:42,
+                 from C:/devkitPro/devkitARM/arm-none-eabi/include/c++/15.1.0/iostream:43,
+                 from C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/src/Main.cpp:3:
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/haxe_Exception.h:21:84: error: could not convert '0' from 'int' to 'std::optional<haxe::Exception>'
+   21 |         Exception(std::string message2, std::optional<haxe::Exception> previous2 = NULL, std::optional<std::any> native2 = NULL);
+      |                                                                                    ^~~~
+      |                                                                                    |
+      |                                                                                    int
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/haxe_PosInfos.h:30:196: error: could not convert '0' from 'int' to 'std::optional<std::shared_ptr<std::deque<haxe::DynamicToString> > >'
+   30 |         static PosInfos make(std::string className, std::string fileName, int lineNumber, std::string methodName, std::optional<std::shared_ptr<std::deque<haxe::DynamicToString>>> customParams = NULL) {
+      |                                                                                                                                                                                                    ^~~~
+      |                                                                                                                                                                                                    |
+      |                                                                                                                                                                                                    int
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/haxe_Log.h:18:111: error: could not convert '0' from 'int' to 'std::optional<std::shared_ptr<haxe::PosInfos> >'
+   18 |         static std::string formatOutput(std::string v, std::optional<std::shared_ptr<haxe::PosInfos>> infos = N);
+      |                                                                                                               ^
+      |                                                                                                               |
+      |                                                                                                               int
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/src/Main.cpp: In static member function 'static void _Main::Main_Fields_::main()':
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/src/Main.cpp:56:46: error: could not convert '0' from 'int' to 'std::optional<haxe::Exception>'
+   56 |                 throw haxe::Exception("Test"s);
+      |                                              ^
+      |                                              |
+      |                                              int
+In file included from C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/_AnonStructs.h:3,
+                 from C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/src/Main.cpp:7:
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/_AnonUtils.h: In instantiation of 'std::shared_ptr<_Tp> haxe::shared_anon(Args ...) [with Anon = PosInfos; Args = {std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >}]':
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/src/Main.cpp:51:71:   required from here
+   51 |         haxe::Log::trace("test: "s + test1, haxe::shared_anon<haxe::PosInfos>("_Main.Main_Fields_"s, "source/Main.hx"s, 25, "main"s));
+      |                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/nael/Downloads/3DSHaxe/reflaxe_HaxeLibCTRU/output/include/_AnonUtils.h:12:57: error: could not convert '0' from 'int' to 'std::optional<std::shared_ptr<std::deque<haxe::DynamicToString> > >'
+   12 |                 return std::make_shared<Anon>(Anon::make(args...));
+      |                                               ~~~~~~~~~~^~~~~~~~~
+      |                                                         |
+      |                                                         int
+make[1]: *** [/opt/devkitpro/devkitARM//base_rules:34: Main.o] Error 1
+make: *** [Makefile:164: 3dsx] Error 2
+'output.3dsx' is not recognized as an internal or external command,
+operable program or batch file.
