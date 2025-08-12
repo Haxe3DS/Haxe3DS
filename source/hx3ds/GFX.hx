@@ -11,12 +11,38 @@ package hx3ds;
  * Width/height refer to the physical dimensions of the screen; that is, the top screen
  * is 240 pixels wide and 400 pixels tall; while the bottom screen is 240x320.
  */
+@:cppInclude("3ds.h")
 class GFX {
 	/**
 	 * Initializes the LCD framebuffers with default parameters
 	 */
 	@:native("gfxInitDefault")
-	public static function initDefault():Void untyped __include__("3ds.h");
+	public static function initDefault():Void {};
+
+	/**
+	 * Enables or disables the 3D stereoscopic effect on the top screen.
+	 * 
+	 * #### Note
+	 * Stereoscopic 3D is disabled by default.
+	 * 
+	 * @param enable Pass true to enable, false to disable.
+	 */
+	@:native("gfxSet3D")
+	public static function set3D(enable:Bool):Void {};
+
+	/**
+	 * Retrieves the status of the 3D stereoscopic effect on the top screen.
+	 * @return true if 3D enabled, false otherwise.
+	 */
+	@:native("gfxIs3D")
+	public static function is3D():Bool return false;
+
+	/**
+	 * Retrieves the status of the 800px (double-height) high resolution display mode of the top screen.
+	 * @return true if wide mode enabled, false otherwise.
+	 */
+	@:native("gfxIsWide")
+	public static function isWide():Bool return false;
 
 	/**
 	 * Enables or disables the 800px (double-height) high resolution display mode of the top screen.

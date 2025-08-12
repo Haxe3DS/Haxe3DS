@@ -140,6 +140,40 @@ typedef TouchPosition = {
 	var py:Int;
 }
 
+typedef AccelVector = {
+	/**
+	 *  Accelerometer X
+	 */
+	var x:Int;
+
+	/**
+	 * Accelerometer Y
+	 */
+	var y:Int;
+
+	/**
+	 * Accelerometer Z
+	 */
+	var z:Int;
+};
+
+typedef AngularRate = {
+	/**
+	 * Roll
+	 */
+	var x:Int;
+
+	/**
+	 * Pitch
+	 */
+	var y:Int;
+
+	/**
+	 * Yaw
+	 */
+	var z:Int;
+};
+
 /**
  * HID service.
  * @see http://3dbrew.org/wiki/HID_Services
@@ -147,6 +181,18 @@ typedef TouchPosition = {
  */
 @:cppInclude("3ds.h")
 class HID {
+	/**
+	 * Initializes HID.
+	 */
+	@:native("hidInit")
+	public static function init():Void {};
+
+	/**
+	 * Exits HID.
+	 */
+	@:native("hidExit")
+	public static function exit():Void {};
+
 	/**
 	 * Scans HID for input data.
 	 */
@@ -199,4 +245,66 @@ pos->px = temp.px;
 pos->py = temp.py");
 		return pos;
 	}
+
+	/**
+	 * Reads the current accelerometer data.
+	 * @return Output of the accelerometer data.
+	 */
+	public static function accelRead():AccelVector {
+		var acc:AccelVector = {x: 0, y: 0, z: 0};
+		untyped __cpp__("accelVector temp;
+hidAccelRead(&temp);
+acc->x = temp.x;
+acc->y = temp.y;
+acc->z = temp.z");
+		return acc;
+	}
+
+	/**
+	 * Reads the current gyroscope data.
+	 * @return Output of the gyroscope data.
+	 */
+	public static function gyroRead():AngularRate {
+		var ang:AngularRate = {x: 0, y: 0, z: 0};
+		untyped __cpp__("angularRate temp;
+hidGyroRead(&temp);
+ang->x = temp.x;
+ang->y = temp.y;
+ang->z = temp.z");
+		return ang;
+	}
+
+	/**
+	 * Enables the accelerometer.
+	 */
+	@:native("HIDUSER_EnableAccelerometer")
+	public static function enableAccelerometer():Void {};
+
+	/**
+	 * Disables the accelerometer.
+	 */
+	@:native("HIDUSER_DisableAccelerometer")
+	public static function disableAccelerometer():Void {};
+
+	/**
+	 * Enables the gyroscope.
+	 */
+	@:native("HIDUSER_EnableGyroscope")
+	public static function enableGyroscope():Void {};
+
+	/**
+	 * Disables the gyroscope.
+	 */
+	@:native("HIDUSER_DisableGyroscope")
+	public static function disableGyroscope():Void {};
+
+	/**
+	 * Gets the current volume slider value. (0-63)
+	 * @return Current volume slider value.
+	 */
+	public static function getSoundVolume():UInt8 {
+		var v:UInt8 = 0;
+		untyped __cpp__("HIDUSER_GetSoundVolume(&v)");
+		return v;
+	};
 }

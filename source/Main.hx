@@ -1,4 +1,4 @@
-import haxe.Exception;
+import hx3ds.CFGU;
 import hx3ds.RomFS;
 import hx3ds.News;
 import hx3ds.HID;
@@ -18,32 +18,36 @@ function main() {
 	RomFS.init();
 
 	Console.init(GFX_TOP);
+
+	trace('Cur Vol: ${HID.getSoundVolume()}');
 	
-	try {
-		trace('You have ${News.getTotalNotifications()} notifications!');
-		trace('And the file in hi.txt says:\n${RomFS.readFile("romfs:/hi.txt")}');
+	trace('You have ${News.getTotalNotifications()} notifications!');
+	trace('And the file in hi.txt says:\n${RomFS.readFile("romfs:/hi.txt")}');
 
-		trace('Press [A] to throw an error!');
-		
-		while (APT.mainLoop()) {
-			HID.scanInput();
-			if (HID.keyPressed(Key.START)) {
-				break;
-			} else if (HID.keyPressed(Key.A)) {
-				throw new Exception("test haxe exception");
-			}
-		}
-	} catch(e:Exception) {
-		Console.clear();
-		Sys.println("<<< EXCEPTION OCCURRED! >>>\n");
-		Sys.println(e.details());
-		Sys.println("Press [A] to close.");
+	trace('Your language: ${CFGU.getSystemLanguage()}');
 
-		while (APT.mainLoop()) {
-			HID.scanInput();
-			if (HID.keyPressed(Key.A)) {
-				break;
-			}
+	trace('Press [A] to show Accel!');
+	trace('Press [B] to show Gyro!');
+	
+	while (APT.mainLoop()) {
+		HID.scanInput();
+		if (HID.keyPressed(Key.START)) {
+			break;
+		} else if (HID.keyPressed(Key.A)) {
+			Console.clear();
+
+			var a = HID.accelRead();
+			trace('Acc X: ${a.x}');
+			trace('Acc Y: ${a.y}');
+			trace('Acc Z: ${a.z}');
+		} else if (HID.keyPressed(Key.B)) {
+			Console.clear();
+			
+			HID.enableGyroscope();
+			var a = HID.gyroRead();
+			trace('Roll  X: ${a.x}');
+			trace('Pitch Y: ${a.y}');
+			trace('Yaw   Z: ${a.z}');
 		}
 	}
 		
