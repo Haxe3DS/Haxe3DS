@@ -85,7 +85,7 @@ options:
             shouldSkip = False
             for ln in range(len(c)):
                 for bl in blockedStuff:
-                    if c[ln].__contains__(bl):
+                    if bl in c[ln]:
                         shouldSkip = True
                         break
                 if not shouldSkip:
@@ -111,11 +111,13 @@ options:
             sys.exit(1)
 
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
-        if make == "3dsx":
-            ip = jsonStruct["settings"]["3dsIP"]
-            if len(ip) > 7:
+        ip:str = jsonStruct["settings"]["3dsIP"]
+        if len(ip) > 7 and len(ip.split(".")) == 4:
+            if make == "3dsx":
                 os.system(f"cd output/output & 3dslink -a {ip} output.3dsx")
             else:
-                os.system(f"cd output/output & output.3dsx")
+                os.system(f"curl --upload-file output/output/output.{make} \"ftp://{ip}:5000/cia/\"")
+        else:
+            os.system(f"cd output/output & output.3dsx")
 
         sys.exit(0)
