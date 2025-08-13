@@ -21,13 +21,23 @@ enum GfxScreen_t {
  * Graphical ANSI Color.
  */
 class ConsoleColor {
-	public static var red:String = "\x1b[31;1m";
-	public static var green:String = "\x1b[32;1m";
-	public static var yellow:String = "\x1b[33;1m";
-	public static var blue:String = "\x1b[34;1m";
-	public static var magenta:String = "\x1b[35;1m";
-	public static var cyan:String = "\x1b[36;1m";
-	public static var white:String = "\x1b[37;1m";
+	public static var textBlack:String = "\x1b[30;1m";
+	public static var textRed:String = "\x1b[31;1m";
+	public static var textGreen:String = "\x1b[32;1m";
+	public static var textYellow:String = "\x1b[33;1m";
+	public static var textBlue:String = "\x1b[34;1m";
+	public static var textMagenta:String = "\x1b[35;1m";
+	public static var textCyan:String = "\x1b[36;1m";
+	public static var textYhite:String = "\x1b[37;1m";
+
+	public static var borderBlack:String = "\x1b[40;1m";
+	public static var borderRed:String = "\x1b[41;1m";
+	public static var borderGreen:String = "\x1b[42;1m";
+	public static var borderYellow:String = "\x1b[43;1m";
+	public static var borderBlue:String = "\x1b[44;1m";
+	public static var borderMagenta:String = "\x1b[45;1m";
+	public static var borderCyan:String = "\x1b[46;1m";
+	public static var borderWhite:String = "\x1b[47;1m";
 }
 
 /**

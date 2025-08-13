@@ -1,3 +1,4 @@
+import hx3ds.PTMU;
 import hx3ds.HID;
 import hx3ds.Console;
 import hx3ds.GFX;
@@ -7,10 +8,16 @@ function main() {
 	untyped __include__("3ds.h");
 	
 	GFX.initDefault();
+	PTMU.init();
 	Console.init(GFX_TOP);
 
-	trace('${ConsoleColor.red}Hello, ${ConsoleColor.green}World!${ConsoleColor.white}');
+	trace('${ConsoleColor.textRed}Hello, ${ConsoleColor.textGreen}${ConsoleColor.borderWhite}World!${ConsoleColor.borderBlack}${ConsoleColor.textYhite}');
 	trace('Press [START] to exit.');
+
+	trace('Total Steps:     ${PTMU.getTotalSteps()}');
+	trace('U Chargin?:      ${PTMU.isCharging()}');
+	trace('Ur Shell Closy?: ${PTMU.isShellClosed()}');
+	trace('U losin\' wait?:  ${PTMU.isWalking()}');
 	
 	while (APT.mainLoop()) {
 		HID.scanInput();
@@ -19,5 +26,6 @@ function main() {
 		}
 	}
 		
+	PTMU.exit();
 	GFX.exit();
 }
