@@ -9,7 +9,8 @@ function main() {
 	GFX.initDefault();
 	Console.init(GFX_TOP);
 
-	trace("Hello, World!");
+	trace('${ConsoleColor.red}Hello, ${ConsoleColor.green}World!${ConsoleColor.white}');
+	trace('Press [START] to exit.');
 	
 	while (APT.mainLoop()) {
 		HID.scanInput();
