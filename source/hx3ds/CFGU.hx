@@ -35,6 +35,12 @@ class CFGU {
     public static function init():Void {};
     
     /**
+     * Exits CFGU.
+     */
+    @:native("cfguExit")
+    public static function exit():Void {};
+
+    /**
      * Gets the system's language.
      * @return The current language the console is in (0 = English, 1 = French, 2 = German, etc).
      * @see https://github.com/devkitPro/libctru/blob/e09a49a08fa469bc08fb62e9d29bfe6407c0232a/libctru/include/3ds/services/cfgu.h#L21-L36
@@ -44,28 +50,15 @@ class CFGU {
     	var language:UInt8 = 0;
     	untyped __cpp__("CFGU_GetSystemLanguage(&language)");
         return language;
-        /*
-        switch(language) {
-            case 0:  return Japanese;
-            case 1:  return English;
-            case 2:  return French;
-            case 3:  return German;
-            case 4:  return Italian;
-            case 5:  return Spanish;
-            case 6:  return SimplifiedChinese;
-            case 7:  return Korean;
-            case 8:  return Dutch;
-            case 9:  return Portugese;
-            case 10: return Russian;
-            case 11: return TraditionalChinese;
-            default: return Default;
-        }
-        */
     };
-    
+
     /**
-     * Exits CFGU.
+     * Gets whether the system is a 2DS.
+     * @return true if the system is a 2DS, false otherwise.
      */
-    @:native("cfguExit")
-    public static function exit():Void {};
+    public static function isUsing2DS():Bool {
+        var out:UInt8 = 0;
+        untyped __cpp__("CFGU_GetModelNintendo2DS(&out)");
+        return out == 0;
+    }
 }

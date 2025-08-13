@@ -48,11 +48,13 @@ class ConsoleColor {
  *
  * General usage is to initialize the console by:
  * ```
- * consoleDemoInit()
+ * import hx3ds.Console;
+ * consoleDemoInit(); // DOES NOT EXIST YET
  * ```
  * or to customize the console usage by:
  * ```
- * consoleInit()
+ * import hx3ds.Console;
+ * Console.init();
  * ```
  */
 class Console {
