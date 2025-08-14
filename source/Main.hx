@@ -1,3 +1,4 @@
+import hx3ds.FS.MediaType;
 import hx3ds.OS;
 import hx3ds.AM;
 import hx3ds.CFGU;
@@ -18,21 +19,8 @@ function main() {
 
 	OS.setSpeedupEnable(APT.isNew3DS());
 
-	trace('${ConsoleColor.textRed}Hello, ${ConsoleColor.textGreen}${ConsoleColor.borderWhite}World!${ConsoleColor.borderBlack}${ConsoleColor.textYhite}');
+	trace('${ConsoleColor.textRed}Hello, ${ConsoleColor.textGreen}${ConsoleColor.borderWhite}World!${ConsoleColor.borderBlack}${ConsoleColor.textWhite}');
 	trace('Press [START] to exit.');
-
-	trace('Total Steps:     ${PTMU.getTotalSteps()}');
-	trace('U Chargin?:      ${PTMU.isCharging()}');
-	trace('Ur Shell Closy?: ${PTMU.isShellClosed()}');
-	trace('U losin\' wait?:  ${PTMU.isWalking()}');
-
-	if (CFGU.isUsing2DS()) {
-		trace("Switch to a 3DS!");
-	} else {
-		trace("Hello smart usyer!");
-	}
-
-	trace('You have ${AM.getTicketCount()} titles! Amazing!!!');
 	
 	while (APT.mainLoop()) {
 		HID.scanInput();

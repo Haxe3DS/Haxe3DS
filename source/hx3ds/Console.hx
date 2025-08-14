@@ -28,7 +28,7 @@ class ConsoleColor {
 	public static var textBlue:String = "\x1b[34;1m";
 	public static var textMagenta:String = "\x1b[35;1m";
 	public static var textCyan:String = "\x1b[36;1m";
-	public static var textYhite:String = "\x1b[37;1m";
+	public static var textWhite:String = "\x1b[37;1m";
 
 	public static var borderBlack:String = "\x1b[40;1m";
 	public static var borderRed:String = "\x1b[41;1m";
