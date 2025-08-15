@@ -1,7 +1,7 @@
-import hx3ds.HID;
-import hx3ds.APT;
-import hx3ds.Console;
-import hx3ds.GFX;
+import haxe3ds.HID;
+import haxe3ds.APT;
+import haxe3ds.Console;
+import haxe3ds.GFX;
 
 function main() {
 	untyped __include__("3ds.h");
