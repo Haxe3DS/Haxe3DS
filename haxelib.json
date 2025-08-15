@@ -7,7 +7,5 @@
     "version": "1.0.0",
     "releasenote": "Initial Release",
     "contributors": ["NAEL2XD"],
-    "dependencies": {
-        "reflaxe": ""
-    }
+    "dependencies": {}
 }
