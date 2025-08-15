@@ -1,19 +1,23 @@
-### Haxe3DS - Compile Haxe code to 3DS
+# Haxe3DS - Now in a library!!!
 
-truly inspired from [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) and [DSHaxe](https://github.com/MochaIcedTea/DSHaxe)
+Ever wanted to make 3DS Homebrew apps? Well i guess this library is for you!!!
 
-# THIS IS A WIP, NOT EVERYTHING IS IMPLEMENTED
-### maybe will become a haxelib in some day idk
+This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) and thanks to them so i don't write a whole library for it.
 
-#### usage:
+# INSTALLATION:
 
-1. install [devkitpro](https://devkitpro.org/wiki/Getting_Started)
-2. download or git clone this repo
-3. (will go unused soon) launch cmd and type "build -c" it will compile to working code
-4. get the funny results
+1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git`
+2. Go to this repo: https://github.com/NAEL2XD/Haxe3DS-Setup
+3. Either download the .exe (compile.py is the source)
+4. Create a new Haxe Project specifically for creating your 3DS Applications.
+5. Place your downloaded exe (or py) to one of your newly made haxe projects.
+6. Open up Terminal and type `build -g` (`python compile.py -g`)
+7. (Optional) Set up your configs on 3dsSettings.json
+8. For the moment of truth, type `build -c` (`python compile.py -c` if using python version), assuming you have source/Main.hx
+9. If you done everything correctly, it should fully compile code successfully.
 
-# note:
+# Credits:
 
-reflaxe.cpp and reflaxe library is kept cause it's only the specific version that currently works
+3DS Compiler was inspired by [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) so i had to make it my own to make it work for 3DS.
 
-that's all yeah it's boring
+[devkitPro](https://devkitpro.org/) for [libctru](https://github.com/devkitPro/libctru) (MAN Y'ALL ARE GOATS)
