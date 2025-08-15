@@ -8,7 +8,6 @@
     "releasenote": "Initial Release",
     "contributors": ["NAEL2XD"],
     "dependencies": {
-        "reflaxe": "",
-        "reflaxe.cpp": ""
+        "reflaxe": ""
     }
 }

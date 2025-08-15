@@ -6,10 +6,10 @@ This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.
 
 # INSTALLATION:
 
-1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git`
+1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git` and `haxelib git reflaxe.cpp https://github.com/SomeRanDev/reflaxe.CPP.git`
 2. Go to this repo: https://github.com/NAEL2XD/Haxe3DS-Setup
 3. Either download the .exe (compile.py is the source)
-4. Create a new Haxe Project specifically for creating your 3DS Applications.
+4. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
 5. Place your downloaded exe (or py) to one of your newly made haxe projects.
 6. Open up Terminal and type `build -g` (`python compile.py -g`)
 7. (Optional) Set up your configs on 3dsSettings.json
