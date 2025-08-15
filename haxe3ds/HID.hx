@@ -118,12 +118,12 @@ extern class Key {
 
 typedef CirclePosition = {
 	/**
-	 * The Circle Pad's X Position, it can be -155 to 155
+	 * The Circle Pad's X Position, it can be -155 to 155 (-146 to 146 if C-Stick)
 	 */
 	var dx:Int;
 
 	/**
-	 * The Circle Pad's Y Position, it can be -155 to 155
+	 * The Circle Pad's Y Position, it can be -155 to 155 (-146 to 146 if C-Stick)
 	 */
 	var dy:Int;
 }
@@ -175,9 +175,13 @@ typedef AngularRate = {
 };
 
 /**
- * HID service.
+ * HID and IRRST services.
  * @see http://3dbrew.org/wiki/HID_Services
  * @see http://3dbrew.org/wiki/HID_Shared_Memory
+ * @see http://3dbrew.org/wiki/IR_Services
+ * @see http://3dbrew.org/wiki/IRRST_Shared_Memory
+ * 
+ * @since 1.0.0 only for C-Stick Support
  */
 @:cppInclude("3ds.h")
 class HID {
@@ -196,8 +200,8 @@ class HID {
 	/**
 	 * Scans HID for input data.
 	 */
-	@:native("hidScanInput")
-	public static function scanInput():Void {};
+	@:native("hidScanInput") // lol
+	public static function scanInput():Void untyped __cpp__("irrstScanInput()");
 
 	/**
 	 * Checks whetever a key is pressed or not.
@@ -228,6 +232,19 @@ class HID {
 		var pos:CirclePosition = {dx: 0, dy: 0};
 		untyped __cpp__("circlePosition temp;
 hidCircleRead(&temp);
+pos->dx = temp.dx;
+pos->dy = temp.dy");
+		return pos;
+	}
+
+	/**
+	 * Reads the current C-Stick position, ONLY is available in New 3DS Models!!!.
+	 * @return CirclePosition Data for dx and dy
+	 */
+	public static function cStickRead():CirclePosition {
+		var pos:CirclePosition = {dx: 0, dy: 0};
+		untyped __cpp__("circlePosition temp;
+irrstCstickRead(&temp);
 pos->dx = temp.dx;
 pos->dy = temp.dy");
 		return pos;
