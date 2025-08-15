@@ -7,5 +7,8 @@
     "version": "1.0.0",
     "releasenote": "Initial Release",
     "contributors": ["NAEL2XD"],
-    "dependencies": {}
+    "dependencies": {
+        "reflaxe.cpp": "git:https://github.com/SomeRanDev/reflaxe.CPP",
+        "reflaxe": "git:https://github.com/SomeRanDev/reflaxe"
+    }
 }
