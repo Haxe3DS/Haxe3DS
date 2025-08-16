@@ -7,20 +7,20 @@ enum CFG_Language {
     /**
      * Use system language in errorInit
      */
-    @:native("CFG_LANGUAGE_DEFAULT") Default;
+    Default;
 
-    @:native("CFG_LANGUAGE_JP") Japanese;
-    @:native("CFG_LANGUAGE_EN") English;
-    @:native("CFG_LANGUAGE_FR") French;
-    @:native("CFG_LANGUAGE_DE") German;
-    @:native("CFG_LANGUAGE_IT") Italian;
-    @:native("CFG_LANGUAGE_ES") Spanish;
-    @:native("CFG_LANGUAGE_ZH") SimplifiedChinese;
-    @:native("CFG_LANGUAGE_KO") Korean;
-    @:native("CFG_LANGUAGE_NL") Dutch;
-    @:native("CFG_LANGUAGE_PT") Portugese;
-    @:native("CFG_LANGUAGE_RU") Russian;
-    @:native("CFG_LANGUAGE_TW") TraditionalChinese;
+    Japanese;
+    English;
+    French;
+    German;
+    Italian;
+    Spanish;
+    SimplifiedChinese;
+    Korean;
+    Dutch;
+    Portugese;
+    Russian;
+    TraditionalChinese;
 }
 
 /**
