@@ -58,4 +58,46 @@ class APT {
 	 */
 	@:native("aptMainLoop")
 	public static function mainLoop():Bool return false;
+
+	/**
+	 * Returns true if the application is currently in the foreground.
+	 */
+	@:native("aptIsActive")
+	public static function isActive():Bool return false;
+
+	/**
+	 * Returns true if the system has told the application to close.
+	 */
+	@:native("aptShouldClose")
+	public static function shouldClose():Bool return false;
+
+	/**
+	 * Returns true if the system can enter sleep mode while the application is active.
+	 */
+	@:native("aptIsSleepAllowed")
+	public static function isSleepAllowed():Bool return false;
+
+	/**
+	 * Configures whether the system can enter sleep mode while the application is active.
+	 */
+	@:native("aptSetSleepAllowed")
+	public static function setSleepAllowed(enable:Bool):Void {};
+
+	/**
+	 * Handles incoming sleep mode requests.
+	 */
+	@:native("aptHandleSleep")
+	public static function handleSleep():Void {};
+
+	/**
+	 * Returns true if the system requires the application to jump back to the HOME menu.
+	 */
+	@:native("aptShouldJumpToHome")
+	public static function shouldJumpToHome():Bool return false;
+
+	/**
+	 * Handles incoming jump-to-HOME requests.
+	 */
+	@:native("aptHandleJumpToHome")
+	public static function handleJumpToHome():Void {};
 }

@@ -143,7 +143,7 @@ class Error {
 	}
 
     /**
-     * Begins displaying the error applet configuration, Using an emulator (azahar or citra) and displaying it will throw an uncatchable EXCEPTION! Use your real hardware 3DS to test this instead.
+     * Begins displaying the error applet configuration, Using an emulator (azahar or citra) and displaying it will throw an uncatchable EXCEPTION or will make Console INVISIBLE! Use your real hardware 3DS to test this instead.
      * @param config The error config setted up.
      * @param textToSet The text to use as, so that it's converted to be compatible with error applet. Will not show custom text if `config` doesn't contain TEXT
      */

@@ -21,7 +21,7 @@ class News {
      */
     public static function addNotification(title:String, message:String):Void {
         untyped __cpp__("u16 OutTitle[32] = {0};
-u16 OutMessage[256] = {0};
+u16 OutMessage[4096] = {0}; // cause why not lool
 
 const char* t = title.c_str();
 const char* m = message.c_str();
