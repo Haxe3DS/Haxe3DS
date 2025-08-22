@@ -17,7 +17,9 @@ class GFX {
 	 * Initializes the LCD framebuffers with default parameters
 	 */
 	@:native("gfxInitDefault")
-	public static function initDefault():Void {};
+	public static function initDefault():Void {
+		Error.setup(TEXT, Default);
+	};
 
 	/**
 	 * Enables or disables the 3D stereoscopic effect on the top screen.

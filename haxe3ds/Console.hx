@@ -61,7 +61,7 @@ class ConsolePUA {
 	public static var steps:String     = "\uE074";
 	public static var playCoin:String  = "\uE075";
 	public static var film:String      = "\uE076";
-	public static var circlePas:String = "\uE077";
+	public static var circlePad:String = "\uE077";
 	public static var power:String     = "\uE078";
 	public static var dpadUp:String    = "\uE079";
 	public static var dpadDown:String  = "\uE07A";
@@ -69,6 +69,9 @@ class ConsolePUA {
 	public static var dpadRight:String = "\uE07C";
 	public static var dpadVert:String  = "\uE07D";
 	public static var dpadHori:String  = "\uE07E";
+	public static var close:String     = "\uE070";
+	public static var closeHighlight:String = "\uE071";
+	public static var questionBlock:String = "\uE06B";
 }
 
 /**

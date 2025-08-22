@@ -16,7 +16,7 @@ Option:
   FreeProductCode         : true # Removes limitations on ProductCode
   MediaFootPadding        : false # If true CCI files are created with padding
   EnableCrypt             : $(APP_ENCRYPTED) # Enables encryption for NCCH and CIA
-  EnableCompress          : false # Compresses where applicable (currently only exefs:/.code)
+  EnableCompress          : true # Compresses where applicable (currently only exefs:/.code)
   
 AccessControlInfo:
   CoreVersion                   : 2
