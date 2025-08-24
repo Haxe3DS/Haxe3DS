@@ -27,3 +27,4 @@ This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.
 - [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
+- [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) for a really great wii u compiler that i got interested for it.
