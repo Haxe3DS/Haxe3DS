@@ -3,7 +3,7 @@ package haxe3ds;
 import cxx.std.FileSystem;
 
 /**
- * RomFS driver.
+ * RomFS driver, along with many other IO tools.
  */
 @:cppInclude("fstream") // For readFile
 class RomFS {
@@ -76,6 +76,34 @@ class RomFS {
 	 */
 	public static function exists(path:String):Bool {
 		return FileSystem.exists(path);
+	}
+
+	/**
+	 * Creates a new directory, `sdmc:/` is included by default and cannot be changed.
+	 * @param path Path to create a new directory, don't include `sdmc:/`
+	 * @return true if successfully created directory, false if failed to create.
+	 */
+	public static function createDirectory(path:String):Bool {
+		return untyped __cpp__('std::filesystem::create_directory("sdmc:/" + path)');
+	}
+
+	/**
+	 * Saves a file to path provided.
+	 * @param path Path to save from.
+	 * @param content Contents to store in the file.
+	 * @return true if successfully saved, false if path doesn't exist.
+	 */
+	public static function saveFile(path:String, content:String):Bool {
+		untyped __cpp__('
+		std::ofstream file("sdmc:/" + path);
+    	if (!file.is_open()) {
+    	    return false;
+    	}
+
+    	file << content;
+    	file.close();
+		');
+		return true;
 	}
 
 	/**
