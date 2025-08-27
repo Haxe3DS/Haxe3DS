@@ -8,6 +8,8 @@
 Ever wanted to make 3DS Homebrew apps without excessive use of middle level language (C/C++)? Well this library is for you!!!
 </p>
 
+Also a revival of the deleted repo named ***3DSHaxe*** by [MochaIcedTea](https://github.com/MochaIcedTea), now continued with more stuff coming it's way! If i do it.
+
 # How does it work?
 
 This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) which can read and compile haxe code to c++ outputted code so that the compiler can understand and compile to 3dsx! This was done with lots of love (and rage) to make this program so i hope i can get some support.
