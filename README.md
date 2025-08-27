@@ -22,6 +22,10 @@ This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.
 6. For the moment of truth, type `python build.py -c`, assuming you have source/Main.hx
 7. If you done everything correctly, it should fully compile code successfully and launch the application (or uses 3dslink/curl to transfer the file).
 
+# Additional libraries:
+
+- [CitroEngine](https://github.com/NAEL2XD/CitroEngine) - Make 3DS Gui Games easily.
+
 # Credits:
 
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.

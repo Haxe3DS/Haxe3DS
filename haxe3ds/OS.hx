@@ -48,5 +48,5 @@ class OS {
 	 * @param enable Specifies whether to enable or disable the speedup.
 	 */
 	@:native("osSetSpeedupEnable")
-	public static function setSpeedupEnable(enable:Bool) {};
+	public static function setSpeedup(enable:Bool) {};
 }

@@ -77,9 +77,13 @@ options:
         ]
 
         replacers = [
-            #["std::nullopt", "NULL"],       # Compiler failures
-            ["* _gthis",     "deleteline"], # Known to throw Exceptions
-            ["_gthis",       "this"]        # Known to throw Exceptions
+            #["std::nullopt", "NULL"],          # Compiler failures
+            ["* _gthis",         "deleteline"], # Known to throw Exceptions
+            ["_gthis",           "this"],       # Known to throw Exceptions
+            ["HCXX_LINE",        "deleteline"], # Decreasing size
+            ["HCXX_STACK_METHOD","deleteline"], # Decreasing size
+            ["	",               "deletechar"],
+            ["    ",             "deletechar"]
         ]
 
         print("Revamping files to make it compatible with C++...")
@@ -89,11 +93,15 @@ options:
             if "haxe_" in files:
                 continue
 
-            f = open(files, "r")
+            print(files.split("\\")[1])
+            f = open(files, "r", encoding="utf-8")
             c = f.read().splitlines()
             f.close()
 
-            for ln in range(len(c)):
+            c[0] = "// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler\n" + c[0]
+
+            ln = 0
+            for _ in range(len(c)):
                 shouldSkip = False
                 for bl in blockedStuff:
                     if bl in c[ln]:
@@ -101,13 +109,19 @@ options:
                         break
                 if not shouldSkip:
                     for repl in replacers:
-                        if repl[0] in c[ln] and repl[1] == "deleteline":
-                            c[ln] = "//deleteline called"
-                            continue
-                        else:
+                        if repl[0] in c[ln]:
+                            if repl[1].startswith("deleteline"):
+                                c[ln] = ""
+                            elif repl[1].startswith("deletechar"):
+                                c[ln] = c[ln].replace(repl[0], "")
                             c[ln] = c[ln].replace(repl[0], repl[1])
+                            continue
+                if len(c[ln]) != 0:
+                    ln += 1
+                else:
+                    del c[ln]
 
-            with open(files, "w") as f:
+            with open(files, "w", encoding="utf-8") as f:
                 f.write('\n'.join(c))
 
         for file in ["Makefile", "resources/AppInfo"]:
@@ -125,7 +139,7 @@ options:
             if os.path.exists(f".haxelib/{lib}/{f}/assets"):
                 shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
 
-        print("Done! Compiling...")
+        print("\nDone! Compiling...")
 
         make = jsonStruct["settings"]["makeAs"]
         os.chdir("output")
@@ -138,12 +152,10 @@ options:
         ip:str = jsonStruct["settings"]["3dsIP"]
         if len(ip) > 7 and len(ip.split(".")) == 4:
             if make == "3dsx":
-                os.system(f"cd output/output & 3dslink -a {ip} output.3dsx")
+                os.system(f"3dslink -a {ip} output.3dsx")
             else:
-                os.system(f"cd output/output & curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
+                os.system(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
         else:
-            os.system(f"cd output/output & output.3dsx")
+            os.system(f"output.3dsx")
 
         sys.exit(0)
-
-#curl --upload-file output/output/output.cia "ftp://192.168.1.184:5000/cia/"

@@ -2,7 +2,7 @@
     "name": "Haxe3DS",
     "url" : "https://github.com/NAEL2XD/Haxe3DS",
     "license": "MIT",
-    "tags": ["3ds", "devkitpro"],
+    "tags": ["3ds", "devkitpro", "homebrew"],
     "description": "Compile Haxe Code to 3DS compatible apps!",
     "version": "1.0.0",
     "releasenote": "Initial Release",

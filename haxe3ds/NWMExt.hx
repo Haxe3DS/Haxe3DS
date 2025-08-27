@@ -18,5 +18,5 @@ class NWMExt {
      * @param enable true enables it, false disables it.
      */
     @:native("NWMEXT_ControlWirelessEnabled")
-    public static function setWirelessActive(enable:Bool):Void {};
+    public static function setWireless(enable:Bool):Void {};
 }
