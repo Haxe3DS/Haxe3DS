@@ -77,7 +77,7 @@ options:
         ]
 
         replacers = [
-            #["std::nullopt", "NULL"],          # Compiler failures
+            ["std::nullopt", "NULL"],           # Compiler failures
             ["* _gthis",         "deleteline"], # Known to throw Exceptions
             ["_gthis",           "this"],       # Known to throw Exceptions
             ["HCXX_LINE",        "deleteline"], # Decreasing size
