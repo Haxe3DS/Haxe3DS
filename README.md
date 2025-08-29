@@ -16,6 +16,15 @@ This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.
 
 # INSTALLATION:
 
+Section I: Installing devkitPro first (needed for 3ds compiling):
+
+1. Go to the official devkitPro site: https://devkitpro.org/wiki/Getting_Started
+2. In the setup section, choose your following system and install devkitPro
+3. (Optional if non windows gui) Check "3DS" for developement and install it.
+4. Assuming you have msys2 installed from devkitPro, open a new cmd and input the following: `(dkp-)pacman -S 3ds-dev 3ds-portlibs` (the "dkp-" is for macos or linux only)
+
+Section II: Project Setup & Compiling:
+
 1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git`, it will also install other libraries for it to work correctly!
 3. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
 3. Get the build.py, by going to `assets` dir and copying `build.py` and pasting to your project
