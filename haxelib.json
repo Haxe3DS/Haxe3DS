@@ -8,7 +8,6 @@
     "releasenote": "Initial Release",
     "contributors": ["NAEL2XD"],
     "dependencies": {
-        "reflaxe.cpp": "git:https://github.com/Slushi-Github/reflaxe.CPP",
-        "reflaxe": "git:https://github.com/SomeRanDev/reflaxe"
+        "reflaxe": "4.0.0-beta"
     }
 }

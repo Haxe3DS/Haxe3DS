@@ -25,8 +25,8 @@ Section I: Installing devkitPro first (needed for 3ds compiling):
 
 Section II: Project Setup & Compiling:
 
-1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git`, it will also install other libraries for it to work correctly!
-3. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
+1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git` and `haxelib git reflaxe.cpp https://github.com/SomeRanDev/reflaxe.CPP`, it will also install other libraries for it to work correctly!
+2. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
 3. Get the build.py, by going to `assets` dir and copying `build.py` and pasting to your project
 4. Open up Terminal and type `python build.py -g`
 5. (Optional) Set up your configs on 3dsSettings.json
