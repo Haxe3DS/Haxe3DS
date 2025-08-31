@@ -204,9 +204,9 @@ class SWKBDHandler {
      * Current array data for buttons.
      * 
      * Indexes:
-     * - 0 = Left button.
+     * - 0 = Left button. (secondary button)
      * - 1 = Middle button.
-     * - 2 = Right button (if only <3 buttons, use index 2 instead).
+     * - 2 = Right button (primary button).
      * 
      * #### Warning:
      * 
