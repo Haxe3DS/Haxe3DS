@@ -189,19 +189,19 @@ class HID {
 	 * Initializes HID.
 	 */
 	@:native("hidInit")
-	public static function init():Void {};
+	public static function init() {};
 
 	/**
 	 * Exits HID.
 	 */
 	@:native("hidExit")
-	public static function exit():Void {};
+	public static function exit() {};
 
 	/**
 	 * Scans HID for input data.
 	 */
 	@:native("hidScanInput") // lol
-	public static function scanInput():Void untyped __cpp__("irrstScanInput()");
+	public static function scanInput() untyped __cpp__("irrstScanInput()");
 
 	/**
 	 * Checks whetever a key is pressed or not.
@@ -295,25 +295,25 @@ ang->z = temp.z");
 	 * Enables the accelerometer.
 	 */
 	@:native("HIDUSER_EnableAccelerometer")
-	public static function enableAccelerometer():Void {};
+	public static function enableAccelerometer() {};
 
 	/**
 	 * Disables the accelerometer.
 	 */
 	@:native("HIDUSER_DisableAccelerometer")
-	public static function disableAccelerometer():Void {};
+	public static function disableAccelerometer() {};
 
 	/**
 	 * Enables the gyroscope.
 	 */
 	@:native("HIDUSER_EnableGyroscope")
-	public static function enableGyroscope():Void {};
+	public static function enableGyroscope() {};
 
 	/**
 	 * Disables the gyroscope.
 	 */
 	@:native("HIDUSER_DisableGyroscope")
-	public static function disableGyroscope():Void {};
+	public static function disableGyroscope() {};
 
 	/**
 	 * Gets the current volume slider value. (0-63)

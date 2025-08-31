@@ -32,13 +32,13 @@ class CFGU {
      * Initializes CFGU.
      */
     @:native("cfguInit")
-    public static function init():Void {};
+    public static function init() {};
     
     /**
      * Exits CFGU.
      */
     @:native("cfguExit")
-    public static function exit():Void {};
+    public static function exit() {};
 
     /**
      * Gets the system's language.

@@ -5,18 +5,18 @@ class NWMExt {
      * Initializes NWMEXT.
      */
     @:native("nwmExtInit")
-    public static function init():Void {};
+    public static function init() {};
 
     /**
      * Exits NWMEXT.
      */
     @:native("nwmExtExit")
-    public static function exit():Void {};
+    public static function exit() {};
 
     /**
      * Turns wireless on or off.
      * @param enable true enables it, false disables it.
      */
     @:native("NWMEXT_ControlWirelessEnabled")
-    public static function setWireless(enable:Bool):Void {};
+    public static function setWireless(enable:Bool) {};
 }

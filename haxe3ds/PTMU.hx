@@ -9,13 +9,13 @@ class PTMU {
      * Initializes PTMU.
      */
     @:native("ptmuInit")
-    public static function init():Void {};
+    public static function init() {};
 
     /**
      * Exits PTMU.
      */
     @:native("ptmuExit")
-    public static function exit():Void {};
+    public static function exit() {};
 
     /**
      * Gets the system's current shell state.

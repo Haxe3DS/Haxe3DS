@@ -17,7 +17,7 @@ class GFX {
 	 * Initializes the LCD framebuffers with default parameters
 	 */
 	@:native("gfxInitDefault")
-	public static function initDefault():Void {
+	public static function initDefault() {
 		Error.setup(TEXT, Default);
 	};
 
@@ -30,7 +30,7 @@ class GFX {
 	 * @param enable Pass true to enable, false to disable.
 	 */
 	@:native("gfxSet3D")
-	public static function set3D(enable:Bool):Void {};
+	public static function set3D(enable:Bool) {};
 
 	/**
 	 * Retrieves the status of the 3D stereoscopic effect on the top screen.
@@ -62,7 +62,7 @@ class GFX {
 	 * @param enable Pass true to enable, false to disable.
 	 */
 	@:native("gfxSetWide")
-	public static function setWide(enable:Bool):Void {};
+	public static function setWide(enable:Bool) {};
 
 	/**
 	 * Deinitializes and frees the LCD framebuffers.
@@ -70,5 +70,5 @@ class GFX {
 	 * This function internally calls gspExit.
 	 */
 	@:native("gfxExit")
-	public static function exit():Void {};
+	public static function exit() {};
 }

@@ -9,13 +9,13 @@ class APT {
 	 * Initializes APT.
 	 */
 	@:native("aptInit")
-	public static function init():Void {};
+	public static function init() {};
 
 	/**
 	 * Exits APT.
 	 */
 	@:native("aptExit")
-	public static function exit():Void {};
+	public static function exit() {};
 
 	/**
 	 * Checks whether the system is a New 3DS.
@@ -38,13 +38,13 @@ class APT {
 	 * @param allowed Should allow going to home menu?
 	 */
 	@:native("aptSetHomeAllowed")
-	public static function setHomeAllowed(allowed:Bool):Void {};
+	public static function setHomeAllowed(allowed:Bool) {};
 
 	/**
 	 * Jumps back to the HOME menu by making the console think you've pressed the HOME Button.
 	 */
 	@:native("aptJumpToHomeMenu")
-	public static function jumpToHomeMenu():Void {};
+	public static function jumpToHomeMenu() {};
 
 	/**
 	 * Returns true if there is an incoming HOME button press rejected by the policy set by APT.setHomeAllowed
@@ -81,13 +81,13 @@ class APT {
 	 * Configures whether the system can enter sleep mode while the application is active.
 	 */
 	@:native("aptSetSleepAllowed")
-	public static function setSleepAllowed(enable:Bool):Void {};
+	public static function setSleepAllowed(enable:Bool) {};
 
 	/**
 	 * Handles incoming sleep mode requests.
 	 */
 	@:native("aptHandleSleep")
-	public static function handleSleep():Void {};
+	public static function handleSleep() {};
 
 	/**
 	 * Returns true if the system requires the application to jump back to the HOME menu.
@@ -99,5 +99,5 @@ class APT {
 	 * Handles incoming jump-to-HOME requests.
 	 */
 	@:native("aptHandleJumpToHome")
-	public static function handleJumpToHome():Void {};
+	public static function handleJumpToHome() {};
 }

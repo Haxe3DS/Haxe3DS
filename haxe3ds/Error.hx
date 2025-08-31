@@ -147,7 +147,7 @@ class Error {
      * @param config The error config setted up.
      * @param textToSet The text to use as, so that it's converted to be compatible with error applet. Will not show custom text if `config` doesn't contain TEXT
      */
-    public static function display(config:ErrorConfig, textToSet:String):Void {
+    public static function display(config:ErrorConfig, textToSet:String) {
 	    untyped __cpp__('
 	        errorConf conf;
 	        conf.type = getFromET(config->type.value());

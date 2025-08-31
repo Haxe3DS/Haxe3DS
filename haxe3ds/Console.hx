@@ -97,11 +97,11 @@ class Console {
 	 * @param screen The screen to use for the console.
 	 */
 	@:native("consoleInit")
-	public static function init(screen:GfxScreen_t, _:String = null):Void {};
+	public static function init(screen:GfxScreen_t, _:String = null) {};
 
 	/**
 	 * Clears the screen by using iprintf("\x1b[2J");
 	 */
 	@:native("consoleClear")
-	public static function clear():Void {};
+	public static function clear() {};
 }

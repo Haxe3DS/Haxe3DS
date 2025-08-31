@@ -8,17 +8,17 @@ class NS {
      * Initializes NS.
      */
     @:native("nsInit")
-    public static function init():Void {};
+    public static function init() {};
 
     /**
      * Exits NS.
      */
     @:native("nsExit")
-    public static function exit():Void {};
+    public static function exit() {};
 
     /**
      * Reboots the system
      */
     @:native("NS_RebootSystem")
-    public static function rebootSystem():Void {};
+    public static function rebootSystem() {};
 }
