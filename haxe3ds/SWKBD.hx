@@ -95,8 +95,42 @@ typedef SWKBDDict = {
     output:String
 }
 
+enum SWKBDFilter {
+    /**
+     * Disallow the use of more than a certain number of digits (0 or more)
+     */
+    DIGITS;
+
+    /**
+     * Disallow the use of the @ sign.
+     */
+    AT;
+
+    /**
+     * Disallow the use of the % sign.
+     */
+    PERCENT;
+
+    /**
+     * Disallow the use of the \ sign.
+     */
+    BACKSLASH;
+
+    /**
+     * Disallow profanity using Nintendo's profanity filter.
+     */
+    PROFANITY;
+
+    /**
+     * Use a callback in order to check the input.
+     */
+    CALLBACK;
+}
+
 @:cppFileCode("
 #include <3ds.h>
+#include <iostream>
+
 SwkbdType toSwkbdType(int index) {
     switch(index) {
         case 0: default: return SWKBD_TYPE_NORMAL;
@@ -125,21 +159,21 @@ SwkbdValidInput toSwkbdValidInput(int index) {
  */
 class SWKBDHandler {
     /**
-     * Current type of Software Keyboard to use.
+     * Current type of Software Keyboard to use. (Read-Only)
      * 
      * @see SWKBDType Enum
      */
-    public var type:Int = 0;
+    public var type(default, null):Int = 0;
 
     /**
-     * Total buttons specified in argument. (will be `X-1`)
+     * Total buttons specified in argument. (will be `X-1`) (Read-Only)
      */
-    public var numButtonsM1:Int = 0;
+    public var numButtonsM1(default, null):Int = 0;
 
     /**
      * Total text length that can be inputted.
      */
-    public var maxTextLen:UInt16 = 0;
+    public var maxTextLen(default, null):UInt16 = 0;
 
     /**
      * Current Password Mode used.
@@ -162,16 +196,22 @@ class SWKBDHandler {
 
     /**
      * Multiline input.
+     * 
+     * I don't even know what it does.
      */
     public var multiline:Bool = false;
 
     /**
      * Fixed-width mode.
+     * 
+     * This basically sets the maximum character length to 32 instead of whatever's max length on `maxTextLen`.
      */
     public var fixedWidth:Bool = false;
 
     /**
      * Allow the usage of the HOME button.
+     * 
+     * If it's set to false, HOME Menu will be disabled and a icon will appear.
      */
     public var homeMenu:Bool = false;
 
@@ -182,11 +222,13 @@ class SWKBDHandler {
 
     /**
      * Allow the usage of the POWER button.
+     * 
+     * If it's set to false, pressing the power button will not bring you to the "In Sleep Mode, the system can..." screen.
      */
     public var power:Bool = false;
 
     /**
-     * Darken the top screen when the keyboard is shown.
+     * If it's set to true, the screen from above will be darken so that the SWKBD will be more focused.
      */
     public var darkenTopScreen:Bool = false;
 
@@ -197,6 +239,8 @@ class SWKBDHandler {
 
     /**
      * Enable predictive input (necessary for Kanji input in JPN systems).
+     * 
+     * If disabled, predictive input will be hidden and won't be able to choose a variety of words. This also disables `dict`
      */
     public var predictiveInput:Bool = true;
 
@@ -217,9 +261,9 @@ class SWKBDHandler {
     /**
      * Current initial text that a software keyboard will display on launch.
      * 
-     * Basically a standard "Starter Text".
+     * Basically a standard Starter Text that will be used.
      */
-    public var initialText:String = "Initial Text";
+    public var initialText:String = "";
 
     /**
      * Current array of a dictionary/prediction, can be pushed to add even more dicts.
@@ -236,6 +280,27 @@ class SWKBDHandler {
      * Current validation for inputs.
      */
     public var validInput:SWKBDValidInputHandler = ANYTHING;
+
+    /**
+     * Default to the QWERTY page when the keyboard is shown.
+     * 
+     * Example being if you're using AZERTY and this is enabled, it will be defaulted to QWERTY!
+     */
+    public var defaultQWERTY:Bool = false;
+
+    /**
+     * Lists of filters to use, don't use duplicate filter flags!
+     * 
+     * @see `SWKBDFilter` enum.
+     */
+    public var filterFlags:Array<SWKBDFilter> = [];
+
+    /**
+     * Specify how many maximum digits to use, will be enabled if `filterFlags` has `DIGITS`!
+     * 
+     * If set to 0 and `filterFlags` has `DIGITS`, it will disallow uses of digits.
+     */
+    public var maxDigits:Int = 0;
 
     /**
      * Initializes software keyboard status.
@@ -266,8 +331,23 @@ class SWKBDHandler {
      */
     public function launch():String {
         untyped __cpp__('
+            u32 filter = 0;
+            for (auto &&e : *this->filterFlags) {
+                switch(e->index) {
+                    case 0: default: filter += SWKBD_FILTER_DIGITS; break;
+                    case 1: filter += SWKBD_FILTER_AT; break;
+                    case 2: filter += SWKBD_FILTER_PERCENT; break;
+                    case 3: filter += SWKBD_FILTER_BACKSLASH; break;
+                    case 4: filter += SWKBD_FILTER_PROFANITY; break;
+                    case 5: filter += SWKBD_FILTER_CALLBACK; break;
+                }
+            }
+
             SwkbdState out;
+            static SwkbdStatusData swkbdStatus;
+            static SwkbdLearningData swkbdLearning;
             swkbdInit(&out, toSwkbdType(this->type), this->numButtonsM1 + 1, -1);
+
             out.type = this->type;
             out.num_buttons_m1 = this->numButtonsM1;
             out.max_text_len = this->maxTextLen;
@@ -279,17 +359,20 @@ class SWKBDHandler {
             out.allow_reset = this->swReset;
             out.allow_power = this->power;
             out.darken_top_screen = this->darkenTopScreen ? 1 : 0;
+            out.default_qwerty = this->defaultQWERTY ? 1 : 0;
             out.predictive_input = this->predictiveInput;
             swkbdSetHintText(&out, this->hintText.c_str());
             swkbdSetInitialText(&out, this->initialText.c_str());
-            swkbdSetValidation(&out, toSwkbdValidInput(this->validInput->index), 0, 0);
+            swkbdSetValidation(&out, toSwkbdValidInput(this->validInput->index), filter, this->maxDigits);
             for (int i = 0; i < 3; i++) swkbdSetButton(&out, i == 0 ? SWKBD_BUTTON_LEFT : i == 1 ? SWKBD_BUTTON_MIDDLE : SWKBD_BUTTON_RIGHT, (*this->buttonData)[i]->input.c_str(), (*this->buttonData)[i]->buttonWillSubmit);
 
             int len = (int)((*this->dict).size());
-            if (len != 0) {
+            if (len != 0 && this->predictiveInput) {
                 SwkbdDictWord words[len];
                 for (int i = 0; i < len; i++) swkbdSetDictWord(&words[i], (*this->dict)[i]->input.c_str(), (*this->dict)[i]->output.c_str());
                 swkbdSetDictionary(&out, words, len);
+                swkbdSetStatusData(&out, &swkbdStatus, true, true);
+                swkbdSetLearningData(&out, &swkbdLearning, true, true);
             }
 
             char output[1700];
