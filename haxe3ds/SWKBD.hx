@@ -28,20 +28,17 @@ enum SWKBDPasswordMode {
     /**
      * Characters are not concealed.
      */
-    @:native("SWKBD_PASSWORD_NONE")
-    SWKBD_PASSWORD_NONE;
+    NONE;
 
     /**
      * Characters are concealed immediately.
      */
-    @:native("SWKBD_PASSWORD_NONE")
-	SWKBD_PASSWORD_HIDE;
+	HIDE;
 
     /**
      * Characters are concealed a second after they've been typed.
      */
-    @:native("SWKBD_PASSWORD_HIDE_DELAY")
-	SWKBD_PASSWORD_HIDE_DELAY;
+	HIDE_DELAY;
 }
 
 enum SWKBDValidInputHandler {
@@ -180,17 +177,18 @@ class SWKBDHandler {
      * 
      * @see `SWKBDPasswordMode` enum for a full list.
      */
-    public var passwordMode:Int = 0;
+    public var passwordMode:SWKBDPasswordMode = NONE;
 
     /**
      * Array of current numpad key.
      * 
-     * Index 0: Left key.
-     * Index 1: Right key.
+     * Indexes:
+     * - 0: Left key.
+     * - 1: Right key.
      * 
      * Value:
      * - 0: Hides the key.
-     * - 1-2: Unicode codepoint (Equivelant to using `"x".code`).
+     * - Any Unicode: Unicode codepoint (Equivelant to using `"x".code`).
      */
     public var numpadKeys:Array<UInt16> = [0, 0];
 
@@ -346,12 +344,11 @@ class SWKBDHandler {
             SwkbdState out;
             static SwkbdStatusData swkbdStatus;
             static SwkbdLearningData swkbdLearning;
-            swkbdInit(&out, toSwkbdType(this->type), this->numButtonsM1 + 1, -1);
+            swkbdInit(&out, toSwkbdType(this->type), this->numButtonsM1 + 1, this->maxTextLen);
 
             out.type = this->type;
             out.num_buttons_m1 = this->numButtonsM1;
-            out.max_text_len = this->maxTextLen;
-            out.password_mode = this->passwordMode;
+            out.password_mode = this->passwordMode->index;
             for (int i = 0; i < 2; i++) out.numpad_keys[i] = (*this->numpadKeys)[i];
             out.multiline = this->multiline;
             out.fixed_width = this->fixedWidth;
