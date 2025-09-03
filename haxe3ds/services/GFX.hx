@@ -1,4 +1,6 @@
-package haxe3ds;
+package haxe3ds.services;
+
+import haxe3ds.applet.Error;
 
 /**
  * Simple framebuffer API
@@ -22,32 +24,29 @@ class GFX {
 	};
 
 	/**
-	 * Enables or disables the 3D stereoscopic effect on the top screen.
+	 * Variable property for the GFX's 3D stereoscopic effect.
 	 * 
-	 * #### Note
-	 * Stereoscopic 3D is disabled by default.
+	 * #### Note:
+	 * Default value for current3D is `false`/`disabled`.
 	 * 
-	 * @param enable Pass true to enable, false to disable.
+	 * #### Property:
+	 * `Get` will call `gfxIs3D` for it's variable.
+	 * 
+	 * `Set` will call `gfxSet3D` if variable is set.
 	 */
-	@:native("gfxSet3D")
-	public static function set3D(enable:Bool) {};
+	public var current3D(get, set):Bool;
+	
+	function get_current3D():Bool {
+		return untyped __cpp__('gfxIs3D()');
+	}
+	
+	function set_current3D(current3D:Bool):Bool {
+		untyped __cpp__('gfxSet3D(current3D)');
+		return current3D;
+	}
 
 	/**
-	 * Retrieves the status of the 3D stereoscopic effect on the top screen.
-	 * @return true if 3D enabled, false otherwise.
-	 */
-	@:native("gfxIs3D")
-	public static function is3D():Bool return false;
-
-	/**
-	 * Retrieves the status of the 800px (double-height) high resolution display mode of the top screen.
-	 * @return true if wide mode enabled, false otherwise.
-	 */
-	@:native("gfxIsWide")
-	public static function isWide():Bool return false;
-
-	/**
-	 * Enables or disables the 800px (double-height) high resolution display mode of the top screen.
+	 * Variable property for the 3DS's wide screen resolution.
 	 * 
 	 * #### Note
 	 * Wide mode is disabled by default.
@@ -56,13 +55,21 @@ class GFX {
 	 * 
 	 * In wide mode pixels are not square, since scanlines are half as tall as they normally are.
 	 * 
-	 * #### Warning
-	 * Wide mode does not work on Old 2DS consoles (however it does work on New 2DS XL consoles).
+	 * #### Property:
+	 * `Get` will call `gfxIsWide` for it's variable.
 	 * 
-	 * @param enable Pass true to enable, false to disable.
+	 * `Set` will call `gfxSetWide` with variable specified.
 	 */
-	@:native("gfxSetWide")
-	public static function setWide(enable:Bool) {};
+	public var isWide(get, set):Bool;
+	
+	function get_isWide():Bool {
+		return untyped __cpp__('gfxIsWide()');
+	}
+	
+	function set_isWide(isWide:Bool):Bool {
+		untyped __cpp__('gfxSetWide(isWide)');
+		return isWide;
+	}
 
 	/**
 	 * Deinitializes and frees the LCD framebuffers.

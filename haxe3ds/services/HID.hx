@@ -1,6 +1,6 @@
-package haxe3ds;
+package haxe3ds.services;
 
-extern class Key {
+class Key {
 	@:native("KEY_START")
 	public static var START:UInt32;
 	
@@ -223,6 +223,28 @@ class HID {
 	 * @return true if up, false if not.
 	 */
 	public static function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & key");
+
+	/**
+	 * Returns a large variety of key pressed/held/up.
+	 * 
+	 * @param typeof Integer typeof, 0/other numbers = pressed, 1 = held, 2 = up
+	 * @return Lists of UInt32 keys pressed.
+	 */
+	public static function keyArray(typeof:Int = 0):Array<UInt32> {
+		var ret:Array<UInt32> = [];
+		final f:UInt32->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
+
+		for (key in [
+			Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,
+			Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL
+		]) {
+			if (f(key)) {
+				ret.push(key);
+			}
+		}
+
+		return ret;
+	}
 
 	/**
 	 * Reads the current circle pad position.

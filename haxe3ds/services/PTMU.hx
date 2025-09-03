@@ -1,4 +1,4 @@
-package haxe3ds;
+package haxe3ds.services;
 
 /**
  * PTMU service.
@@ -31,8 +31,8 @@ class PTMU {
      * Gets the system's current battery level.
      * 
      * All types of battery levels:
-     * - 5: 4 bars (100-61%)
-     * - 4: 3 bars (60-31%)
+     * - 5: 4 bars (100%-61%)
+     * - 4: 3 bars (60%-31%)
      * - 3: 2 bars (30%-11%)
      * - 2: 1 bar (10%-6%)
      * - 1: 1 bar (5%-1%, flashing LED)

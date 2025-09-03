@@ -1,4 +1,4 @@
-package haxe3ds;
+package haxe3ds.services;
 
 @:cppInclude("3ds.h")
 class News {

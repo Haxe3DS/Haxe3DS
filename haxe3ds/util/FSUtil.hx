@@ -4,7 +4,11 @@ import cxx.std.FileSystem;
 
 @:cppInclude("fstream") // For readFile
 @:cppInclude("filesystem") // For readFile
-class FS {
+
+/**
+ * Better File System Utility with extra functions for IO.
+ */
+class FSUtil {
 	/**
 	 * Reads a file from SDMC/ROMFS and gets the current read string from file.
 	 * @param path The path to read from, include the `sdmc:/` or `romfs:/` partition.

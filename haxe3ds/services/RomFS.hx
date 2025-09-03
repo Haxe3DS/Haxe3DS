@@ -1,4 +1,4 @@
-package haxe3ds;
+package haxe3ds.services;
 
 /**
  * RomFS driver, along with many other IO tools.

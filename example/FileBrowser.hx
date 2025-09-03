@@ -10,7 +10,7 @@
  * 	   START - Exit
  */
 
-import haxe3ds.util.FS;
+import haxe3ds.util.FSUtil as FS;
 import haxe3ds.HID;
 import haxe3ds.APT;
 import haxe3ds.Console;

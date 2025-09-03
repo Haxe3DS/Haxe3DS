@@ -1,4 +1,4 @@
-package haxe3ds;
+package haxe3ds.applet;
 
 import cxx.num.UInt16;
 

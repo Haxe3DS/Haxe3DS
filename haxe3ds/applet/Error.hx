@@ -1,6 +1,6 @@
-package haxe3ds;
+package haxe3ds.applet;
 
-import haxe3ds.CFGU.CFG_Language;
+import haxe3ds.services.CFGU.CFG_Language;
 
 enum ErrorType {
 	/**
@@ -110,6 +110,10 @@ typedef ErrorConfig = {
 
 @:cppInclude("3ds.h")
 @:cppInclude("haxe3ds_Utils.h")
+
+/**
+ * Error class for creating Applet Error Popup.
+ */
 class Error {
     /**
      * Setups a error configuration so that the applet can understand it and display it for you.
