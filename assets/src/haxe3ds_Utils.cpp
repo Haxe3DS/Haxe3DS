@@ -1,6 +1,6 @@
 #include "haxe3ds_Utils.h"
 
-errorType getFromET(std::shared_ptr<haxe3ds::ErrorType> e) {
+errorType getFromET(std::shared_ptr<haxe3ds::applet::ErrorType> e) {
     switch(e->index) {
         case 0:  return ERROR_CODE;
         case 1:  return ERROR_TEXT;
@@ -14,7 +14,7 @@ errorType getFromET(std::shared_ptr<haxe3ds::ErrorType> e) {
     }
 }
     
-CFG_Language getFromCFGC(std::shared_ptr<haxe3ds::CFG_Language> e) {
+CFG_Language getFromCFGC(std::shared_ptr<haxe3ds::services::CFG_Language> e) {
     switch(e->index) {
         case 0:  return CFG_LANGUAGE_DEFAULT;
         case 1:  return CFG_LANGUAGE_JP;
@@ -33,7 +33,7 @@ CFG_Language getFromCFGC(std::shared_ptr<haxe3ds::CFG_Language> e) {
     }
 }
     
-errorReturnCode getFromERC(std::shared_ptr<haxe3ds::ErrorReturnCode> e) {
+errorReturnCode getFromERC(std::shared_ptr<haxe3ds::applet::ErrorReturnCode> e) {
 	switch(e->index) {
 		case 0:  return ERROR_UNKNOWN;
 		case 1:  return ERROR_NONE;

@@ -130,16 +130,14 @@ class Error {
 	        configExport->type = errType;
 	        configExport->errorCode = conf.errorCode;
 		
-	        configExport->upperScreenFlag = conf.upperScreenFlag == ERROR_STEREO 
-	            ? haxe3ds::ErrorScreenFlag::ERROR_STEREO() 
-	            : haxe3ds::ErrorScreenFlag::ERROR_NORMAL();
+	        configExport->upperScreenFlag = conf.upperScreenFlag == ERROR_STEREO ? haxe3ds::applet::ErrorScreenFlag::ERROR_STEREO() : haxe3ds::applet::ErrorScreenFlag::ERROR_NORMAL();
 		
 	        configExport->useLanguage = conf.useLanguage;
 	        configExport->homeButton = conf.homeButton;
 	        configExport->softwareReset = conf.softwareReset;
 	        configExport->appJump = conf.appJump;
 		
-	        configExport->returnCode = haxe3ds::ErrorReturnCode::ERROR_SUCCESS();
+	        configExport->returnCode = haxe3ds::applet::ErrorReturnCode::ERROR_SUCCESS();
 		
 	        configExport->eulaVersion = conf.eulaVersion;
 	    ');

@@ -41,7 +41,7 @@ class GFX {
 	}
 	
 	function set_current3D(current3D:Bool):Bool {
-		untyped __cpp__('gfxSet3D(current3D)');
+		untyped __cpp__('gfxSet3D(current3D2)');
 		return current3D;
 	}
 
@@ -67,7 +67,7 @@ class GFX {
 	}
 	
 	function set_isWide(isWide:Bool):Bool {
-		untyped __cpp__('gfxSetWide(isWide)');
+		untyped __cpp__('gfxSetWide(isWide2)');
 		return isWide;
 	}
 
