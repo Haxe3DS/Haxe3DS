@@ -200,8 +200,7 @@ class HID {
 	/**
 	 * Scans HID for input data.
 	 */
-	@:native("hidScanInput") // lol
-	public static function scanInput() untyped __cpp__("irrstScanInput()");
+	public static function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
 
 	/**
 	 * Checks whetever a key is pressed or not.
