@@ -4,8 +4,8 @@
     "license": "MIT",
     "tags": ["3ds", "devkitpro", "homebrew"],
     "description": "Compile Haxe Code to 3DS compatible apps!",
-    "version": "1.0.0",
-    "releasenote": "Initial Release",
+    "version": "1.1.0",
+    "releasenote": "Added some services, Added SWKBD, and probably even more. Oh and compiler fixes.",
     "contributors": ["NAEL2XD"],
     "dependencies": {
         "reflaxe": "4.0.0-beta"
