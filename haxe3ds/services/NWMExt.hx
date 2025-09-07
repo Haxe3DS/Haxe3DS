@@ -25,7 +25,7 @@ class NWMExt {
         return wireless;
     }
     static function set_wireless(wireless:Bool):Bool {
-        untyped __cpp__('NWMEXT_ControlWirelessEnabled(wireless2)');
+        untyped __cpp__('NWMEXT_ControlWirelessEnabled(wireless)');
         return wireless;
     }
 }

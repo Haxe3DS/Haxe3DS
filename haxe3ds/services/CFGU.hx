@@ -35,7 +35,10 @@ class CFGU {
         untyped __cpp__('
             cfguInit();
             CFGU_GetSystemLanguage(&systemLanguage);
-            CFGU_GetModelNintendo2DS(&isUsing2DSModel);
+
+            u8 r;
+            CFGU_GetModelNintendo2DS(&r);
+            isUsing2DSModel = r == 0;
         ');
     };
     

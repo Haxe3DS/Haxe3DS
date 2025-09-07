@@ -22,7 +22,6 @@ class APT {
 			bool check = false;
 			aptInit();
 			APT_CheckNew3DS(&isNew3DS);
-			canSleep = aptIsSleepAllowed()
 		');
 	}
 

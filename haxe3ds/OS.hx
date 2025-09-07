@@ -67,7 +67,7 @@ class OS {
 		return speedup;
 	}
 	static function set_speedup(speedup:Bool):Bool {
-		untyped __cpp__('osSetSpeedupEnable(speedup2)');
+		untyped __cpp__('osSetSpeedupEnable(speedup)');
 		return speedup;
 	}
 }
