@@ -5,8 +5,16 @@ class News {
     /**
      * Initializes NEWS.
      */
-    @:native("newsInit")
-    public static function init() {};
+    public static function init() {
+        untyped __cpp__('
+            newsInit();
+
+            Result r = 0;
+            if (R_FAILED(r = NEWS_GetTotalNotifications(&totalNotifications))) {
+                totalNotifications = r;
+            }
+        ');
+    };
 
     /**
      * Exits NEWS.
@@ -33,11 +41,10 @@ NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), NULL, 0
     }
 
     /**
-     * Gets current total notifications number.
+     * Variable property that gets current total notifications number.
+     * 
+     * Error Codes:
+     * - `0xD900182F (3640662063)` - Due to LibCTRU's amazing coding skills, they've used `news:u` instead of `news:s` and thus is the reason why it caused this amazing error.
      */
-    public static function getTotalNotifications():UInt32 {
-        var out:UInt32 = 0;
-        untyped __cpp__("NEWS_GetTotalNotifications(&out)");
-        return out;
-    }
+    public static var totalNotifications(default, null):UInt32;
 }

@@ -35,11 +35,9 @@ class GFX {
 	 * `Set` will call `gfxSet3D` if variable is set.
 	 */
 	public var current3D(get, set):Bool;
-	
 	function get_current3D():Bool {
 		return untyped __cpp__('gfxIs3D()');
 	}
-	
 	function set_current3D(current3D:Bool):Bool {
 		untyped __cpp__('gfxSet3D(current3D2)');
 		return current3D;
@@ -61,11 +59,9 @@ class GFX {
 	 * `Set` will call `gfxSetWide` with variable specified.
 	 */
 	public var isWide(get, set):Bool;
-	
 	function get_isWide():Bool {
 		return untyped __cpp__('gfxIsWide()');
 	}
-	
 	function set_isWide(isWide:Bool):Bool {
 		untyped __cpp__('gfxSetWide(isWide2)');
 		return isWide;

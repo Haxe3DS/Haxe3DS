@@ -14,9 +14,18 @@ class NWMExt {
     public static function exit() {};
 
     /**
-     * Turns wireless on or off.
-     * @param enable true enables it, false disables it.
+     * Variable property for getting wireless.
+     * 
+     * `Get` will return the variable.
+     * 
+     * `Set` will call `NWMEXT_ControlWirelessEnabled` and sets it and returns the variable.
      */
-    @:native("NWMEXT_ControlWirelessEnabled")
-    public static function setWireless(enable:Bool) {};
+    @:isVar public static var wireless(get, set):Bool;
+    static function get_wireless():Bool {
+        return wireless;
+    }
+    static function set_wireless(wireless:Bool):Bool {
+        untyped __cpp__('NWMEXT_ControlWirelessEnabled(wireless2)');
+        return wireless;
+    }
 }

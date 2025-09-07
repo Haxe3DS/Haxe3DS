@@ -313,36 +313,46 @@ ang->z = temp.z");
 	}
 
 	/**
-	 * Enables the accelerometer.
+	 * Variable property that gets or sets the accelerometer's status.
+	 * 
+	 * `Get` will return the variable.
+	 * 
+	 * `Set` will call either `HIDUSER_EnableAccelerometer` if true, or `HIDUSER_DisableAccelerometer` if false.
 	 */
-	@:native("HIDUSER_EnableAccelerometer")
-	public static function enableAccelerometer() {};
+	@:isVar public static var accelerometer(get, set):Bool;
+	static function get_accelerometer():Bool {
+		return accelerometer;
+	}
+	static function set_accelerometer(accelerometer:Bool):Bool {
+		untyped __cpp__('accelerometer ? HIDUSER_EnableAccelerometer() : HIDUSER_DisableAccelerometer()');
+		return accelerometer;
+	}
 
 	/**
-	 * Disables the accelerometer.
+	 * Variable property that gets or sets the gyroscope's status.
+	 * 
+	 * `Get` will return the variable.
+	 * 
+	 * `Set` will call either `HIDUSER_EnableGyroscope` if true, or `HIDUSER_DisableGyroscope` if false.
 	 */
-	@:native("HIDUSER_DisableAccelerometer")
-	public static function disableAccelerometer() {};
+	@:isVar public static var gyroscope(get, set):Bool;
+	static function get_gyroscope():Bool {
+		return gyroscope;
+	}
+	static function set_gyroscope(gyroscope:Bool):Bool {
+		untyped __cpp__('gyroscope ? HIDUSER_EnableGyroscope() : HIDUSER_DisableGyroscope()');
+		return gyroscope;
+	}
 
 	/**
-	 * Enables the gyroscope.
+	 * Variable property that gets the current volume slider value. (0-63).
+	 * 
+	 * `Get` will call `HIDUSER_GetSoundVolume` and returns the variable.
 	 */
-	@:native("HIDUSER_EnableGyroscope")
-	public static function enableGyroscope() {};
-
-	/**
-	 * Disables the gyroscope.
-	 */
-	@:native("HIDUSER_DisableGyroscope")
-	public static function disableGyroscope() {};
-
-	/**
-	 * Gets the current volume slider value. (0-63)
-	 * @return Current volume slider value.
-	 */
-	public static function getSoundVolume():UInt8 {
+	public static var soundVolume(get, null):UInt8;
+	static function get_soundVolume():UInt8 {
 		var v:UInt8 = 0;
 		untyped __cpp__("HIDUSER_GetSoundVolume(&v)");
 		return v;
-	};
+	}
 }

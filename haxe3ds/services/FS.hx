@@ -21,32 +21,31 @@ class FS {
     /**
      * Initializes FS.
      */
-    @:native("fsInit")
-    public static function init() {}
+    public static function init() {
+        untyped __cpp__('
+            fsInit();
+            FSUSER_IsSdmcDetected(&isSDMCDetected);
+            FSUSER_IsSdmcWritable(&isSDMCWritable)
+        ');
+    }
+
+    /**
+     * Variable property that gets whether an SD card is detected.
+     * 
+     * If the SDMC is found and detected, it returns `true`, else `false`.
+     */
+    public static var isSDMCDetected(default, null):Bool = false;
+
+    /**
+     * Gets whether the SD card is writable.
+     * 
+     * If the SDMC can be written, it returns `true`, else `false`
+     */
+    public static var isSDMCWritable(default, null):Bool = false;
 
     /**
      * Exits FS.
      */
     @:native("fsExit")
     public static function exit() {}
-
-    /**
-     * Gets whether an SD card is detected.
-     * @return If the SDMC is found and detected.
-     */
-    public static function isSDMCDetected():Bool {
-        var ret:Bool = false;
-        untyped __cpp__('FSUSER_IsSdmcDetected(&ret)');
-        return ret;
-    }
-
-    /**
-     * Gets whether the SD card is writable.
-     * @return `true` If the SDMC can be writable, else `false`.
-     */
-    public static function isSDMCWritable():Bool {
-        var ret:Bool = false;
-        untyped __cpp__('FSUSER_IsSdmcDetected(&ret)');
-        return ret;
-    }
 }

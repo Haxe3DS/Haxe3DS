@@ -18,17 +18,19 @@ class PTMU {
     public static function exit() {};
 
     /**
-     * Gets the system's current shell state.
-     * @return true if Shell is closed, false if open.
+     * Variable property that gets the system's current shell state.
+     * 
+     * `Get` will call `PTMU_GetShellState` and checks if it returns 0.
      */
-    public static function isShellClosed():Bool {
+    public static var shellClosed(get, null):Bool;
+    static function get_shellClosed():Bool {
         var out:UInt8 = 0;
         untyped __cpp__("PTMU_GetShellState(&out)");
         return out == 0;
     }
 
     /**
-     * Gets the system's current battery level.
+     * Variable property that gets the system's current battery level.
      * 
      * All types of battery levels:
      * - 5: 4 bars (100%-61%)
@@ -38,29 +40,34 @@ class PTMU {
      * - 1: 1 bar (5%-1%, flashing LED)
      * - 0: 0 bar (0%)
      * 
-     * @return Current battery level (0-5)
+     * `Get` will call `PTMU_GetBatteryLevel` and will return the current battery level (0-5)
      */
-    public static function getBatteryLevel():UInt8 {
+    public static var batteryLevel(get, null):UInt8;
+    static function get_batteryLevel():UInt8 {
         var ret:UInt8 = 0;
         untyped __cpp__("PTMU_GetBatteryLevel(&ret)");
         return ret;
     }
 
     /**
-     * Gets the system's current battery charge state.
-     * @return true if it's charging, false if not.
+     * Variable property that gets the system's current battery charge state.
+     * 
+     * `Get` will call `PTMU_GetBatteryChargeState` and will return true if it's charging (value is 1), false if not.
      */
-    public static function isCharging():Bool {
+    public static var isCharging(get, null):Bool;
+    static function get_isCharging():Bool {
         var out:UInt8 = 0;
         untyped __cpp__("PTMU_GetBatteryChargeState(&out)");
         return out == 1;
     }
 
     /**
-     * Gets the system's current pedometer state.
-     * @return true if walking, false if not walking.
+     * Variable property that gets the system's current pedometer state.
+     * 
+     * `Get` will call `PTMU_GetPedometerState` and will return true if walking, false if not walking.
      */
-    public static function isWalking():Bool {
+    public static var isWalking(get, null):Bool;
+    static function get_isWalking():Bool {
         var out:UInt8 = 0;
         untyped __cpp__("PTMU_GetPedometerState(&out)");
         return out == 1;
@@ -78,20 +85,24 @@ class PTMU {
     }
 
     /**
-     * Gets the pedometer's total step count.
-     * @return Pointer to write the total step count to.
+     * Variable property that gets the pedometer's total step count.
+     * 
+     * `Get` will call `PTMU_GetTotalStepCount` and will return the total step count to.
      */
-    public static function getTotalSteps():Int {
+    public static var totalSteps(get, null):Int;
+    static function get_totalSteps():Int {
         var out:UInt32 = 0;
         untyped __cpp__("PTMU_GetTotalStepCount(&out)");
         return out;
     }
 
     /**
-     * Gets whether the adapter is plugged in or not
-     * @return Whetever if the adapter is plugged in or not.
+     * Variable property that gets whether the adapter is plugged in or not.
+     * 
+     * `Get` will call `PTMU_GetAdapterState` and will return whetever if the adapter is plugged in or not.
      */
-    public static function getAdapterState():Bool {
+    public static var adapterState(get, null):Bool;
+    static function get_adapterState():Bool {
         var out:Bool = false;
         untyped __cpp__("PTMU_GetAdapterState(&out)");
         return out;

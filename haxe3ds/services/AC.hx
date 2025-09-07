@@ -66,7 +66,7 @@ class AC {
     /**
      * `(AC:U)` The SSID as a string called from `ACU_GetSSID`.
      * 
-     * For some reason returns `66` for my console, or is it just me.
+     * For some reason returns `66` for my console, or is it just me?
      */
     public static var ssid(default, null):String = "";
 

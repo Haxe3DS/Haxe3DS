@@ -71,7 +71,7 @@ class ConsolePUA {
 	public static var dpadHori:String  = "\uE07E";
 	public static var close:String     = "\uE070";
 	public static var closeHighlight:String = "\uE071";
-	public static var questionBlock:String = "\uE06B";
+	public static var questionBlock:String  = "\uE06B";
 }
 
 /**

@@ -18,12 +18,12 @@ class APT {
 	 * Initializes APT.
 	 */
 	public static function init() {
-		var check:Bool = false;
-		untyped __cpp__('aptInit(); APT_CheckNew3DS(&check)');
-		isNew3DS = check;
-
-		untyped __cpp__('check = aptIsSleepAllowed()');
-		canSleep = check;
+		untyped __cpp__('
+			bool check = false;
+			aptInit();
+			APT_CheckNew3DS(&isNew3DS);
+			canSleep = aptIsSleepAllowed()
+		');
 	}
 
 	/**
@@ -42,7 +42,6 @@ class APT {
 	 * `Set` will call function `aptSetHomeAllowed()` with home param.
 	 */
 	public static var homeMenu(get, set):Bool;
-	
 	static function get_homeMenu():Bool {
 		return untyped __cpp__('aptIsHomeAllowed()');
 	}
@@ -110,10 +109,14 @@ class APT {
 	public static function handleSleep() {};
 
 	/**
-	 * Returns true if the system requires the application to jump back to the HOME menu.
+	 * Variable property that checks if the user can go to home menu.
+	 * 
+	 * `Get` will call `aptShouldJumpToHome` and returns true if the system requires the application to jump back to the HOME menu.
 	 */
-	@:native("aptShouldJumpToHome")
-	public static function shouldJumpToHome():Bool return false;
+	public static var shouldJumpToHome(get, null):Bool;
+	static function get_shouldJumpToHome():Bool {
+		return untyped __cpp__('aptShouldJumpToHome()');
+	}
 
 	/**
 	 * Handles incoming jump-to-HOME requests.
