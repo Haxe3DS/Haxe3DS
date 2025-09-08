@@ -29,19 +29,19 @@ class FSUtil {
 	}
 
 	/**
-	 * Reads a whole directory, working version of FileSystem.readDirectory();
+	 * Reads a whole directory and retrieves an array of file paths, working version of FileSystem.readDirectory();
 	 * @param dir The directory path to read, you must include `sdmc:/` or `romfs:/` partition.
 	 * @param recursive Whetever or not you want it to be recursive, **OPTIONAL** defaults to false.
-	 * @return The whole directory file and dir names read. (example: ~~romfs:/~~hi.txt, ~~romfs:/~~Cool File.ogg, ~~romfs:/~~A Folder)
+	 * @return The whole directory file and dir names read. (example: romfs:/hi.txt, romfs:/Cool File.ogg, romfs:/A Folder)
 	 */
 	public static function readDirectory(dir:String, recursive:Bool = false):Array<String> {
 		var ret:Array<String> = [];
 		untyped __cpp__('
 			namespace fs = std::filesystem;
 			if (recursive) {
-				for (auto &&r : fs::recursive_directory_iterator(dir)) ret->push_back(r.path().filename());
+				for (auto &&r : fs::recursive_directory_iterator(dir)) ret->push_back(r.path());
 			} else {
-				for (auto &&r : fs::directory_iterator(dir)) ret->push_back(r.path().filename());
+				for (auto &&r : fs::directory_iterator(dir)) ret->push_back(r.path());
 			}
 		');
 		return ret;
