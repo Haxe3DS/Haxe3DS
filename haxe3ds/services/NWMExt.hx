@@ -14,16 +14,11 @@ class NWMExt {
     public static function exit() {};
 
     /**
-     * Variable property for getting wireless.
-     * 
-     * `Get` will return the variable.
+     * Variable property for settings wireless.
      * 
      * `Set` will call `NWMEXT_ControlWirelessEnabled` and sets it and returns the variable.
      */
-    @:isVar public static var wireless(get, set):Bool;
-    static function get_wireless():Bool {
-        return wireless;
-    }
+    @:isVar public static var wireless(null, set):Bool;
     static function set_wireless(wireless:Bool):Bool {
         untyped __cpp__('NWMEXT_ControlWirelessEnabled(wireless)');
         return wireless;

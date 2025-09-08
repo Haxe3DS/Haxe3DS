@@ -9,12 +9,11 @@
  * 		   Y - Close File (only if read)
  * 	   START - Exit
  */
-
 import haxe3ds.util.FSUtil as FS;
-import haxe3ds.HID;
-import haxe3ds.APT;
+import haxe3ds.services.HID;
+import haxe3ds.services.APT;
 import haxe3ds.Console;
-import haxe3ds.GFX;
+import haxe3ds.services.GFX;
 
 var path:String = "sdmc:/";
 var contents:Array<String> = FS.readDirectory(path);

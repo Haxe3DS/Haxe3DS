@@ -41,10 +41,7 @@ class APT {
 	 * `Set` will call function `aptSetHomeAllowed()` with home param.
 	 */
 	public static var homeMenu(get, set):Bool;
-	static function get_homeMenu():Bool {
-		return untyped __cpp__('aptIsHomeAllowed()');
-	}
-	
+	static function get_homeMenu():Bool return untyped __cpp__('aptIsHomeAllowed()');
 	static function set_homeMenu(homeMenu:Bool):Bool {
 		untyped __cpp__('aptSetHomeAllowed(homeMenu)');
 		return homeMenu;
@@ -91,11 +88,7 @@ class APT {
 	 * `Set` will call function `aptSetSleepAllowed()` with sleep param.
 	 */
 	public static var canSleep(get, set):Bool;
-	
-	static function get_canSleep():Bool {
-		return untyped __cpp__('aptIsSleepAllowed()');
-	}
-	
+	static function get_canSleep():Bool return untyped __cpp__('aptIsSleepAllowed()');
 	static function set_canSleep(canSleep:Bool):Bool {
 		untyped __cpp__('aptSetSleepAllowed(canSleep)');
 		return canSleep;
@@ -108,14 +101,10 @@ class APT {
 	public static function handleSleep() {};
 
 	/**
-	 * Variable property that checks if the user can go to home menu.
-	 * 
-	 * `Get` will call `aptShouldJumpToHome` and returns true if the system requires the application to jump back to the HOME menu.
+	 * Returns true if the system requires the application to jump back to the HOME menu.
 	 */
-	public static var shouldJumpToHome(get, null):Bool;
-	static function get_shouldJumpToHome():Bool {
-		return untyped __cpp__('aptShouldJumpToHome()');
-	}
+	@:native("aptShouldJumpToHome")
+	public static function shouldJumpToHome():Bool return false;
 
 	/**
 	 * Handles incoming jump-to-HOME requests.

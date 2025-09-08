@@ -319,10 +319,7 @@ ang->z = temp.z");
 	 * 
 	 * `Set` will call either `HIDUSER_EnableAccelerometer` if true, or `HIDUSER_DisableAccelerometer` if false.
 	 */
-	@:isVar public static var accelerometer(get, set):Bool;
-	static function get_accelerometer():Bool {
-		return accelerometer;
-	}
+	@:isVar public static var accelerometer(null, set):Bool;
 	static function set_accelerometer(accelerometer:Bool):Bool {
 		untyped __cpp__('accelerometer ? HIDUSER_EnableAccelerometer() : HIDUSER_DisableAccelerometer()');
 		return accelerometer;
@@ -331,14 +328,9 @@ ang->z = temp.z");
 	/**
 	 * Variable property that gets or sets the gyroscope's status.
 	 * 
-	 * `Get` will return the variable.
-	 * 
 	 * `Set` will call either `HIDUSER_EnableGyroscope` if true, or `HIDUSER_DisableGyroscope` if false.
 	 */
-	@:isVar public static var gyroscope(get, set):Bool;
-	static function get_gyroscope():Bool {
-		return gyroscope;
-	}
+	@:isVar public static var gyroscope(null, set):Bool;
 	static function set_gyroscope(gyroscope:Bool):Bool {
 		untyped __cpp__('gyroscope ? HIDUSER_EnableGyroscope() : HIDUSER_DisableGyroscope()');
 		return gyroscope;

@@ -59,9 +59,7 @@ class GFX {
 	 * `Set` will call `gfxSetWide` with variable specified.
 	 */
 	public var isWide(get, set):Bool;
-	function get_isWide():Bool {
-		return untyped __cpp__('gfxIsWide()');
-	}
+	function get_isWide():Bool return untyped __cpp__('gfxIsWide()');
 	function set_isWide(isWide:Bool):Bool {
 		untyped __cpp__('gfxSetWide(isWide2)');
 		return isWide;
