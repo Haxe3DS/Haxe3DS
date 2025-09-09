@@ -25,7 +25,8 @@ if __name__ == "__main__":
 
 options:
   -g      Generates a Struct JSON and saves it to the current CWD.
-  -c      Compiles to 3DS with 3dsSettings.json provided""")
+  -c      Compiles to 3DS with 3dsSettings.json provided
+  -e      Helper function to search exception""")
         sys.exit(0)
 
     arg = sys.argv[1]
@@ -77,13 +78,13 @@ options:
         ]
 
         replacers = [
-            ["std::nullopt", "NULL"],           # Compiler failures
-            ["* _gthis",         "deleteline"], # Known to throw Exceptions
-            ["_gthis",           "this"],       # Known to throw Exceptions
+            #["std::nullopt", "NULL"],  # Compiler failures
+            ["* _gthis", "deleteline"], # Known to throw Exceptions
+            ["_gthis",   "this"],       # Known to throw Exceptions
             ["HCXX_LINE",        "deleteline"], # Decreasing size
             ["HCXX_STACK_METHOD","deleteline"], # Decreasing size
-            ["	",               "deletechar"],
-            ["    ",             "deletechar"]
+            ["	",       "deletechar"],
+            ["    ",     "deletechar"]
         ]
 
         print("Revamping files to make it compatible with C++...")
@@ -159,3 +160,11 @@ options:
             os.system(f"output.3dsx")
 
         sys.exit(0)
+
+    elif "-e" in arg:
+        a = ""
+        for x in sys.argv:
+            if x.startswith("0x"):
+                a += f"{x} "
+
+        sys.exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
