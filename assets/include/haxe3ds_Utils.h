@@ -7,3 +7,4 @@
 errorType getFromET(std::shared_ptr<haxe3ds::applet::ErrorType> e);
 CFG_Language getFromCFGC(std::shared_ptr<haxe3ds::services::CFG_Language> e);
 errorReturnCode getFromERC(std::shared_ptr<haxe3ds::applet::ErrorReturnCode> e);
+std::string u16ToString(u16* i, size_t ln);

@@ -45,3 +45,10 @@ errorReturnCode getFromERC(std::shared_ptr<haxe3ds::applet::ErrorReturnCode> e) 
 		default: return ERROR_UNKNOWN;
 	}
 }
+
+std::string u16ToString(u16* i, size_t ln) {
+    u8 out[ln];
+    ssize_t l = utf16_to_utf8(out, i, ln);
+    out[l] = '\0';
+    return std::string(reinterpret_cast<char*>(out));
+}
