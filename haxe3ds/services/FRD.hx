@@ -1,4 +1,4 @@
-package;
+package haxe3ds.services;
 
 import cxx.num.UInt8;
 import cxx.num.UInt32;
