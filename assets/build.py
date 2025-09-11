@@ -78,11 +78,12 @@ options:
         ]
 
         replacers = [
-            #["std::nullopt", "NULL"],  # Compiler failures
-            ["* _gthis", "deleteline"], # Known to throw Exceptions
-            ["_gthis",   "this"],       # Known to throw Exceptions
-            ["HCXX_LINE",        "deleteline"], # Decreasing size
-            ["HCXX_STACK_METHOD","deleteline"], # Decreasing size
+            ["std::nullopt", "NULL"],              # Compiler failures
+            ["* _gthis", "deleteline"],            # Known to throw Exceptions
+            ["_gthis",   "this"],                  # Known to throw Exceptions
+            ["AnonStruct0::make();","Dynamic();"], # Compiler failures
+            ["HCXX_LINE",        "deleteline"],    # Decreasing size
+            ["HCXX_STACK_METHOD","deleteline"],    # Decreasing size
             ["	",       "deletechar"],
             ["    ",     "deletechar"]
         ]
@@ -124,6 +125,29 @@ options:
 
             with open(files, "w", encoding="utf-8") as f:
                 f.write('\n'.join(c))
+
+        if os.path.exists("output/include/dynamic/"):
+            for file in ["haxe3ds_services_HID", "HxArray"]:
+                p = f"output/include/dynamic/Dynamic_{file}.h"
+                if os.path.exists(p):
+                    os.remove(p)
+
+                p = p.replace("dynamic/Dynamic_", "")
+                if os.path.exists(p):
+                    c = []
+                    with open(p, "r") as f:
+                        c = f.read().split("\n")
+
+                    for i, har in enumerate(c):
+                        if har.startswith('#include "dynamic/'):
+                            try:
+                                while True:
+                                    del c[i]
+                            except IndexError:
+                                break
+
+                    with open(p, "w") as f:
+                        f.write('\n'.join(c))
 
         for file in ["Makefile", "resources/AppInfo"]:
             c = open(f"output/{file}", "r").read()

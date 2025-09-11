@@ -4,8 +4,8 @@
     "license": "MIT",
     "tags": ["3ds", "devkitpro", "homebrew"],
     "description": "Compile Haxe Code to 3DS compatible apps!",
-    "version": "1.1.0",
-    "releasenote": "Added some services, Added SWKBD, and probably even more. Oh and compiler fixes.",
+    "version": "1.2.0",
+    "releasenote": "Added the FRD services, Fully added GSPLCD services, Added support for DYNAMIC variables (wip (not really since it's from reflaxe.cpp and i gotta modify them)) and especially yeah that's all.",
     "contributors": ["NAEL2XD"],
     "dependencies": {
         "reflaxe": "4.0.0-beta"
