@@ -123,11 +123,15 @@ class CFGU {
      * Variable property that checks if NFC (code name: fangate) is supported.
      * 
      * Will automatically be set when `CGFU.init` is called.
+     * 
+     * @since 1.2.0
      */
     public static var supportsNFC(default, null):Bool;
 
     /**
      * Clears parental controls
+     * 
+     * @since 1.2.0
      */
     @:native("CFGI_ClearParentalControls")
     public static function clearParentalControls() {}

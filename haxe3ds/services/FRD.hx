@@ -62,6 +62,8 @@ typedef FRDProfile = {
 
 /**
  * Friend Services
+ * 
+ * @since 1.2.0
  */
 @:cppFileCode('
 #include <3ds.h>
@@ -119,6 +121,14 @@ class FRD {
 
     /**
      * Variable struct for your current preference usage that can be set on `Friend List` > `Settings`
+     * 
+     * To edit your preference, you just do this:
+     * ```
+     * var prefs = FRD.me_preference;
+     * prefs.publicMode = false;
+     * prefs.showPlayedGame = false;
+     * FRD.me_preference = prefs;
+     * ```
      */
     public static var me_preference(get, set):FRDPreference;
     static function get_me_preference():FRDPreference {
@@ -172,7 +182,7 @@ class FRD {
 
     /**
      * Changes the Friend List's presence.
-     * @param textToUse Text to set as, maximum 127 characters.
+     * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateMyPresence`).
      * @return `true` if successful, `false` if fail.
      */
     public static function updatePresence(textToUse:String):Bool {

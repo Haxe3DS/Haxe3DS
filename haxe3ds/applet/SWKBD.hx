@@ -150,7 +150,10 @@ SwkbdValidInput toSwkbdValidInput(int index) {
 /**
  * Software keyboard applet.
  * 
- * Some of the features from SWKBD are not implemented yet, will be available in the future or so.
+ * ~~Some of the features from SWKBD are not implemented yet, will be available in the future or so.~~
+ * 
+ * 1.2.0 UPDATE:
+ * - Most features implemented, will not do callback because it uses an extra function that i do not know how to use correctly.
  * 
  * @since 1.1.0
  */

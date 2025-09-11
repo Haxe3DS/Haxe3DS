@@ -6,17 +6,16 @@ enum MediaType {
     GAME_CARD;
 }
 
-@:cppFileCode("
-#include <3ds.h>
-")
-
 /**
  * File System Service.
  * 
- * !! WIP !!
+ * ### !! WIP !!
  * 
  * @since 1.1.0
  */
+@:cppFileCode("
+#include <3ds.h>
+")
 class FS {
     /**
      * Initializes FS.

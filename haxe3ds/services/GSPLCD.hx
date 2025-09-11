@@ -22,6 +22,8 @@ enum GSPLCDScreen {
 
 /**
  * GSPLCD service.
+ * 
+ * @since 1.2.0
  */
 @:cppFileCode('
 #include <3ds.h>

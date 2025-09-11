@@ -54,7 +54,7 @@ class APT {
 	public static function jumpToHomeMenu() {};
 
 	/**
-	 * Returns true if there is an incoming HOME button press rejected by the policy set by APT.setHomeAllowed
+	 * Returns true if there is an incoming HOME button press rejected by the policy set by `APT.homeMenu`
 	 */
 	@:native("aptCheckHomePressRejected")
 	public static function isHomePressed():Bool return false;
