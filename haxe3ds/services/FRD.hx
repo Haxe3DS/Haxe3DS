@@ -74,19 +74,19 @@ class FRD {
      * 
      * Always returns `false`?
      */
-    public static var loggedIn(default, null):Bool = false;
+    public static var me_loggedIn(default, null):Bool = false;
 
     /**
      * Variable that checks if the user is connected to the internet.
      * 
      * Always returns `false`?
      */
-    public static var isOnline(default, null):Bool = false;
+    public static var me_isOnline(default, null):Bool = false;
 
     /**
      * Variable that returns your own friend key.
      */
-    public static var friendKey(default, null):FRDKey = {
+    public static var me_friendKey(default, null):FRDKey = {
         principalID: 0,
         localFriendCode: 0
     };
@@ -94,7 +94,7 @@ class FRD {
     /**
      * Listing of the current user's profile, including their region, platform, language, area and country.
      */
-    public static var myProfile(default, null):FRDProfile = {
+    public static var me_profile(default, null):FRDProfile = {
         region: 0, platform: 0, language: 0, area: 0, country: 0
     }
 
@@ -103,25 +103,25 @@ class FRD {
      * 
      * Origin was in `*u16[10]` which was converted to a string.
      */
-    public static var myMiiName(default, null):String = "";
+    public static var me_miiName(default, null):String = "";
 
     /**
      * Variable for this ID of the current local account.
      */
-    public static var localAccountId(default, null):UInt8 = 0;
+    public static var me_localAccountId(default, null):UInt8 = 0;
 
     /**
      * Variable that gets the current comment from Friend List, this is received from `Friend List` > `Your Profile`.
      * 
      * Origin was in `*u16[10]` which was converted to a string.
      */
-    public static var myComment(default, null):String = "";
+    public static var me_comment(default, null):String = "";
 
     /**
      * Variable struct for your current preference usage that can be set on `Friend List` > `Settings`
      */
-    public static var preference(get, set):FRDPreference;
-    static function get_preference():FRDPreference {
+    public static var me_preference(get, set):FRDPreference;
+    static function get_me_preference():FRDPreference {
         var prefs:FRDPreference = {
             publicMode: false,
             showGameName: false,
@@ -130,9 +130,9 @@ class FRD {
         untyped __cpp__('FRD_GetMyPreference(&prefs->publicMode, &prefs->showGameName, &prefs->showGameName)');
         return prefs;
     }
-    static function set_preference(preference:FRDPreference):FRDPreference {
-        untyped __cpp__('FRDA_UpdatePreference(preference->publicMode, preference->showGameName, preference->showGameName)');
-        return preference;
+    static function set_me_preference(me_preference:FRDPreference):FRDPreference {
+        untyped __cpp__('FRDA_UpdatePreference(me_preference->publicMode, me_preference->showGameName, me_preference->showGameName)');
+        return me_preference;
     }
 
     /**
@@ -142,31 +142,31 @@ class FRD {
     public static function init(forceUser:Bool) {
         untyped __cpp__('
             frdInit(forceUser);
-            FRD_HasLoggedIn(&loggedIn);
-            FRD_IsOnline(&isOnline);
+            FRD_HasLoggedIn(&me_loggedIn);
+            FRD_IsOnline(&me_isOnline);
 
             FriendKey key;
             FRD_GetMyFriendKey(&key);
-            friendKey->principalID     = key.principalId;
-            friendKey->localFriendCode = key.localFriendCode;
+            me_friendKey->principalID     = key.principalId;
+            me_friendKey->localFriendCode = key.localFriendCode;
 
             Profile prof;
             FRD_GetMyProfile(&prof);
-            myProfile->region = prof.region;
-            myProfile->platform = prof.platform;
-            myProfile->language = prof.language;
-            myProfile->area = prof.area;
-            myProfile->country = prof.country;
+            me_profile->region = prof.region;
+            me_profile->platform = prof.platform;
+            me_profile->language = prof.language;
+            me_profile->area = prof.area;
+            me_profile->country = prof.country;
 
             MiiScreenName n;
             FRD_GetMyScreenName(&n);
-            myMiiName = u16ToString(n, MII_NAME_LEN);
+            me_miiName = u16ToString(n, MII_NAME_LEN);
 
             FriendComment c;
             FRD_GetMyComment(&c);
-            myComment = u16ToString(c, FRIEND_COMMENT_LEN);
+            me_comment = u16ToString(c, FRIEND_COMMENT_LEN);
 
-            FRD_GetMyLocalAccountId(&localAccountId);
+            FRD_GetMyLocalAccountId(&me_localAccountId);
         ');
     }
 
