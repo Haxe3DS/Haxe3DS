@@ -37,21 +37,44 @@ class CFGU {
     public static function init() {
         untyped __cpp__('
             cfguInit();
-            CFGU_GetSystemLanguage(&systemLanguage);
 
             u8 r;
-            CFGU_GetModelNintendo2DS(&r);
-            isUsing2DSModel = r == 0;
+            std::deque<std::string> arr = {"Japanese","English","French","German","Italian","Spanish","Simplified Chinese","Korean","Dutch","Portugese","Russian","Traditional Chinese"};
+            CFGU_GetSystemLanguage(&r);
+            systemLanguage = arr[r];
 
-            CFGU_SecureInfoGetRegion(&systemRegion);
+            arr = {"JPN","USA","EUR","AUS","CHN","KOR","TWN"};
+            CFGU_SecureInfoGetRegion(&r);
+            systemRegion = arr[r];
 
             CFGU_GetRegionCanadaUSA(&r);
             isCanadaUSA = r == 1;
 
-            CFGU_GetRegionCanadaUSA(&r);
-            systemModel = r;
-
             CFGU_IsNFCSupported(&supportsNFC);
+
+            arr = {"CTR","SPR","KTR","FTR","RED","JAN"};
+            CFGU_GetSystemModel(&r);
+            systemModel = arr[r];
+
+            struct Block {
+                u16 username[10];
+                u32 zero;
+                u32 ngWord;
+            };
+            Block usern;
+            CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, std::addressof(usern));
+            systemUsername = u16ToString(usern.username, 10);
+
+            struct Birth {
+                u8 month;
+                u8 day;
+            };
+            Birth birt;
+            CFGU_GetConfigInfoBlk2(sizeof(Birth), 0x000A0001, std::addressof(birt));
+            arr = {"January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"};
+            char date[15];
+            std::snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
+            systemBirthday = date
         ');
     };
     
@@ -62,40 +85,89 @@ class CFGU {
     public static function exit() {};
 
     /**
-     * (CFG:U) Variable for the current system language used.
+     * Variable that gets the System's Current Username set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
      * 
-     * Will automatically be set when `CGFU.init` is called.
+     * Special thanks to [this repo](https://github.com/joel16/3DSident/blob/next/source/config.cpp#L37) for finding it out.
      * 
-     * @see https://www.3dbrew.org/wiki/Config_Services
+     * @since 1.3.0
      */
-    public static var systemLanguage(default, null):UInt8;
+    public static var systemUsername(default, null):String;
 
     /**
-     * Variable for returning if the model is a 2DS instead of a 3DS.
+     * Variable that gets the System's Current Birthday set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
      * 
-     * Will automatically be set when `CGFU.init` is called.
+     * Special thanks to [this repo](https://github.com/joel16/3DSident/blob/next/source/config.cpp#L51) for finding it out.
      * 
-     * Available since:
-     * - 3DS: 6.0.0-11
-     * - Haxe3DS: 1.1.0
+     * Format for string examples:
+     * ```
+     * "January 03"
+     * "August 19",
+     * "December 25"
+     * ```
+     * 
+     * @since 1.3.0
      */
-    public static var isUsing2DSModel(default, null):Bool;
+    public static var systemBirthday(default, null):String;
 
     /**
-     * The current system region.
+     * Variable string for the current model.
+     * 
+     * Possible Values:
+     * ```
+     * - "CTR" // OLD 3DS    (0)
+     * - "SPR" // OLD 3DS XL (1)
+     * - "KTR" // OLD 2DS    (2)
+     * - "FTR" // NEW 3DS    (3)
+     * - "RED" // NEW 3DS XL (4)
+     * - "JAN" // NEW 2DS XL (5)
+     * ```
+     * 
+     * @since 1.3.0
+     */
+    public static var systemModel(default, null):String;
+
+    /**
+     * Variable string for the current region of this system.
+     * 
+     * Possible Values:
+     * ```
+     * - "JPN" // 0
+     * - "USA" // 1
+     * - "EUR" // 2
+     * - "AUS" // 3
+     * - "CHN" // 4
+     * - "KOR" // 5
+     * - "TWN" // 6
+     * ```
+     * 
+     * @since 1.3.0
+     */
+    public static var systemRegion(default, null):String;
+
+    /**
+     * Variable for the current system language used.
      * 
      * Will automatically be set when `CGFU.init` is called.
      * 
-     * Variable returns:
-     * - `0`: Japan.
-     * - `1`: USA.
-     * - `2`: Europe.
-     * - `3`: Australia.
-     * - `4`: China.
-     * - `5`: Korea.
-     * - `6`: Taiwan.
+     * Possible Values:
+     * ```
+     * - "Japanese"            // 0
+     * - "English"             // 1
+     * - "French"              // 2
+     * - "German"              // 3
+     * - "Italian"             // 4
+     * - "Spanish"             // 5
+     * - "Simplified Chinese"  // 6
+     * - "Korean"              // 7
+     * - "Dutch"               // 8
+     * - "Portugese"           // 9
+     * - "Russian"             // 10
+     * - "Traditional Chinese" // 11
+     * ```
+     * 
+     * @since 1.3.0
      */
-    public static var systemRegion(default, null):UInt8;
+    public static var systemLanguage(default, null):String;
 
     /**
      * Whetever or not the system is in canada or USA.
@@ -103,21 +175,6 @@ class CFGU {
      * Will automatically be set when `CGFU.init` is called.
      */
     public static var isCanadaUSA(default, null):Bool;
-
-    /**
-     * The current system model using.
-     * 
-     * Will automatically be set when `CGFU.init` is called.
-     * 
-     * Variable returns:
-     * - `0`: Old 3DS (CTR)
-     * - `1`: Old 3DS XL (SPR)
-     * - `2`: New 3DS (KTR)
-     * - `3`: Old 2DS (FTR)
-     * - `4`: New 3DS XL (RED)
-     * - `5`: New 2DS XL (JAN)
-     */
-    public static var systemModel(default, null):UInt8;
 
     /**
      * Variable property that checks if NFC (code name: fangate) is supported.

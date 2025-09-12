@@ -67,6 +67,8 @@ class AC {
      * `(AC:U)` The SSID as a string called from `ACU_GetSSID`.
      * 
      * For some reason returns `66` for my console, or is it just me?
+     * 
+     * @since 1.3.0 (now uses `ACI_GetNetworkWirelessEssidSecuritySsid`)
      */
     public static var ssid(default, null):String = "";
 
@@ -101,7 +103,7 @@ class AC {
             ACU_GetStatus(&e);
             connected = e == 3;
 
-            ACU_GetSSID(&s);
+            ACI_GetNetworkWirelessEssidSecuritySsid(&s);
             ssid = std::to_string(s);
 
             ACU_GetProxyEnable(&b);
