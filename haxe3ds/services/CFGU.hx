@@ -100,9 +100,9 @@ class CFGU {
      * 
      * Format for string examples:
      * ```
-     * "January 03"
-     * "August 19",
-     * "December 25"
+     * - "January 03"
+     * - "August 19"
+     * - "December 25"
      * ```
      * 
      * @since 1.3.0
@@ -170,7 +170,7 @@ class CFGU {
     public static var systemLanguage(default, null):String;
 
     /**
-     * Whetever or not the system is in canada or USA.
+     * Whetever or not the system is in canada or USA. This is also known as `CFG:IsCoppacsSupported`
      * 
      * Will automatically be set when `CGFU.init` is called.
      */

@@ -74,9 +74,9 @@ class PTMU {
     }
 
     /**
-     * Gets the system's step count history.
+     * Gets the system's step count history by many hours ago.
      * @param hours Number of hours to get the step count history for.
-     * @return The elapsed step count history.
+     * @return The elapsed step count history by hours ago.
      */
     public static function getStepHistory(hours:UInt32):UInt16 {
         var ret:UInt16 = 0;
@@ -87,7 +87,7 @@ class PTMU {
     /**
      * Variable property that gets the pedometer's total step count.
      * 
-     * `Get` will call `PTMU_GetTotalStepCount` and will return the total step count to.
+     * This also can be viewed by going to `Activity Log` > `Top Screen saying "Steps"`
      */
     public static var totalSteps(get, null):Int;
     static function get_totalSteps():Int {
