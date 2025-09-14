@@ -19,9 +19,9 @@ enum MediaType {
 // https://www.3dbrew.org/wiki/RomFS#Hash_Table_Structure
 int getHashTableLength(int numEntries) {
 	int count = numEntries;
-	if (numEntries < 3) {
+	if (count < 3) {
         count = 3;
-    } else if (numEntries < 19) {
+    } else if (count < 19) {
         count |= 1;
     } else {
 		while (count % 2 == 0 
@@ -70,6 +70,8 @@ class FS {
      * 
      * *Note*: This is practically not possible if it's a 3DSX app, CIA would defidently work well.
      * 
+     * *Note 2*: Doesn't seem to be written in 3DS but can in AZAHAR?
+     * 
      * @param partition Partition of the save data to use, Leave default for `ext`
      * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
      * @param dirs Same as `files`.
@@ -79,11 +81,13 @@ class FS {
         untyped __cpp__('
             bool retry = false;
             const char* p = partition.c_str();
+            int i = getHashTableLength(dirs), j = getHashTableLength(files);
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
+            FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
             Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
             if (ret == 0xC8A04554) { // save format error
-                ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, getHashTableLength(dirs), getHashTableLength(files), false);
+                ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
                 if (R_FAILED(ret)) {
                     return false;
                 }
