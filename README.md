@@ -37,7 +37,7 @@ Section II: Project Setup & Compiling:
 
 # Additional libraries:
 
-- [CitroEngine](https://github.com/NAEL2XD/CitroEngine) - Make 3DS Gui Games easily.
+- [CitroEngine](https://github.com/NAEL2XD/CitroEngine) - Make 3DS GUI Games easily.
 
 # Credits:
 
