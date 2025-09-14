@@ -84,7 +84,6 @@ class FS {
             int i = getHashTableLength(dirs), j = getHashTableLength(files);
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
-            FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
             Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
             if (ret == 0xC8A04554) { // save format error
                 ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
