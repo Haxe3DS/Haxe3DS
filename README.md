@@ -14,6 +14,8 @@ Also a revival of the deleted repo named ***3DSHaxe*** by [MochaIcedTea](https:/
 
 This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) which can read and compile haxe code to c++ outputted code so that the compiler can understand and compile to 3dsx! This was done with lots of love (and rage) to make this program so i hope i can get some support.
 
+Note: Tested on Haxe 4.3.2
+
 # INSTALLATION:
 
 Section I: Installing devkitPro first (needed for 3ds compiling):
@@ -25,7 +27,7 @@ Section I: Installing devkitPro first (needed for 3ds compiling):
 
 Section II: Project Setup & Compiling:
 
-1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git` and `haxelib git reflaxe.cpp https://github.com/SomeRanDev/reflaxe.CPP`, it will also install other libraries for it to work correctly!
+1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git` and `haxelib git reflaxe.cpp https://github.com/NAEL2XD/reflaxe.CPP`, it will also install other libraries for it to work correctly!
 2. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
 3. Get the build.py, by going to `assets` dir and copying `build.py` and pasting to your project
 4. Open up Terminal and type `python build.py -g`
@@ -43,3 +45,4 @@ Section II: Project Setup & Compiling:
 - [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
 - [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) for a really great wii u compiler that i got interested for it.
+- [3DBrew](https://www.3dbrew.org/) for the amount of documentations done to this system!

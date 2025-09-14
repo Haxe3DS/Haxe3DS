@@ -29,8 +29,8 @@ class News {
 
     /**
      * Adds a notification to the home menu Notifications applet.
-     * @param title UTF-16 title of the notification.
-     * @param message UTF-16 message of the notification, or NULL for no message.
+     * @param title String title of the notification.
+     * @param message String message of the notification, or NULL for no message.
      */
     public static function addNotification(title:String, message:String) {
         untyped __cpp__("
