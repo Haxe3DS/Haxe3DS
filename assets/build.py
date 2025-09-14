@@ -4,6 +4,7 @@ import os
 import shutil
 import glob
 import time
+import subprocess
 
 jsonStruct = {
     "settings": {
@@ -44,26 +45,33 @@ options:
             print("3dsSettings.json doesn't exist!! Consider generating the Json!")
             sys.exit(1)
 
-        with open("3dsSettings.json", "r") as f:
-            jsonStruct = json.load(f)
+        def read(file):
+            c = ""
+            with open(file, "r", encoding="utf-8") as f:
+                c = f.read()
+            return c
+        
+        def write(file, c):
+            with open(file, "w", encoding="utf-8") as f:
+                f.write('\n'.join(c) if type(c) == list else c)
 
-        with open("build.hxml", "w") as f:
-            f.write(f"""-cp source
--main Main
+        jsonStruct = json.loads(read("3dsSettings.json"))
+        c = """-cp source
+        -main Main
+        -lib reflaxe.cpp
+        """
+        for libs in jsonStruct["settings"]["libraries"]:
+            c += f"-lib {libs}\n"
 
--lib reflaxe.cpp
-""")
-            for libs in jsonStruct["settings"]["libraries"]:
-                f.write(f"-lib {libs}\n")
-
-            f.write("""
+        c += """
 -D cpp-output=output
 -D mainClass=Main
 -D cxx-no-null-warnings
 -D keep-unused-locals
 -D keep-useless-exprs
 -D cxx_callstack
--D cxx_inline_trace_disabled""")
+-D cxx_inline_trace_disabled"""
+        write("build.hxml", c)
                 
         if jsonStruct["settings"]["deleteTempFiles"] == True and os.path.exists("output"):
             shutil.rmtree("output")
@@ -78,14 +86,13 @@ options:
         ]
 
         replacers = [
-            ["std::nullopt", "NULL"],              # Compiler failures
-            ["* _gthis", "deleteline"],            # Known to throw Exceptions
-            ["_gthis",   "this"],                  # Known to throw Exceptions
-            ["AnonStruct0::make();","Dynamic();"], # Compiler failures
-            ["HCXX_LINE",        "deleteline"],    # Decreasing size
-            ["HCXX_STACK_METHOD","deleteline"],    # Decreasing size
-            ["	",       "deletechar"],
-            ["    ",     "deletechar"]
+            ["* _gthis", "deleteline"], # Known to throw Exceptions
+            ["_gthis",   "this"],       # Known to throw Exceptions
+            ["AnonStruct0::make();","Dynamic();"],        # Compiler failures
+            ["HCXX_LINE",        "deleteline"], # Decreasing size
+            ["HCXX_STACK_METHOD","deleteline"], # Decreasing size
+            #["	",       "deletechar"],
+            #["    ",     "deletechar"]
         ]
 
         print("Revamping files to make it compatible with C++...")
@@ -95,11 +102,7 @@ options:
             if "haxe_" in files:
                 continue
 
-            print(files.split("\\")[1])
-            f = open(files, "r", encoding="utf-8")
-            c = f.read().splitlines()
-            f.close()
-
+            c = read(files).splitlines()
             c[0] = "// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler\n" + c[0]
 
             ln = 0
@@ -123,20 +126,24 @@ options:
                 else:
                     del c[ln]
 
-            with open(files, "w", encoding="utf-8") as f:
-                f.write('\n'.join(c))
+            write(files, c)
 
         if os.path.exists("output/include/dynamic/"):
-            for file in ["haxe3ds_services_HID", "HxArray"]:
+            stuff2rem = ["haxe3ds_services_HID", "HxArray"]
+            for hxfile in glob.glob("source/**.hx", recursive=True):
+                c = read(hxfile)
+                d = hxfile.split("\\")
+                if "@:noDynGen" in c:
+                    stuff2rem.append(d[len(d)-1][:-3])
+
+            for file in stuff2rem:
                 p = f"output/include/dynamic/Dynamic_{file}.h"
                 if os.path.exists(p):
                     os.remove(p)
 
                 p = p.replace("dynamic/Dynamic_", "")
                 if os.path.exists(p):
-                    c = []
-                    with open(p, "r") as f:
-                        c = f.read().split("\n")
+                    c = read(p).splitlines()
 
                     for i, har in enumerate(c):
                         if har.startswith('#include "dynamic/'):
@@ -146,17 +153,14 @@ options:
                             except IndexError:
                                 break
 
-                    with open(p, "w") as f:
-                        f.write('\n'.join(c))
+                    write(p, c)
 
         for file in ["Makefile", "resources/AppInfo"]:
-            c = open(f"output/{file}", "r").read()
+            c = read(f"output/{file}")
             c = c.replace("[TITLE_JSON]",       jsonStruct["metadata"]["title"])
             c = c.replace("[DESCRIPTION_JSON]", jsonStruct["metadata"]["description"])
             c = c.replace("[AUTHOR_JSON]",      jsonStruct["metadata"]["author"])
-
-            with open(f"output/{file}", "w") as f:
-                f.write(c)
+            write(f"output/{file}", c)
 
         # assets from installed libs
         for lib in jsonStruct["settings"]["libraries"]:
@@ -165,12 +169,30 @@ options:
                 shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
 
         print("\nDone! Compiling...")
-
         make = jsonStruct["settings"]["makeAs"]
         os.chdir("output")
-        if os.system(f"make {make}") != 0:
-            print("Failed to compile!")
-            sys.exit(1)
+        while True:
+            process = subprocess.Popen(f"make {make}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            _, stderr = process.communicate()
+
+            if process.returncode == 0:
+                break
+            else:
+                redo = False
+                for ln in stderr.splitlines():
+                    if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                        l = ln.split(":")
+                        l[1] = f"{l[0]}:{l[1]}"
+                        lc = int(l[2])-1
+                        c = read(l[1]).splitlines()
+                        c[lc] = c[lc].replace("std::nullopt", "NULL")
+                        write(l[1], c)
+                        print(f"Got error: {ln}, now fixed. Recompiling...")
+                        redo = True
+
+                if not redo:
+                    print(f"Compile Failure: STDERR:\n{stderr}")
+                    exit(1)
 
         os.chdir("output")
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
