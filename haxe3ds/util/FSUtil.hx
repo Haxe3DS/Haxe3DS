@@ -11,7 +11,7 @@ import cxx.std.FileSystem;
 class FSUtil {
 	/**
 	 * Reads a file from SDMC/ROMFS and gets the current read string from file.
-	 * @param path The path to read from, include the `sdmc:/` or `romfs:/` partition.
+	 * @param path The path to read from, include the `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
 	 * @return Current content from file, "" if file was not found or file is 0 bytes.
 	 */
 	public static function readFile(path:String):String {
@@ -30,7 +30,7 @@ class FSUtil {
 
 	/**
 	 * Reads a whole directory and retrieves an array of file paths, working version of FileSystem.readDirectory();
-	 * @param dir The directory path to read, you must include `sdmc:/` or `romfs:/` partition.
+	 * @param dir The directory path to read, you must include `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
 	 * @param recursive Whetever or not you want it to be recursive, **OPTIONAL** defaults to false.
 	 * @return The whole directory file and dir names read. (example: romfs:/hi.txt, romfs:/Cool File.ogg, romfs:/A Folder)
 	 */
@@ -49,7 +49,7 @@ class FSUtil {
 
 	/**
 	 * Checks if path provided is a file or not
-	 * @param path Path to check file path, you must include `sdmc:/` or `romfs:/` partition.
+	 * @param path Path to check file path, you must include `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
 	 * @return true if it's a file, false if it's a dir or doesn't exist.
 	 */
 	public static function isFile(path:String):Bool {
@@ -58,7 +58,7 @@ class FSUtil {
 
 	/**
 	 * Checks if path provided is a directory or not
-	 * @param path Path to check directory path, you must include `sdmc:/` or `romfs:/` partition.
+	 * @param path Path to check directory path, you must include `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
 	 * @return true if it's a directory, false if it's a file or doesn't exist.
 	 */
 	public static function isDirectory(path:String):Bool {
@@ -67,7 +67,7 @@ class FSUtil {
 
 	/**
 	 * Checks if one of the files exists or not.
-	 * @param path Path to check which directory or file it exists, you must include `sdmc:/` or `romfs:/` partition.
+	 * @param path Path to check which directory or file it exists, you must include `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
 	 * @return true if present and existing, false if isn't found.
 	 */
 	public static function exists(path:String):Bool {
@@ -76,22 +76,22 @@ class FSUtil {
 
 	/**
 	 * Creates a new directory, `sdmc:/` is included by default and cannot be changed.
-	 * @param path Path to create a new directory, don't include `sdmc:/`
+	 * @param path Path to create a new directory, you must include `sdmc:/` partition or the save data partition if it's mounted.
 	 * @return true if successfully created directory, false if failed to create.
 	 */
 	public static function createDirectory(path:String):Bool {
-		return untyped __cpp__('std::filesystem::create_directory("sdmc:/" + path)');
+		return untyped __cpp__('std::filesystem::create_directory(path)');
 	}
 
 	/**
 	 * Saves a file to path provided.
-	 * @param path Path to save from.
+	 * @param path Path to save from, must include the `sdmc:/` partition path or the extdata partition path.
 	 * @param content Contents to store in the file.
 	 * @return true if successfully saved, false if path doesn't exist.
 	 */
 	public static function saveFile(path:String, content:String):Bool {
 		untyped __cpp__('
-		    std::ofstream file("sdmc:/" + path);
+		    std::ofstream file(path);
     	    if (!file.is_open()) {
     	        return false;
     	    }

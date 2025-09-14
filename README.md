@@ -14,7 +14,7 @@ Also a revival of the deleted repo named ***3DSHaxe*** by [MochaIcedTea](https:/
 
 This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) which can read and compile haxe code to c++ outputted code so that the compiler can understand and compile to 3dsx! This was done with lots of love (and rage) to make this program so i hope i can get some support.
 
-Note: Tested on Haxe 4.3.2
+Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+
 
 # INSTALLATION:
 
@@ -46,3 +46,4 @@ Section II: Project Setup & Compiling:
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
 - [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) for a really great wii u compiler that i got interested for it.
 - [3DBrew](https://www.3dbrew.org/) for the amount of documentations done to this system!
+- [Nintendo Homebrew](https://discord.gg/nintendohomebrew) for helping me with `FS.mountSaveData` and `FS.flushAndCommit`. Y'all are amazing <3

@@ -15,6 +15,27 @@ enum MediaType {
  */
 @:cppFileCode("
 #include <3ds.h>
+
+// https://www.3dbrew.org/wiki/RomFS#Hash_Table_Structure
+int getHashTableLength(int numEntries) {
+	int count = numEntries;
+	if (numEntries < 3) {
+        count = 3;
+    } else if (numEntries < 19) {
+        count |= 1;
+    } else {
+		while (count % 2 == 0 
+			|| count % 3 == 0 
+			|| count % 5 == 0 
+			|| count % 7 == 0 
+			|| count % 11 == 0 
+			|| count % 13 == 0 
+			|| count % 17 == 0) {
+			count++;
+		}
+	}
+	return count;
+}
 ")
 class FS {
     /**
@@ -41,6 +62,48 @@ class FS {
      * If the SDMC can be written, it returns `true`, else `false`
      */
     public static var isSDMCWritable(default, null):Bool = false;
+
+    /**
+     * Mounts a save data from the console, will format the whole save data in this app if something has gone wrong!
+     * 
+     * This has PROPER error handling mounts, if errors then formats, check fail, if not try again, if failed returns false, else returns true.
+     * 
+     * @param partition Partition of the save data to use, Leave default for `ext`
+     * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
+     * @param dirs Same as `files`.
+     * @return `true` if mounted, `false` if FS has failed or mount has failed (shouldn't happen?)
+     * @since 1.3.0
+     */
+    public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Bool {
+        untyped __cpp__('
+            bool retry = false;
+            const char* p = partition.c_str();
+            FS_Path path = fsMakePath(PATH_EMPTY, "");
+            Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
+            if (ret == 0xC8A04554) { // save format error
+                ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, getHashTableLength(dirs), getHashTableLength(files), false);
+                if (R_FAILED(ret)) {
+                    return false;
+                }
+                retry = true;
+            }
+            if (retry) {
+                if (R_FAILED(archiveMount(ARCHIVE_SAVEDATA, path, p))) {
+                    return false;
+                }
+            }
+        ');
+        return true;
+    }
+    /**
+     * Flushes and Commits the save data to this software, this will OVERWRITE the old data and can only be restored if the user has it saved in his backups.
+     * @param partition Partition of the save data to use, Leave default for `ext`
+     * @return `true` is success, `false` if FS fail or partition path doesn't exist.
+     * @since 1.3.0
+     */
+    public static function flushAndCommit(partition:String = "ext"):Bool {
+        return untyped __cpp__('R_SUCCEEDED(archiveCommitSaveData(partition.c_str()))');
+    }
 
     /**
      * Exits FS.

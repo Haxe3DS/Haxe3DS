@@ -7,8 +7,12 @@ CFGU:
 AC:
 - `ssid`: Use `ACI_GetNetworkWirelessEssidSecuritySsid` instead of `ACU_GetSSID`
 
+FS:
+- Added `mountSaveData` and `flushAndCommit`
+
 Compiler:
-- Updated to be a little more smarter for fixing compilation (can only fix `error: cannot convert 'const std::nullopt_t' to` only.)
+- Updated to be a little more smarter at fixing compilation errors (can only fix `error: cannot convert 'const std::nullopt_t' to` only.)
+- *Intentionally* hidden the stdout thing for no reason.
 
 # 1.2.0
 
