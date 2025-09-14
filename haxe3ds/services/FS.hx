@@ -68,16 +68,18 @@ class FS {
      * 
      * This has PROPER error handling mounts, if errors then formats, check fail, if not try again, if failed returns false, else returns true.
      * 
+     * *Note*: This is practically not possible if it's a 3DSX app, CIA would defidently work well.
+     * 
      * @param partition Partition of the save data to use, Leave default for `ext`
      * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
      * @param dirs Same as `files`.
-     * @return `true` if mounted, `false` if FS has failed or mount has failed (shouldn't happen?)
-     * @since 1.3.0
+     * @return `true` if successfully mounted, `false` if FS has failed or mount has failed (shouldn't happen?)
      */
     public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Bool {
         untyped __cpp__('
             bool retry = false;
             const char* p = partition.c_str();
+
             FS_Path path = fsMakePath(PATH_EMPTY, "");
             Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
             if (ret == 0xC8A04554) { // save format error
@@ -85,8 +87,10 @@ class FS {
                 if (R_FAILED(ret)) {
                     return false;
                 }
+
                 retry = true;
             }
+
             if (retry) {
                 if (R_FAILED(archiveMount(ARCHIVE_SAVEDATA, path, p))) {
                     return false;
@@ -95,11 +99,11 @@ class FS {
         ');
         return true;
     }
+
     /**
      * Flushes and Commits the save data to this software, this will OVERWRITE the old data and can only be restored if the user has it saved in his backups.
      * @param partition Partition of the save data to use, Leave default for `ext`
-     * @return `true` is success, `false` if FS fail or partition path doesn't exist.
-     * @since 1.3.0
+     * @return `true` if success, `false` if FS has failed or partition path doesn't exist.
      */
     public static function flushAndCommit(partition:String = "ext"):Bool {
         return untyped __cpp__('R_SUCCEEDED(archiveCommitSaveData(partition.c_str()))');
