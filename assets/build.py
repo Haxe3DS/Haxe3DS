@@ -5,6 +5,7 @@ import shutil
 import glob
 import time
 import subprocess
+import threading
 
 jsonStruct = {
     "settings": {
@@ -168,9 +169,21 @@ options:
             if os.path.exists(f".haxelib/{lib}/{f}/assets"):
                 shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
 
+        finished = False
+        tries = 1
+        def thr():
+            estimate = 0
+            for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**"))
+            estimate = round(estimate / 1.46, 5)
+            while not finished:
+                print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
+            print(" " * (os.get_terminal_size().columns - 2), end='\r')
+
         print("\nDone! Compiling...")
         make = jsonStruct["settings"]["makeAs"]
         os.chdir("output")
+        threading.Thread(target=thr).start()
+
         while True:
             process = subprocess.Popen(f"make {make}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             _, stderr = process.communicate()
@@ -194,6 +207,9 @@ options:
                     print(f"Compile Failure: STDERR:\n{stderr}")
                     exit(1)
 
+                tries += 1
+
+        finished = True
         os.chdir("output")
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
         ip:str = jsonStruct["settings"]["3dsIP"]
