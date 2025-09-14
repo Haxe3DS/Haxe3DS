@@ -70,7 +70,7 @@ class FS {
      * 
      * *Note*: This is practically not possible if it's a 3DSX app, CIA would defidently work well.
      * 
-     * *Note 2*: Doesn't seem to be written in 3DS but can in AZAHAR?
+     * ~~*Note 2*: Doesn't seem to be written in 3DS but can in AZAHAR?~~
      * 
      * @param partition Partition of the save data to use, Leave default for `ext`
      * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
