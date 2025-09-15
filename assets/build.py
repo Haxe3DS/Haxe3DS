@@ -175,8 +175,7 @@ options:
             estimate = 0
             for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**"))
             estimate = round(estimate / 1.46, 5)
-            while not finished:
-                print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
+            while not finished: print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
             print(" " * (os.get_terminal_size().columns - 2), end='\r')
 
         print("\nDone! Compiling...")
@@ -193,17 +192,26 @@ options:
             else:
                 redo = False
                 for ln in stderr.splitlines():
-                    if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                    if ": error: " in ln:
                         l = ln.split(":")
                         l[1] = f"{l[0]}:{l[1]}"
                         lc = int(l[2])-1
                         c = read(l[1]).splitlines()
-                        c[lc] = c[lc].replace("std::nullopt", "NULL")
-                        write(l[1], c)
-                        print(f"Got error: {ln}, now fixed. Recompiling...")
-                        redo = True
+                        cc = c.copy()
 
+                        if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                            c[lc] = c[lc].replace("std::nullopt", "NULL")
+                        elif "error: expected ',' or ';' before" in ln:
+                            lc -= 1
+                            c[lc] += ";"
+
+                        if c != cc:
+                            redo = True
+                            write(l[1], c)
+                            print(f"Error ({ln}) is fixed. Recompiling...")
+                    
                 if not redo:
+                    finished = True
                     print(f"Compile Failure: STDERR:\n{stderr}")
                     exit(1)
 
