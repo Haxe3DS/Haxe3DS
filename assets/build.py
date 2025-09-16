@@ -174,7 +174,7 @@ options:
         def thr():
             estimate = 0
             for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**"))
-            estimate = round(estimate / 1.46, 5)
+            estimate = round(estimate / 1.19, 5)
             while not finished: print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
             print(" " * (os.get_terminal_size().columns - 2), end='\r')
 
@@ -199,10 +199,11 @@ options:
                         c = read(l[1]).splitlines()
                         cc = c.copy()
 
+                        exp = "error: expected ';' before" in ln
                         if "error: cannot convert 'const std::nullopt_t' to " in ln:
                             c[lc] = c[lc].replace("std::nullopt", "NULL")
-                        elif "error: expected ',' or ';' before" in ln:
-                            lc -= 1
+                        elif "error: expected ',' or ';' before" in ln or exp:
+                            if not exp: lc -= 1
                             c[lc] += ";"
 
                         if c != cc:
