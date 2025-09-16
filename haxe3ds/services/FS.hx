@@ -113,6 +113,70 @@ class FS {
     }
 
     /**
+     * Variable for the concurrent Play Coins in your system found by `/gamecoin.dat`.
+     * 
+     * Note: If any of the FS API failed, `-1` will be returned!
+     */
+    public static var playCoins(get, set):UInt16;
+    
+    static function get_playCoins():UInt16 {
+        var out:UInt16 = -1;
+        untyped __cpp__('
+            FS_Archive archive;
+            u32 path[3] = {MEDIATYPE_NAND, 0xF000000B, 0x00048000};
+            if (R_FAILED(FSUSER_OpenArchive(&archive, ARCHIVE_SHARED_EXTDATA, (FS_Path){PATH_BINARY, 0xC, path}))) {
+                goto end1;
+            }
+
+            Handle fileHandle;
+            if (R_FAILED(FSUSER_OpenFile(&fileHandle, archive, fsMakePath(PATH_UTF16, u"/gamecoin.dat"), FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE))) {
+                goto end2;
+            }
+
+            u32 _;
+            FSFILE_Read(fileHandle, &_, 4, &out, sizeof(out));
+
+            FSFILE_Close(fileHandle);
+            end2:
+            FSUSER_CloseArchive(archive);
+            end1:
+        ');
+        return out;
+    }
+    
+    static function set_playCoins(playCoins:UInt16):UInt16 {
+        untyped __cpp__('
+            FS_Archive archive;
+            u32 path[3] = {MEDIATYPE_NAND, 0xF000000B, 0x00048000};
+            u8 coinBytes[2] = {(u8)(playCoins & 0xFF), (u8)((playCoins >> 8) & 0xFF)};
+            bool fail = true;
+            if (R_FAILED(FSUSER_OpenArchive(&archive, ARCHIVE_SHARED_EXTDATA, (FS_Path){PATH_BINARY, 0xC, path}))) {
+                goto end1;
+            }
+
+            Handle fileHandle;
+            if (R_FAILED(FSUSER_OpenFile(&fileHandle, archive, fsMakePath(PATH_UTF16, u"/gamecoin.dat"), FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE))) {
+                goto end2;
+            }
+            
+            playCoins = playCoins > 300 ? 300 : playCoins < 0 ? 0 : playCoins;
+            u32 _;
+
+            fail = R_FAILED(FSFILE_Write(fileHandle, &_, 4, coinBytes, sizeof(coinBytes), FS_WRITE_FLUSH));
+
+            FSFILE_Close(fileHandle);
+            end2:
+            FSUSER_CloseArchive(archive);
+            end1:
+
+            if (fail) {
+                return -1;
+            }
+        ');
+        return playCoins;
+    }
+
+    /**
      * Exits FS.
      */
     @:native("fsExit")

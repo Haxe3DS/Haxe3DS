@@ -8,10 +8,10 @@ AC:
 - `ssid`: Use `ACI_GetNetworkWirelessEssidSecuritySsid` instead of `ACU_GetSSID`
 
 FS:
-- Added `mountSaveData` and `flushAndCommit`
+- Added `mountSaveData`, `flushAndCommit` and `playCoins`
 
 Compiler:
-- Updated to be a little more smarter at fixing compilation errors (can only fix `error: cannot convert 'const std::nullopt_t' to` only.)
+- Updated to be a little more smarter at fixing compilation errors.
 - *Intentionally* hidden the stdout thing for no reason.
 - Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
 
