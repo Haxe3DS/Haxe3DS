@@ -13,6 +13,7 @@ FS:
 Compiler:
 - Updated to be a little more smarter at fixing compilation errors (can only fix `error: cannot convert 'const std::nullopt_t' to` only.)
 - *Intentionally* hidden the stdout thing for no reason.
+- Switched to use STD C++23 instead of STD C++17
 
 # 1.2.0
 
