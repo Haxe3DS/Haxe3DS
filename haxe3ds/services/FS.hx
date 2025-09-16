@@ -9,7 +9,7 @@ enum MediaType {
 /**
  * File System Service.
  * 
- * ### !! WIP !!
+ * This service includes features such as mounting a save, getting and setting the play coins, and SDMC utility!
  * 
  * @since 1.1.0
  */
@@ -76,6 +76,7 @@ class FS {
      * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
      * @param dirs Same as `files`.
      * @return `true` if successfully mounted, `false` if FS has failed or mount has failed (shouldn't happen?)
+     * @since 1.3.0
      */
     public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Bool {
         untyped __cpp__('
@@ -107,6 +108,7 @@ class FS {
      * Flushes and Commits the save data to this software, this will OVERWRITE the old data and can only be restored if the user has it saved in his backups.
      * @param partition Partition of the save data to use, Leave default for `ext`
      * @return `true` if success, `false` if FS has failed or partition path doesn't exist.
+     * @since 1.3.0
      */
     public static function flushAndCommit(partition:String = "ext"):Bool {
         return untyped __cpp__('R_SUCCEEDED(archiveCommitSaveData(partition.c_str()))');
@@ -116,6 +118,7 @@ class FS {
      * Variable for the concurrent Play Coins in your system found by `/gamecoin.dat`.
      * 
      * Note: If any of the FS API failed, `-1` will be returned!
+     * @since 1.3.0
      */
     public static var playCoins(get, set):UInt16;
     
