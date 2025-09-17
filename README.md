@@ -22,22 +22,7 @@ Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+
 
 # INSTALLATION:
 
-Section I: Installing devkitPro first (needed for 3ds compiling):
-
-1. Go to the official devkitPro site: https://devkitpro.org/wiki/Getting_Started
-2. In the setup section, choose your following system and install devkitPro
-3. (Optional if non windows gui) Check "3DS" for developement and install it.
-4. Assuming you have msys2 installed from devkitPro, open a new cmd and input the following: `(dkp-)pacman -S 3ds-dev 3ds-portlibs` (the "dkp-" is for macos or linux only)
-
-Section II: Project Setup & Compiling:
-
-1. Open up terminal, and type `haxelib git haxe3ds https://github.com/NAEL2XD/Haxe3DS.git` and `haxelib git reflaxe.cpp https://github.com/NAEL2XD/reflaxe.CPP`, it will also install other libraries for it to work correctly!
-2. Create a new Haxe Project specifically for creating your 3DS Applications, or download `template.zip` in the root of the repo and extract it.
-3. Get the build.py, by going to `assets` dir and copying `build.py` and pasting to your project
-4. Open up Terminal and type `python build.py -g`
-5. (Optional) Set up your configs on 3dsSettings.json
-6. For the moment of truth, type `python build.py -c`, assuming you have source/Main.hx
-7. If you done everything correctly, it should fully compile code successfully and launch the application (or uses 3dslink/curl to transfer the file).
+[See this to find out on how to install.](https://github.com/NAEL2XD/Haxe3DS/wiki/Haxe3DS-Installation)
 
 # Additional libraries:
 
