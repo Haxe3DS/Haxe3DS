@@ -9,11 +9,13 @@ AC:
 
 FS:
 - Added `mountSaveData`, `flushAndCommit` and `playCoins`
+- Added Class being `FSFile`!
 
 Compiler:
 - Updated to be a little more smarter at fixing compilation errors.
 - *Intentionally* hidden the stdout thing for no reason.
 - Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
+- Moved 3DS IP related to a key:value and also added `debugMode`! (WIP)
 
 # 1.2.0
 

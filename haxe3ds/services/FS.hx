@@ -1,9 +1,18 @@
 package haxe3ds.services;
 
-enum MediaType {
-    NAND;
-    SD;
-    GAME_CARD;
+/**
+ * Archive Identifier for Filesystem.
+ */
+enum FSArchiveID {
+    /**
+     * SD Card.
+     */
+    SDMC;
+
+    /**
+     * ROM Filesystem (assets)
+     */
+    ROMFS;
 }
 
 /**
@@ -35,6 +44,13 @@ int getHashTableLength(int numEntries) {
 		}
 	}
 	return count;
+}
+
+FS_ArchiveID toArchID(int ind) {
+    switch(ind) {
+        case 0: default: return ARCHIVE_SDMC;
+        case 1: return ARCHIVE_ROMFS;
+    }
 }
 ")
 class FS {
@@ -184,4 +200,87 @@ class FS {
      */
     @:native("fsExit")
     public static function exit() {}
+}
+
+/**
+ * File Handler for reading/writing file.
+ * 
+ * @since 1.3.0
+ */
+@:headerClassCode('
+    FS_Archive arch = 0;
+    Handle h = 0;
+')
+class FSFile {
+    var id:FSArchiveID;
+
+    /**
+     * The current size get from for readed file.
+     * 
+     * This is also the offset of the amount of bytes.
+     */
+    public var byteSize:UInt32 = 0;
+
+    /**
+     * Creates a new file handler.
+     * @param path Path to open in.
+     * @param archive Archive mode, Using `ROMFS` will block you from using `write`!
+     */
+    public function new(path:String, archive:FSArchiveID) {
+        id = archive;
+
+        untyped __cpp__('
+            FSUSER_OpenArchive(&arch, toArchID(archive->index), fsMakePath(PATH_ASCII, "/"));
+            if (R_SUCCEEDED(FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE))) {
+                u64 by = 0;
+                FSFILE_GetSize(h, &by);
+                this->byteSize = (u32)by;
+            }
+        ');
+    }
+
+    /**
+     * Writes the current file running
+     * @param str String to write.
+     * @return `true` if successfully wrote, `false` if closed or unknown.
+     */
+    public function write(str:String):Bool {
+        if (id == ROMFS) {
+            return false;
+        }
+
+        return untyped __cpp__('R_SUCCEEDED(FSFILE_Write(h, &byteSize, byteSize, str.c_str(), str.size(), FS_WRITE_FLUSH))');
+    }
+
+    /**
+     * Reada a file from the archive.
+     * @param offset Offset to use
+     * @param len Length to read.
+     * @return String read from file.
+     */
+    public function read(offset:UInt32 = 0, len:UInt32 = -1):String {
+        if (len == -1) {
+            len = byteSize;
+        }
+        len = Math.floor(len);
+
+        var out:String = "";
+        untyped __cpp__('
+            u32 r = 0;
+            void* shit = malloc(len);
+            FSFILE_Read(h, &r, offset, (char*)(shit), len);
+            out = std::string((char*)(shit));
+        ');
+        return out;
+    }
+
+    /**
+     * Closes a file and closes the archive (saves memory?)
+     */
+    public function close() {
+        untyped __cpp__('
+            FSFILE_Close(h);
+            FSUSER_CloseArchive(arch)
+        ');
+    }
 }

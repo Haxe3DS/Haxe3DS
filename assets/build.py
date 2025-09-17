@@ -9,10 +9,13 @@ import threading
 
 jsonStruct = {
     "settings": {
-        "3dsIP": "0.0.0.0",
-        "deleteTempFiles": False,
-        "makeAs": "cia",
-        "libraries": ["haxe3ds"]
+        "deleteTempFiles": True,
+        "makeAs": "3dsx",
+        "libraries": ["haxe3ds"],
+        "3dslink": {
+            "ip": "0.0.0.0",
+            "debugMode": False
+        }
     },
     "metadata": {
         "title": "Haxe3DS",
@@ -46,7 +49,7 @@ options:
             print("3dsSettings.json doesn't exist!! Consider generating the Json!")
             sys.exit(1)
 
-        def read(file):
+        def read(file:str) -> str:
             c = ""
             with open(file, "r", encoding="utf-8") as f:
                 c = f.read()
@@ -156,6 +159,10 @@ options:
 
                     write(p, c)
 
+        serverMode = "-s" if jsonStruct["settings"]["3dslink"]["debugMode"] else ""
+        if serverMode == "-s":
+            write("output/src/_main_.cpp", '// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler (DEBUG MODE)\n#include <3ds.h>\n#include <memory>\n#include <malloc.h>\n#include "Main.h"\nint main(int, const char**) {\nu8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();\n_Main::Main_Fields_::main();\nsocExit();\nfree(buf);\nreturn 0;\n}')
+
         for file in ["Makefile", "resources/AppInfo"]:
             c = read(f"output/{file}")
             c = c.replace("[TITLE_JSON]",       jsonStruct["metadata"]["title"])
@@ -221,10 +228,10 @@ options:
         finished = True
         os.chdir("output")
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
-        ip:str = jsonStruct["settings"]["3dsIP"]
+        ip:str = jsonStruct["settings"]["3dslink"]["ip"]
         if len(ip) > 7 and len(ip.split(".")) == 4:
             if make == "3dsx":
-                os.system(f"3dslink -a {ip} output.3dsx")
+                os.system(f"3dslink -a {ip} {serverMode} output.3dsx")
             else:
                 os.system(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
         else:
