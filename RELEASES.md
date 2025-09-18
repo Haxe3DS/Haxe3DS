@@ -20,6 +20,9 @@ Compiler:
 - Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
 - Moved 3DS IP related to a key:value and also added `debugMode`! (WIP)
 
+Other:
+- Moved Installation into Wiki!
+
 # 1.2.0
 
 - Added this release markdown so i don't forget what i've done.
