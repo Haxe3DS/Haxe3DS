@@ -11,6 +11,9 @@ FS:
 - Added `mountSaveData`, `flushAndCommit` and `playCoins`
 - Added Class being `FSFile`!
 
+ENV:
+- Initial New Class.
+
 Compiler:
 - Updated to be a little more smarter at fixing compilation errors.
 - *Intentionally* hidden the stdout thing for no reason.
