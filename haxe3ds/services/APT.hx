@@ -19,7 +19,6 @@ class APT {
 	 */
 	public static function init() {
 		untyped __cpp__('
-			bool check = false;
 			aptInit();
 			APT_CheckNew3DS(&isNew3DS);
 		');

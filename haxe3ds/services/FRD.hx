@@ -4,6 +4,9 @@ import cxx.num.UInt8;
 import cxx.num.UInt32;
 import cxx.num.UInt64;
 
+/**
+ * Preference from your friend list.
+ */
 typedef FRDPreference = {
     /**
      * Determines whether friends are notified of the current user's online status.
@@ -21,6 +24,9 @@ typedef FRDPreference = {
     showPlayedGame:Bool
 }
 
+/**
+ * The friend key, which contains the PID and LFC
+ */
 typedef FRDKey = {
     /**
      * The Principal ID Tied to an account.
@@ -33,6 +39,9 @@ typedef FRDKey = {
 	localFriendCode:UInt64
 }
 
+/**
+ * The profile type-definition.
+ */
 typedef FRDProfile = {
     /**
      * The region code for the hardware.
@@ -187,10 +196,9 @@ class FRD {
      */
     public static function updatePresence(textToUse:String):Bool {
         untyped __cpp__('
-            const char* text = textToUse.c_str();
             FriendGameModeDescription desc;
             memset(desc, 0, sizeof(desc));
-            utf8_to_utf16(desc, (const uint8_t*)text, FRIEND_GAME_MODE_DESCRIPTION_LEN - 1);
+            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN - 1);
             
             Presence frdPres;
             memset(&frdPres, 0, sizeof(frdPres));

@@ -40,7 +40,6 @@ options:
         with open("3dsSettings.json", "w") as f:
             f.write(json.dumps(jsonStruct, indent=4))
         print("Done!")
-        sys.exit(0)
 
     elif "-c" in arg:
         oldTime = time.time()
@@ -53,11 +52,13 @@ options:
             c = ""
             with open(file, "r", encoding="utf-8") as f:
                 c = f.read()
+                f.close()
             return c
         
         def write(file, c):
             with open(file, "w", encoding="utf-8") as f:
                 f.write('\n'.join(c) if type(c) == list else c)
+                f.close()
 
         jsonStruct = json.loads(read("3dsSettings.json"))
         c = """-cp source
@@ -133,7 +134,7 @@ options:
             write(files, c)
 
         if os.path.exists("output/include/dynamic/"):
-            stuff2rem = ["haxe3ds_services_HID", "HxArray"]
+            stuff2rem = ["haxe3ds_services_HID"]
             for hxfile in glob.glob("source/**.hx", recursive=True):
                 c = read(hxfile)
                 d = hxfile.split("\\")
@@ -161,7 +162,14 @@ options:
 
         serverMode = "-s" if jsonStruct["settings"]["3dslink"]["debugMode"] else ""
         if serverMode == "-s":
-            write("output/src/_main_.cpp", '// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler (DEBUG MODE)\n#include <3ds.h>\n#include <memory>\n#include <malloc.h>\n#include "Main.h"\nint main(int, const char**) {\nu8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();\n_Main::Main_Fields_::main();\nsocExit();\nfree(buf);\nreturn 0;\n}')
+            lol = read('output/src/_main_.cpp')
+            l = lol.index("_Main::Main_Fields_::main();")-1
+            dictation = list(lol)
+            dictation[0] = "#include <3ds.h>\n#include <malloc.h> /"
+            dictation[l] = 'u8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();'
+            dictation[l+28] = ';socExit();\nfree(buf);'
+            write("output/src/_main_.cpp", ''.join(dictation))
+            print("d")
 
         for file in ["Makefile", "resources/AppInfo"]:
             c = read(f"output/{file}")
@@ -172,7 +180,7 @@ options:
 
         # assets from installed libs
         for lib in jsonStruct["settings"]["libraries"]:
-            f = open(f".haxelib/{lib}/.current").read()
+            f = read(f".haxelib/{lib}/.current")
             if os.path.exists(f".haxelib/{lib}/{f}/assets"):
                 shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
 
@@ -196,34 +204,66 @@ options:
 
             if process.returncode == 0:
                 break
-            else:
-                redo = False
-                for ln in stderr.splitlines():
-                    if ": error: " in ln:
-                        l = ln.split(":")
-                        l[1] = f"{l[0]}:{l[1]}"
-                        lc = int(l[2])-1
-                        c = read(l[1]).splitlines()
-                        cc = c.copy()
 
-                        exp = "error: expected ';' before" in ln
-                        if "error: cannot convert 'const std::nullopt_t' to " in ln:
-                            c[lc] = c[lc].replace("std::nullopt", "NULL")
-                        elif "error: expected ',' or ';' before" in ln or exp:
-                            if not exp: lc -= 1
-                            c[lc] += ";"
+            fc:dict = {}
+            cc = []
+            def create(ln:str) -> tuple:
+                global cc
+                lc = 0
+                l = []
+                try:
+                    l = ln.split(":")
+                    l[1] = f"{l[0]}:{l[1]}"
+                    lc = int(l[2])-1
+                    if l[1] not in fc:
+                        v = read(l[1]).splitlines()
+                        fc[l[1]] = [v, v.copy()]
+                except ValueError:
+                    return None, None
+                
+                return lc, l
+                
+            for ln in stderr.splitlines():
+                if "/devkitPro/libctru/" in ln: # dangerous, so i added a check
+                    continue
 
-                        if c != cc:
-                            redo = True
-                            write(l[1], c)
-                            print(f"Error ({ln}) is fixed. Recompiling...")
-                    
-                if not redo:
-                    finished = True
-                    print(f"Compile Failure: STDERR:\n{stderr}")
-                    exit(1)
+                if ": error: " in ln:
+                    lc, l = create(ln)
+                    exp = "error: expected ';' before" in ln
+                    lnk = fc[l[1]][0]
 
-                tries += 1
+                    if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                        lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
+                    elif "error: expected ',' or ';' before" in ln or exp:
+                        if not exp: lc -= 1
+                        lnk[lc] += ";"
+                    elif "error: no matching function for call to" in ln:
+                        lnk[lc] = lnk[lc].replace(";", "(nullptr);")
+
+                elif ": note: " in ln:
+                    lc, l = create(ln)
+                    hFile = l[1].replace(".cpp", ".h").replace("src", "include")
+                    lnk = fc[l[1]][0]
+
+                    if "note: candidate 1: 'template<class Dyn1, class Dyn2>" in ln:
+                        bartSimpson = read(hFile)
+                        for i in [f"Dyn{x}" for x in range(10)]:
+                            bartSimpson = bartSimpson.replace(i, "haxe::Dynamic")
+                        fc[l[1]][0] = bartSimpson.split("\n")
+                        del fc[l[1]][0][lc-1]
+
+            redo = False
+            for i in fc.keys():
+                if fc[i][0] != fc[i][1]:
+                    write(i, fc[i][0])
+                    print(f"Error ({i}) is fixed. Recompiling...")
+                    redo = True
+            
+            if not redo:
+                finished = True
+                print(f"Compile Failure: STDERR:\n{stderr}")
+                exit(1)
+            tries += 1
 
         finished = True
         os.chdir("output")
@@ -235,14 +275,13 @@ options:
             else:
                 os.system(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
         else:
-            os.system(f"output.3dsx")
-
-        sys.exit(0)
+            os.system("output.3dsx")
 
     elif "-e" in arg:
         a = ""
         for x in sys.argv:
             if x.startswith("0x"):
                 a += f"{x} "
-
         sys.exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
+    
+    sys.exit(0)
