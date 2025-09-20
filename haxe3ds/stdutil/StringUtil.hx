@@ -1,10 +1,13 @@
-package haxe3ds.util;
+package haxe3ds.stdutil;
 
 import cxx.DynamicToString;
 
 using StringTools;
 
-class STDUtil {
+/**
+ * Standard Library for String Utility.
+ */
+class StringUtil {
     /**
      * Formats a string with arguments provided, Example: `Hello, {}!` with args ["World"] -> `Hello, World!`
      * 

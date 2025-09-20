@@ -111,10 +111,8 @@ class FS {
                 retry = true;
             }
 
-            if (retry) {
-                if (R_FAILED(archiveMount(ARCHIVE_SAVEDATA, path, p))) {
-                    return false;
-                }
+            if (retry && R_FAILED(archiveMount(ARCHIVE_SAVEDATA, path, p))) {
+                return false;
             }
         ');
         return true;
@@ -134,6 +132,7 @@ class FS {
      * Variable for the concurrent Play Coins in your system found by `/gamecoin.dat`.
      * 
      * Note: If any of the FS API failed, `-1` will be returned!
+     * 
      * @since 1.3.0
      */
     public static var playCoins(get, set):UInt16;

@@ -14,8 +14,8 @@ FS:
 ENV:
 - Initial New Class.
 
-STDUtil:
-- Initial New Class.
+STDs:
+- Initial New Classes (StringUtil, CTime).
 
 Compiler:
 - Updated to be a little more smarter at fixing compilation errors.
