@@ -262,7 +262,7 @@ class FSFile {
         if (len == -1) {
             len = byteSize;
         }
-        len = Math.floor(len);
+        len = Std.int(Math.abs(len));
 
         var out:String = "";
         untyped __cpp__('

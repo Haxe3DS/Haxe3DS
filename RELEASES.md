@@ -14,6 +14,9 @@ FS:
 ENV:
 - Initial New Class.
 
+STDUtil:
+- Initial New Class.
+
 Compiler:
 - Updated to be a little more smarter at fixing compilation errors.
 - *Intentionally* hidden the stdout thing for no reason.
