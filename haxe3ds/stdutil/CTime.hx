@@ -91,4 +91,25 @@ class CTime {
     static function get_weekday():Int {
         return untyped __cpp__('getNow().tm_wday');
     }
+
+    /**
+     * Convert the time now to a formatted string: `Wed Sep 21 10:27:52 2011`
+     * 
+     * Where:
+     * - `Wed` is the substring version of the current weekday in string.
+     * - `Sep` is the substring version of the current month in string.
+     * - `21` is the integer for the current month day.
+     * - `10:27:52` is the string of the current timestamp.
+     * - `2011` is the integer for the current year.
+     * 
+     * @return Timed String
+     */
+    public static function toString():String {
+        var out:String = "";
+        untyped __cpp__('
+            tm shit = getNow();
+	        out = std::string(std::asctime(&shit))
+        ');
+        return out;
+    }
 }

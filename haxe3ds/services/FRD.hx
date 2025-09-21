@@ -146,11 +146,11 @@ class FRD {
             showGameName: false,
             showPlayedGame: false
         }
-        untyped __cpp__('FRD_GetMyPreference(&prefs->publicMode, &prefs->showGameName, &prefs->showGameName)');
+        untyped __cpp__('FRD_GetMyPreference(&prefs->publicMode, &prefs->showGameName, &prefs->showPlayedGame)');
         return prefs;
     }
     static function set_me_preference(me_preference:FRDPreference):FRDPreference {
-        untyped __cpp__('FRDA_UpdatePreference(me_preference->publicMode, me_preference->showGameName, me_preference->showGameName)');
+        untyped __cpp__('FRDA_UpdatePreference(me_preference->publicMode, me_preference->showGameName, me_preference->showPlayedGame)');
         return me_preference;
     }
 

@@ -18,7 +18,7 @@ Join for some fun and learn more about Haxe3DS today! https://discord.gg/9w73WaX
 
 This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) which can read and compile haxe code to c++ outputted code so that the compiler can understand and compile to 3dsx! This was done with lots of love (and rage) to make this program so i hope i can get some support.
 
-Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+
+Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+ and never will.
 
 # INSTALLATION:
 
