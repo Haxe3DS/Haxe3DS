@@ -32,19 +32,6 @@ CFG_Language getFromCFGC(std::shared_ptr<haxe3ds::services::CFG_Language> e) {
 		default: return CFG_LANGUAGE_DEFAULT;
     }
 }
-    
-errorReturnCode getFromERC(std::shared_ptr<haxe3ds::applet::ErrorReturnCode> e) {
-	switch(e->index) {
-		case 0:  return ERROR_UNKNOWN;
-		case 1:  return ERROR_NONE;
-		case 2:  return ERROR_SUCCESS;
-		case 3:  return ERROR_NOT_SUPPORTED;
-		case 4:  return ERROR_HOME_BUTTON;
-		case 5:  return ERROR_SOFTWARE_RESET;
-		case 6:  return ERROR_POWER_BUTTON;
-		default: return ERROR_UNKNOWN;
-	}
-}
 
 std::string u16ToString(u16* i, size_t ln) {
     u8 out[ln+1];

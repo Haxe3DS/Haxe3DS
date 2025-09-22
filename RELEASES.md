@@ -1,27 +1,33 @@
 # 1.3.0
 
+AC:
+- `ssid`: Use `ACI_GetNetworkWirelessEssidSecuritySsid` instead of `ACU_GetSSID`
+
 CFGU:
 - Added `systemUsername` and `systemBirthday`.
 - Converted `systemModel`, `systemRegion` and `systemLanguage` to a string variable.
 
-AC:
-- `ssid`: Use `ACI_GetNetworkWirelessEssidSecuritySsid` instead of `ACU_GetSSID`
+Compiler:
+- Updated to be a little more smarter at fixing compilation errors.
+- *Intentionally* hidden the stdout/stderr output for no reason.
+- Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
+- Moved 3DS IP related to a key:value and also added `debugMode`!
+
+ENV:
+- Initial New Class.
+
+Error:
+- Class has been fully documented and fully done!
+
+FRD:
+- Fixed a bug where it had 2 `showGameName` in both `FRD_GetMyPreference` and `FRDA_UpdatePreference` arguments causing inaccuracies.
 
 FS:
 - Added `mountSaveData`, `flushAndCommit` and `playCoins`
 - Added Class being `FSFile`!
 
-ENV:
-- Initial New Class.
-
 STDs:
 - Initial New Classes (StringUtil, CTime).
-
-Compiler:
-- Updated to be a little more smarter at fixing compilation errors.
-- *Intentionally* hidden the stdout thing for no reason.
-- Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
-- Moved 3DS IP related to a key:value and also added `debugMode`! (WIP)
 
 Other:
 - Moved Installation into Wiki!
