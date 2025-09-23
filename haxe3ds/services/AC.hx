@@ -7,27 +7,27 @@ typedef ACProxy = {
     /**
      * Whetever or not the proxy is enabled or not.
      */
-    enable:Bool,
+    var enable:Bool;
 
     /**
      * Host name
      */
-    host:String,
+    var host:String;
 
     /**
      * Port used
      */
-    port:UInt16,
+    var port:UInt16;
 
     /**
      * The current username for this proxy.
      */
-    username:String,
+    var username:String;
 
     /**
      * The password for this proxy.
      */
-    password:String
+    var password:String;
 }
 
 /**

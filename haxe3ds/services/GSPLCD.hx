@@ -42,17 +42,14 @@ class GSPLCD {
      * 
      * This calls `GSPLCD_SetLedForceOff` if you set the variable.
      */
-    public static var LED(get, set):Bool;
-    static function get_LED():Bool {
-        return true;
-    }
+    public static var LED(null, set):Bool;
     static function set_LED(LED:Bool):Bool {
         untyped __cpp__('GSPLCD_SetLedForceOff(!LED)');
         return LED;
     }
 
     /**
-     * Variable that Gets the LCD screens' vendors. Stubbed on old 3ds.
+     * Variable that Gets the LCD screens' vendors. Stubbed on OLD 3ds.
      */
     public static var vendors(default, null):UInt8 = 0;
 

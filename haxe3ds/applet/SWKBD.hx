@@ -72,24 +72,24 @@ typedef SWKBDButtonData = {
     /**
      * Current text provided, maximum 16 characters.
      */
-    input:String,
+    var input:String;
 
     /**
      * Whetever or not it should acts like a "OK / SUBMIT TEXT" button.
      */
-    buttonWillSubmit:Bool
+    var buttonWillSubmit:Bool;
 }
 
 typedef SWKBDDict = {
     /**
      * Example would be if you use "lenny" as in.
      */
-    input:String,
+    var input:String;
 
     /**
      * And if you set the output to ( ͡° ͜ʖ ͡°), it will be this.
      */
-    output:String
+    var output:String;
 }
 
 enum SWKBDFilter {

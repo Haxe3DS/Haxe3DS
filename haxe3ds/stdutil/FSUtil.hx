@@ -1,17 +1,18 @@
-package haxe3ds.util;
+package haxe3ds.stdutil;
 
 import cxx.std.FileSystem;
-
-@:cppInclude("fstream") // For readFile
-@:cppInclude("filesystem") // For readFile
 
 /**
  * Better File System Utility with extra functions for IO.
  */
+@:cppFileCode("
+#include <fstream>
+#include <filesystem>
+")
 class FSUtil {
 	/**
 	 * Reads a file from SDMC/ROMFS and gets the current read string from file.
-	 * @param path The path to read from, include the `sdmc:/` or `romfs:/` partition, or the save data partition if it's mounted.
+	 * @param path The path to read from, include the `sdmc:/`, `romfs:/`, or the save data partition if it's mounted.
 	 * @return Current content from file, "" if file was not found or file is 0 bytes.
 	 */
 	public static function readFile(path:String):String {
@@ -75,7 +76,7 @@ class FSUtil {
 	}
 
 	/**
-	 * Creates a new directory, `sdmc:/` is included by default and cannot be changed.
+	 * Creates a new directory.
 	 * @param path Path to create a new directory, you must include `sdmc:/` partition or the save data partition if it's mounted.
 	 * @return true if successfully created directory, false if failed to create.
 	 */

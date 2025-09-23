@@ -26,7 +26,7 @@ jsonStruct = {
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        print("""usage: Hx3DSCompiler [-g] [-c]
+        print("""usage: Hx3DSCompiler [-g] [-c] [-e]
 
 options:
   -g      Generates a Struct JSON and saves it to the current CWD.
@@ -171,6 +171,12 @@ options:
             write("output/src/_main_.cpp", ''.join(dictation))
             print("d")
 
+        # assets from installed libs
+        for lib in jsonStruct["settings"]["libraries"]:
+            f = read(f".haxelib/{lib}/.current")
+            if os.path.exists(f".haxelib/{lib}/{f}/assets"):
+                shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
+
         for file in ["Makefile", "resources/AppInfo"]:
             c = read(f"output/{file}")
             c = c.replace("[TITLE_JSON]",       jsonStruct["metadata"]["title"])
@@ -178,17 +184,11 @@ options:
             c = c.replace("[AUTHOR_JSON]",      jsonStruct["metadata"]["author"])
             write(f"output/{file}", c)
 
-        # assets from installed libs
-        for lib in jsonStruct["settings"]["libraries"]:
-            f = read(f".haxelib/{lib}/.current")
-            if os.path.exists(f".haxelib/{lib}/{f}/assets"):
-                shutil.copytree(f".haxelib/{lib}/{f}/assets", "output", dirs_exist_ok=True)
-
         finished = False
         tries = 1
         def thr():
             estimate = 0
-            for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**"))
+            for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**", recursive=True))
             estimate = round(estimate / 1.19, 5)
             while not finished: print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
             print(" " * (os.get_terminal_size().columns - 2), end='\r')
@@ -223,34 +223,37 @@ options:
                 
                 return lc, l
                 
-            for ln in stderr.splitlines():
-                if "/devkitPro/libctru/" in ln: # dangerous, so i added a check
-                    continue
+            try:
+                for ln in stderr.splitlines():
+                    if "/devkitPro/libctru/" in ln: # dangerous, so i added a check
+                        continue
 
-                if ": error: " in ln:
-                    lc, l = create(ln)
-                    exp = "error: expected ';' before" in ln
-                    lnk = fc[l[1]][0]
+                    if ": error: " in ln:
+                        lc, l = create(ln)
+                        exp = "error: expected ';' before" in ln
+                        lnk = fc[l[1]][0]
 
-                    if "error: cannot convert 'const std::nullopt_t' to " in ln:
-                        lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
-                    elif "error: expected ',' or ';' before" in ln or exp:
-                        if not exp: lc -= 1
-                        lnk[lc] += ";"
-                    elif "error: no matching function for call to" in ln:
-                        lnk[lc] = lnk[lc].replace(";", "(nullptr);")
+                        if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                            lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
+                        elif "error: expected ',' or ';' before" in ln or exp:
+                            if not exp: lc -= 1
+                            lnk[lc] += ";"
+                        elif "error: no matching function for call to" in ln:
+                            lnk[lc] = lnk[lc].replace(";", "(nullptr);")
 
-                elif ": note: " in ln:
-                    lc, l = create(ln)
-                    hFile = l[1].replace(".cpp", ".h").replace("src", "include")
-                    lnk = fc[l[1]][0]
+                    elif ": note: " in ln:
+                        lc, l = create(ln)
+                        hFile = l[1].replace(".cpp", ".h").replace("src", "include")
+                        lnk = fc[l[1]][0]
 
-                    if "note: candidate 1: 'template<class Dyn1, class Dyn2>" in ln:
-                        bartSimpson = read(hFile)
-                        for i in [f"Dyn{x}" for x in range(10)]:
-                            bartSimpson = bartSimpson.replace(i, "haxe::Dynamic")
-                        fc[l[1]][0] = bartSimpson.split("\n")
-                        del fc[l[1]][0][lc-1]
+                        if "note: candidate 1: 'template<class Dyn1, class Dyn2>" in ln:
+                            bartSimpson = read(hFile)
+                            for i in [f"Dyn{x}" for x in range(10)]:
+                                bartSimpson = bartSimpson.replace(i, "haxe::Dynamic")
+                            fc[l[1]][0] = bartSimpson.split("\n")
+                            del fc[l[1]][0][lc-1]
+            except ValueError: # Linker Error
+                pass
 
             redo = False
             for i in fc.keys():

@@ -6,6 +6,8 @@ using StringTools;
 
 /**
  * Standard Library for String Utility.
+ * 
+ * @since 1.3.0
  */
 class StringUtil {
     /**

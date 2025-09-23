@@ -102,7 +102,7 @@ class FS {
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
             Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
-            if (ret == 0xC8A04554) { // save format error
+            if (ret == 0xC8A04554 || R_FAILED(ret)) { // save format error
                 ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
                 if (R_FAILED(ret)) {
                     return false;

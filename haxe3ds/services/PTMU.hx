@@ -64,7 +64,7 @@ class PTMU {
     /**
      * Variable property that gets the system's current pedometer state.
      * 
-     * `Get` will call `PTMU_GetPedometerState` and will return true if walking, false if not walking.
+     * Returns `true` when the pedometer is counting the number of steps; otherwise, returns `false`. 
      */
     public static var isWalking(get, null):Bool;
     static function get_isWalking():Bool {

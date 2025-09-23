@@ -51,6 +51,8 @@ enum ErrorType {
 
 /**
  * Return code. Stores the return code that indicates the reason why the Error/EULA applet terminated.
+ * 
+ * @since 1.3.0
  */
 enum ErrorReturnCode {
 	/**
@@ -91,10 +93,14 @@ enum ErrorReturnCode {
 
 /**
  * Result provided from `Error.display`.
+ * 
+ * @since 1.3.0
  */
 typedef ErrorResult = {
 	/**
 	 * Return code. Stores the return code that indicates the reason why the Error/EULA applet terminated.
+	 * 
+	 * Does return `UNKNOWN`?
 	 */
 	var returnCode:ErrorReturnCode;
 

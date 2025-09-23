@@ -12,6 +12,9 @@ Compiler:
 - *Intentionally* hidden the stdout/stderr output for no reason.
 - Switched to use STD C++23 instead of STD C++17, which also means `array.remove`, `array.indexOf`, etc. is fixed!!
 - Moved 3DS IP related to a key:value and also added `debugMode`!
+- Fixed bugs where it would overwrite the devkitPro's libctru header file which was dangerous.
+- Handled linker errors by breaking them.
+- No longer use `Makefile` in local assets, now it will be in haxelib assets.
 
 ENV:
 - Initial New Class.
@@ -25,12 +28,21 @@ FRD:
 FS:
 - Added `mountSaveData`, `flushAndCommit` and `playCoins`
 - Added Class being `FSFile`!
+- Added additional error handling.
+
+GSPLCD:
+- Remove `get_LED`
+
+News:
+- Class has been fully documented and fully done(?)
 
 STDs:
 - Initial New Classes (StringUtil, CTime).
 
 Other:
 - Moved Installation into Wiki!
+- VSCode: Fixed typedefs not showing details about info from variables.
+- Moved other haxe files to separate folders for cleaning.
 
 # 1.2.0
 

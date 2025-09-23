@@ -226,7 +226,7 @@ class HID {
 	/**
 	 * Returns a large variety of key pressed/held/up.
 	 * 
-	 * @param typeof Integer typeof, 0/other numbers = pressed, 1 = held, 2 = up
+	 * @param typeof Integer typeof, 1 = held, 2 = up, other = pressed.
 	 * @return Lists of UInt32 keys pressed.
 	 */
 	public static function keyArray(typeof:Int = 0):Array<UInt32> {

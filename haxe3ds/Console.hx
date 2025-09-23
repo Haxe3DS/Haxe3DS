@@ -7,14 +7,12 @@ enum GfxScreen_t {
 	/**
 	 * The 3DS's top screen. Resolution at 400x240.
 	 */
-	@:native("GFX_TOP")
-	GFX_TOP;
+	@:native("GFX_TOP")    GFX_TOP;
 
 	/**
 	 * The 3DS's bottom screen. Resolution at 320x240.
 	 */
-	@:native("GFX_BOTTOM")
-	GFX_BOTTOM;
+	@:native("GFX_BOTTOM") GFX_BOTTOM;
 }
 
 /**
@@ -79,17 +77,6 @@ class ConsolePUA {
  *
  * Provides STDIO integration for printing to the 3DS screen as well as debug print
  * functionality provided by STDERR.
- *
- * General usage is to initialize the console by:
- * ```
- * import hx3ds.Console;
- * consoleDemoInit(); // DOES NOT EXIST YET
- * ```
- * or to customize the console usage by:
- * ```
- * import hx3ds.Console;
- * Console.init();
- * ```
  */
 class Console {
 	/**

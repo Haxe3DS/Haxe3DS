@@ -15,6 +15,8 @@ tm getNow() {
  * Standard Library using `ctime`.
  * 
  * This is not the same as `haxe.std.Date`!
+ * 
+ * @since 1.3.0
  */
 class CTime {
     /**

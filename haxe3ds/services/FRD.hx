@@ -11,17 +11,17 @@ typedef FRDPreference = {
     /**
      * Determines whether friends are notified of the current user's online status.
      */
-    publicMode:Bool,
+    var publicMode:Bool;
 
     /**
      * Determines whether friends are notified of the application that the current user is running.
      */
-    showGameName:Bool,
+    var showGameName:Bool;
 
     /**
      * Determines whether to display the current user's game history.
      */
-    showPlayedGame:Bool
+    var showPlayedGame:Bool;
 }
 
 /**
@@ -31,12 +31,12 @@ typedef FRDKey = {
     /**
      * The Principal ID Tied to an account.
      */
-    principalID:UInt32,
+    var principalID:UInt32;
 
 	/**
 	 * The local friend code found in your `Friend List` app.
 	 */
-	localFriendCode:UInt64
+	var localFriendCode:UInt64;
 }
 
 /**
@@ -46,27 +46,27 @@ typedef FRDProfile = {
     /**
      * The region code for the hardware.
      */
-    region:UInt8,
+    var region:UInt8;
 
     /**
      * Country Code.
      */
-    country:UInt8,
+    var country:UInt8;
 
     /**
      * Area Code.
      */
-    area:UInt8,
+    var area:UInt8;
 
     /**
      * Language Code.
      */
-    language:UInt8,
+    var language:UInt8;
 
     /**
      * Platform Code.
      */
-    platform:UInt8
+    var platform:UInt8;
 }
 
 /**
