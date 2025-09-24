@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/NAEL2XD/Haxe3DS">
-    <img src="logo.png" alt="Haxe3DS" width="600">
+    <img src="logo.png" alt="Haxe3DS" width="300">
   </a>
 </p>
 
