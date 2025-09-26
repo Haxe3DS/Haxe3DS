@@ -62,7 +62,6 @@ typedef NEWSHeader = {
  * Currently a total train wreck caused by LibCTRU devs, so this is broken atm, unless you know how to fix this (which is just replacing `news:u` to `news:s`), this will never work.
  */
 @:cppFileCode('
-#include <3ds.h>
 #include <string.h>
 #include "haxe3ds_Utils.h"
 ')
@@ -88,10 +87,10 @@ class News {
     public static function exit() {};
 
     /**
-     * Adds a notification to the home menu Notifications applet.
+     * Adds a notification to the home menu Notifications applet. TODO: fix images.
      * @param title String title of the notification, maximum `0x40` or `64` characters.
      * @param message String message of the notification, or `""` for no message. maximum `0x1780` or `6016` characters.
-     * @param imagePath Path to the image, make sure the image is less than 0xC800 (or 65536) bytes!
+     * @param imagePath Path to the image, make sure the image is less than 0xC800 (or 65536) bytes! **NOTE**: only supports sdmc.
      * @return true if success, false if failed.
      * @since 1.3.0
      */
@@ -111,14 +110,18 @@ class News {
         ");
 
         if (imagePath != "null" && FSUtil.exists(imagePath) && (imagePath.endsWith("jpg") || imagePath.endsWith("jpeg"))) {
-            final sdmc:Bool = imagePath.startsWith("sdmc:/");
-            imagePath = '/${imagePath.split(":/")[1]}';
+            imagePath.startsWith("/") ? null : imagePath = '/$imagePath';
 
             untyped __cpp__('
                 Handle h;
                 
-                if (R_FAILED(FSUSER_OpenFileDirectly(&h, sdmc ? ARCHIVE_SDMC : ARCHIVE_ROMFS, (FS_Path){PATH_EMPTY, 1, (u8*)""}, fsMakePath(PATH_ASCII, imagePath.c_str()), FS_OPEN_READ, 0))) {
-                    goto fail;
+                FS_Archive arch = 0;
+                if (R_FAILED(FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, "")))) {
+                    goto fail1;
+                }
+
+                if (R_FAILED(FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, imagePath.c_str()), FS_OPEN_READ, FS_ATTRIBUTE_READ_ONLY))) {
+                    goto fail2;
                 }
                     
                 image = (u8*)malloc(0xC800);
@@ -130,8 +133,9 @@ class News {
                 }
 
                 svcCloseHandle(h);
-
-                fail:
+                fail2:
+                FSUSER_CloseArchive(arch);
+                fail1:
             ');
         }
 
@@ -167,7 +171,7 @@ class News {
     }
 
     /**
-     * Sets a header from the specified news id and output.
+     * Sets a header from the specified news ID and output. Todo: fix returning false everytime
      * @param newsID Identification of the current news.
      * @param out Header Type-Definition to use.
      * @return true if success, false if failed.
@@ -186,7 +190,7 @@ class News {
             h.processID = out->processID;
             h.jumpParam = out->jumpParam;
             h.time = out->time;
-            utf8_to_utf16(h.title, (const uint8_t*)out->title.c_str(), out->title.size());
+            utf8_to_utf16(h.title, (const u8*)out->title.c_str(), out->title.size());
         ');
 
         return untyped __cpp__('R_SUCCEEDED(NEWS_SetNotificationHeader(newsID, &h))');

@@ -23,8 +23,6 @@ enum FSArchiveID {
  * @since 1.1.0
  */
 @:cppFileCode("
-#include <3ds.h>
-
 // https://www.3dbrew.org/wiki/RomFS#Hash_Table_Structure
 int getHashTableLength(int numEntries) {
 	int count = numEntries;
@@ -51,8 +49,8 @@ FS_ArchiveID toArchID(int ind) {
         case 0: default: return ARCHIVE_SDMC;
         case 1: return ARCHIVE_ROMFS;
     }
-}
-")
+}")
+@:headerCode('#include <3ds.h>')
 class FS {
     /**
      * Initializes FS.
