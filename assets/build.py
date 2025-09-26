@@ -225,7 +225,7 @@ options:
                 
             try:
                 for ln in stderr.splitlines():
-                    if "/devkitPro/libctru/" in ln: # dangerous, so i added a check
+                    if any(x in ln for x in ["/devkitPro/libctru/", "/arm-none-eabi/include/"]): # dangerous, so i added a check
                         continue
 
                     if ": error: " in ln:
@@ -240,6 +240,10 @@ options:
                             lnk[lc] += ";"
                         elif "error: no matching function for call to" in ln:
                             lnk[lc] = lnk[lc].replace(";", "(nullptr);")
+                        elif "error: conversion from '" in ln:
+                            lol = lnk[lc]
+                            name = lol[lol.rfind(" ")+1:lol.find(";")]
+                            lnk[lc] = lnk[lc].replace(name, f'std::dynamic_pointer_cast{lol[lol.find("<"):lol.rfind(">")+1]}({name})')
 
                     elif ": note: " in ln:
                         lc, l = create(ln)
