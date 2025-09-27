@@ -1,5 +1,7 @@
 # 1.4.0
 
+- Added ACT.
+
 Other:
 - New Logo!
 
