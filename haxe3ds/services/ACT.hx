@@ -6,6 +6,8 @@ import cxx.num.UInt8;
 
 /**
  * ACT's Account Information.
+ * 
+ * @since 1.4.0
  */
 typedef ACTAccountInfo = {
     /**
@@ -24,21 +26,39 @@ typedef ACTAccountInfo = {
     var receiveAds:Bool;
 
     /**
-     * Whetever or not this account has chosen "male". If not then it's a female.
+     * Whetever or not this account's mii is a male or a female.
      */
     var male:Bool;
 
     /**
      * The current mii name.
-     * 
-     * ### Note:
-     * Currently returning raw string bytes.
      */
     var miiName:String;
+
+    /**
+     * Current Country Name. EG: FR, US, JP.
+     */
+    var countryName:String;
+
+    /**
+     * Current Principal ID.
+     * 
+     * @see https://www.3dbrew.org/wiki/Principal_ID
+     */
+    var principalID:UInt32;
+
+    /**
+     * The current birth date as `DD/MM/YYYY`.
+     * 
+     * Note: If using `pnid` and no date is specified, it returns `1/1/1990`.
+     */
+    var birthDate:String;
 }
 
 /**
- * ACT (Account) Services
+ * ACT (Account) Services.
+ * 
+ * @since 1.4.0
  */
 @:cppFileCode('
 #include <3ds.h>
@@ -68,7 +88,10 @@ class ACT {
         userAge: 0,
         receiveAds: false,
         male: false,
-        miiName: ""
+        miiName: "",
+        countryName: "",
+        principalID: 0,
+        birthDate: ""
     };
 
     /**
@@ -79,7 +102,10 @@ class ACT {
         userAge: 0,
         receiveAds: false,
         male: false,
-        miiName: ""
+        miiName: "",
+        countryName: "",
+        principalID: 0,
+        birthDate: ""
     };
 
     /**
@@ -97,26 +123,31 @@ class ACT {
             auto nidU = nnid, pidU = pnid;
 
             int j[2] = {1, 3};
+            typedef char country[3];
             for (int i = 0; i < 2; i++) {
-                AccountId     numAcc;
                 u16           userAge;
                 bool          ads;
-                bool          male;
-                MiiScreenName mii;
+                country       cn;
+                AccountInfo   info;
 
                 int k = j[i];
-                ACT_GetAccountInfo(&numAcc,  17, k, INFO_TYPE_ACCOUNT_ID);
                 ACT_GetAccountInfo(&userAge,  2, k, INFO_TYPE_AGE);
                 ACT_GetAccountInfo(&ads,      1, k, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
-                ACT_GetAccountInfo(&male,     1, k, INFO_TYPE_GENDER);
-                ACT_GetAccountInfo(&mii,     11, k, INFO_TYPE_MII_NAME);
+                ACT_GetAccountInfo(&cn,       3, k, INFO_TYPE_COUNTRY_NAME);
+                ACT_GetAccountInfo(&info,   160, k, INFO_TYPE_ACCOUNT_INFO);
+
+                char str[11];
+				snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
 
                 auto set = i == 0 ? nidU : pidU;
-                set->username   = std::string(numAcc);
-                set->userAge    = userAge;
-                set->receiveAds = ads;
-                set->male       = male;
-                set->miiName    = u16ToString(mii, 11);
+                set->username    = string(info.accountId);
+                set->userAge     = userAge;
+                set->receiveAds  = ads;
+                set->male        = !info.mii.miiData.mii_details.sex;
+                set->miiName     = u16ToString(info.screenName, 11);
+                set->countryName = string(reinterpret_cast<char*>(cn));
+                set->principalID = info.principalId;
+                set->birthDate   = string(str);
             }
         ');
 
@@ -124,9 +155,9 @@ class ACT {
         pnid = untyped __cpp__('pidU');
     }
 
-    public static function exit() {
-        untyped __cpp__('
-            actExit()
-        ');
-    }
+    /**
+     * Exits AC service
+     */
+    @:native("actExit")
+    public static function exit() {}
 }

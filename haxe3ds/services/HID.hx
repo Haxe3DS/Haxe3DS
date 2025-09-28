@@ -233,10 +233,8 @@ class HID {
 		var ret:Array<UInt32> = [];
 		final f:UInt32->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
 
-		for (key in [
-			Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,
-			Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL
-		]) {
+		final arr:Array<UInt32> = [Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL];
+		for (key in arr) {
 			if (f(key)) {
 				ret.push(key);
 			}
@@ -251,10 +249,12 @@ class HID {
 	 */
 	public static function circlePadRead():CirclePosition {
 		var pos:CirclePosition = {dx: 0, dy: 0};
-		untyped __cpp__("circlePosition temp;
-hidCircleRead(&temp);
-pos->dx = temp.dx;
-pos->dy = temp.dy");
+		untyped __cpp__("
+			circlePosition temp;
+			hidCircleRead(&temp);
+			pos->dx = temp.dx;
+			pos->dy = temp.dy
+		");
 		return pos;
 	}
 
@@ -264,10 +264,12 @@ pos->dy = temp.dy");
 	 */
 	public static function cStickRead():CirclePosition {
 		var pos:CirclePosition = {dx: 0, dy: 0};
-		untyped __cpp__("circlePosition temp;
-irrstCstickRead(&temp);
-pos->dx = temp.dx;
-pos->dy = temp.dy");
+		untyped __cpp__("
+			circlePosition temp;
+			irrstCstickRead(&temp);
+			pos->dx = temp.dx;
+			pos->dy = temp.dy
+		");
 		return pos;
 	}
 
@@ -277,10 +279,12 @@ pos->dy = temp.dy");
 	 */
 	public static function touchPadRead():TouchPosition {
 		var pos:TouchPosition = {px: 0, py: 0};
-		untyped __cpp__("touchPosition temp;
-hidTouchRead(&temp);
-pos->px = temp.px;
-pos->py = temp.py");
+		untyped __cpp__("
+			touchPosition temp;
+			hidTouchRead(&temp);
+			pos->px = temp.px;
+			pos->py = temp.py
+		");
 		return pos;
 	}
 
@@ -290,11 +294,13 @@ pos->py = temp.py");
 	 */
 	public static function accelRead():AccelVector {
 		var acc:AccelVector = {x: 0, y: 0, z: 0};
-		untyped __cpp__("accelVector temp;
-hidAccelRead(&temp);
-acc->x = temp.x;
-acc->y = temp.y;
-acc->z = temp.z");
+		untyped __cpp__("
+			accelVector temp;
+			hidAccelRead(&temp);
+			acc->x = temp.x;
+			acc->y = temp.y;
+			acc->z = temp.z
+		");
 		return acc;
 	}
 
@@ -304,11 +310,13 @@ acc->z = temp.z");
 	 */
 	public static function gyroRead():AngularRate {
 		var ang:AngularRate = {x: 0, y: 0, z: 0};
-		untyped __cpp__("angularRate temp;
-hidGyroRead(&temp);
-ang->x = temp.x;
-ang->y = temp.y;
-ang->z = temp.z");
+		untyped __cpp__("
+			angularRate temp;
+			hidGyroRead(&temp);
+			ang->x = temp.x;
+			ang->y = temp.y;
+			ang->z = temp.z
+		");
 		return ang;
 	}
 

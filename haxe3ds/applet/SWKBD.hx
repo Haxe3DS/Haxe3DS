@@ -377,8 +377,7 @@ class SWKBDHandler {
 
             char output[1700];
             swkbdInputText(&out, output, 1700);
-            return std::string(output)
         ');
-        return "";
+        return untyped __cpp__('std::string(output)');
     }
 }
