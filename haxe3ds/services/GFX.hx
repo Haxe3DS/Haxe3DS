@@ -13,7 +13,7 @@ import haxe3ds.applet.Error;
  * Width/height refer to the physical dimensions of the screen; that is, the top screen
  * is 240 pixels wide and 400 pixels tall; while the bottom screen is 240x320.
  */
-@:cppInclude("3ds.h")
+@:headerCode("#include <3ds.h>")
 class GFX {
 	/**
 	 * Initializes the LCD framebuffers with default parameters
