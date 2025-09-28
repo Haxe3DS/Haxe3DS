@@ -70,7 +70,7 @@ typedef FRDProfile = {
 }
 
 /**
- * Friend Services
+ * Friend Services.
  * 
  * @since 1.2.0
  */
@@ -156,11 +156,10 @@ class FRD {
 
     /**
      * Initializes friend services.
-     * @param forceUser Whether or not to force using the user service frd:u instead of the default (admin service frd:a).
      */
-    public static function init(forceUser:Bool) {
+    public static function init() {
         untyped __cpp__('
-            frdInit(forceUser);
+            frdInit(false);
             FRD_HasLoggedIn(&me_loggedIn);
             FRD_IsOnline(&me_isOnline);
 
@@ -198,7 +197,7 @@ class FRD {
         untyped __cpp__('
             FriendGameModeDescription desc;
             memset(desc, 0, sizeof(desc));
-            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN - 1);
+            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN);
             
             Presence frdPres;
             memset(&frdPres, 0, sizeof(frdPres));
@@ -211,10 +210,24 @@ class FRD {
             frdPres.joinGameId           = tid;
             frdPres.joinGameMode         = 0;
             frdPres.ownerPrincipalId     = 0;
-            
-            return R_SUCCEEDED(FRD_UpdateMyPresence(&frdPres, &desc));
         ');
-        return false;
+        return untyped __cpp__('R_SUCCEEDED(FRD_UpdateMyPresence(&frdPres, &desc))');
+    }
+
+    /**
+     * Updates your own friend comment with the string specified. (Just to know please don't try to bypass profanity, maybe you'll get banned!)
+     * @param textToUse Text to use, Maximum 16 characters.
+     * @return `true` if succeeded, `false` if failed.
+     * @since 1.4.0
+     */
+    public static function updateComment(textToUse:String):Bool {
+        untyped __cpp__('
+            FriendComment desc;
+            memset(desc, 0, sizeof(desc));
+            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_COMMENT_LEN)
+        ');
+
+        return untyped __cpp__('R_SUCCEEDED(FRDA_UpdateComment(&desc))');
     }
 
     /**

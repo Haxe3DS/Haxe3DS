@@ -15,12 +15,20 @@ class APT {
 	public static var isNew3DS(default, null):Bool = false;
 
 	/**
+	 * The current Program/Title ID running.
+	 * 
+	 * Homebrew Launcher's TID: `0x000400000D921E00 (1125900134522368)` (This is always different if using a CIA with a custom TID)
+	 */
+	public static var programID(default, null):UInt64 = 0;
+
+	/**
 	 * Initializes APT.
 	 */
 	public static function init() {
 		untyped __cpp__('
 			aptInit();
 			APT_CheckNew3DS(&isNew3DS);
+			APT_GetProgramID(&programID);
 		');
 	}
 

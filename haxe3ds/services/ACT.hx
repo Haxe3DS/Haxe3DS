@@ -140,14 +140,14 @@ class ACT {
 				snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
 
                 auto set = i == 0 ? nidU : pidU;
-                set->username    = string(info.accountId);
+                set->username    = info.accountId;
                 set->userAge     = userAge;
                 set->receiveAds  = ads;
                 set->male        = !info.mii.miiData.mii_details.sex;
                 set->miiName     = u16ToString(info.screenName, 11);
-                set->countryName = string(reinterpret_cast<char*>(cn));
+                set->countryName = reinterpret_cast<char*>(cn);
                 set->principalID = info.principalId;
-                set->birthDate   = string(str);
+                set->birthDate   = str;
             }
         ');
 

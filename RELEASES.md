@@ -1,6 +1,8 @@
 # 1.4.0
 
 - Added ACT.
+- APT: Added `programID`
+- FRD: Added `updateComment(String)`
 
 Other:
 - New Logo!
