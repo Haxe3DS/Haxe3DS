@@ -231,6 +231,15 @@ class FRD {
     }
 
     /**
+     * Configures the current client session to allow processing of internal friend-services tasks during sleep mode.
+     */
+    public static var halfAwake(null, set):Bool;
+    static function set_halfAwake(halfAwake:Bool):Bool {
+        untyped __cpp__('FRD_AllowHalfAwake(halfAwake)');
+        return halfAwake;
+    }
+
+    /**
      * Exits friend services.
      */
     @:native("frdExit")

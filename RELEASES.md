@@ -2,7 +2,8 @@
 
 - Added ACT.
 - APT: Added `programID`
-- FRD: Added `updateComment(String)`
+- FRD: Added `updateComment(String)`, `halfAwake`
+- MCUWUC: Init
 
 Other:
 - New Logo!

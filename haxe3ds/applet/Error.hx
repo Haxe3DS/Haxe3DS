@@ -174,13 +174,13 @@ typedef ErrorConfig = {
 errorType getFromET(int e) {
     switch(e) {
         case 0: default: return ERROR_CODE;
-        case 1:  return ERROR_TEXT;
-        case 2:  return ERROR_EULA;
-        case 3:  return ERROR_CODE_LANGUAGE;
-        case 4:  return ERROR_TEXT_LANGUAGE;
-        case 5:  return ERROR_EULA_LANGUAGE;
-        case 6:  return ERROR_TEXT_WORD_WRAP;
-        case 7:  return ERROR_TEXT_LANGUAGE_WORD_WRAP;
+        case 1: return ERROR_TEXT;
+        case 2: return ERROR_EULA;
+        case 3: return ERROR_CODE_LANGUAGE;
+        case 4: return ERROR_TEXT_LANGUAGE;
+        case 5: return ERROR_EULA_LANGUAGE;
+        case 6: return ERROR_TEXT_WORD_WRAP;
+        case 7: return ERROR_TEXT_LANGUAGE_WORD_WRAP;
     }
 }
 

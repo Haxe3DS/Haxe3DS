@@ -119,11 +119,21 @@ enum SWKBDFilter {
     PROFANITY;
 
     /**
-     * Use a callback in order to check the input.
+     * Use a callback in order to check the input. (Currently Unsupported)
      */
-    CALLBACK;
+    //CALLBACK;
 }
 
+/**
+ * Software keyboard applet.
+ * 
+ * ~~Some of the features from SWKBD are not implemented yet, will be available in the future or so.~~
+ * 
+ * 1.2.0 UPDATE:
+ * - Most features implemented, will not do callback because it uses an extra function that i do not know how to use correctly.
+ * 
+ * @since 1.1.0
+ */
 @:cppFileCode("
 #include <3ds.h>
 #include <iostream>
@@ -146,17 +156,6 @@ SwkbdValidInput toSwkbdValidInput(int index) {
         case 4: return SWKBD_FIXEDLEN;
     }
 }")
-
-/**
- * Software keyboard applet.
- * 
- * ~~Some of the features from SWKBD are not implemented yet, will be available in the future or so.~~
- * 
- * 1.2.0 UPDATE:
- * - Most features implemented, will not do callback because it uses an extra function that i do not know how to use correctly.
- * 
- * @since 1.1.0
- */
 class SWKBDHandler {
     /**
      * Current type of Software Keyboard to use. (Read-Only)
