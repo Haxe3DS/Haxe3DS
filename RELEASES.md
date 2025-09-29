@@ -4,6 +4,7 @@
 - APT: Added `programID`
 - FRD: Added `updateComment(String)`, `halfAwake`
 - MCUWUC: Init
+- NS: Added `terminate()`
 
 Other:
 - New Logo!

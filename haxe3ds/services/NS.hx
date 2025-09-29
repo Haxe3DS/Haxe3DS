@@ -21,4 +21,10 @@ class NS {
      */
     @:native("NS_RebootSystem")
     public static function rebootSystem() {};
+
+    /**
+     * Terminates the application from which this function is called
+     */
+    @:native("NS_TerminateTitle")
+    public static function terminate() {}
 }
