@@ -23,7 +23,9 @@ class NS {
     public static function rebootSystem() {};
 
     /**
-     * Terminates the application from which this function is called
+     * If called, force terminates the application and throws a popup being "An error has occurred, forcing the software to close. The system will now restart."
+     * 
+     * Wrapper of `PMApp:TerminateTitle`
      */
     @:native("NS_TerminateTitle")
     public static function terminate() {}
