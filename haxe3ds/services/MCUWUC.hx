@@ -63,6 +63,9 @@ class MCUWUC {
 
     /**
      * The current MCU Firmware Version by this format: `%u-%u`.
+     * 
+     * Note:
+     * - It starts with `HI-LO`.
      */
     public static var mcuVersion(default, null):String = "";
 }

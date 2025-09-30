@@ -34,8 +34,7 @@ u32 screenToU32(std::shared_ptr<haxe3ds::services::GSPLCDScreen> i) {
         case 1: return GSPLCD_SCREEN_BOTTOM;
         case 2: return GSPLCD_SCREEN_BOTH;
     }
-}
-')
+}')
 class GSPLCD {
     /**
      * Variable Property that forcefully sets the LED, and won't forcefully get the property.

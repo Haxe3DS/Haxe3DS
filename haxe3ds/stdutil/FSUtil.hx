@@ -16,17 +16,12 @@ class FSUtil {
 	 * @return Current content from file, "" if file was not found or file is 0 bytes.
 	 */
 	public static function readFile(path:String):String {
-		var content:String = "";
-		untyped __cpp__("
-			std::ifstream file(path);
-			if (!file.is_open()) return \"\";
+		untyped __cpp__('
+			using namespace std;
+    		ifstream ifs(path);
+		');
 
-			std::string line;
-			while (std::getline(file, line)) content += line + '\\n';
-
-			file.close()
-		");
-		return content;
+		return untyped __cpp__('istreambuf_iterator<char>{ifs}, {}');
 	}
 
 	/**
@@ -81,7 +76,7 @@ class FSUtil {
 	 * @return true if successfully created directory, false if failed to create.
 	 */
 	public static function createDirectory(path:String):Bool {
-		return untyped __cpp__('std::filesystem::create_directory(path)');
+		return untyped __cpp__('std::filesystem::create_directories(path)');
 	}
 
 	/**
@@ -101,5 +96,15 @@ class FSUtil {
     	    file.close()
 		');
 		return true;
+	}
+
+	/**
+	 * Copies a file to their desired location, NOTE: Copying only works on SDMC or in SAVE DATA!
+	 * @param fromPath Path to the file that's located at the partition.
+	 * @param toPath Path to copy from the path.
+	 * @return `true` if successfully copied, `false` if failed to copy.
+	 */
+	public static function copyFile(fromPath:String, toPath:String):Bool {
+		return untyped __cpp__('std::filesystem::copy_file(fromPath, toPath)');
 	}
 }

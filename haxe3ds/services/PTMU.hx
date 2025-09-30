@@ -87,7 +87,7 @@ class PTMU {
     /**
      * Variable property that gets the pedometer's total step count.
      * 
-     * This also can be viewed by going to `Activity Log` > `Top Screen saying "Steps"`
+     * This also can be viewed by going to `Activity Log` > `Top Screen saying "Steps Taken"`
      */
     public static var totalSteps(get, null):Int;
     static function get_totalSteps():Int {

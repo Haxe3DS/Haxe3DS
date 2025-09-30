@@ -14,6 +14,8 @@ Also a revival of the deleted repo named ***3DSHaxe*** by [MochaIcedTea](https:/
 
 This make uses of [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.cpp](https://github.com/SomeRanDev/reflaxe.CPP) which can read and compile haxe code to c++ outputted code so that the compiler can understand and compile to 3dsx! This was done with lots of love (and rage) to make this program so i hope i can get some support.
 
+By the way, it's suppose to make the 3ds homebrew easier, i'm not implementing all of them in the header file and just call it a day.
+
 Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+ and never will.
 
 # INSTALLATION:

@@ -24,13 +24,13 @@ class PTMSYSM {
     public static function requestSleep() {}
 
     /**
-     * Clear the "step history".
+     * Clears the "step history".
      */
     @:native("PTMSYSM_ClearStepHistory")
     public static function clearStepHistory() {}
 
     /**
-     * Clear the "play history".
+     * Clears the "play history".
      */
     @:native("PTMSYSM_ClearPlayHistory")
     public static function clearPlayHistory() {}

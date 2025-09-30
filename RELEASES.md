@@ -3,6 +3,8 @@
 - Added ACT.
 - APT: Added `programID`
 - FRD: Added `updateComment(String)`, `halfAwake`
+- FRD: Added enum: `FRDRelationship`
+- FRD: Fix connection stuff.
 - MCUWUC: Init
 - NS: Added `terminate()`
 

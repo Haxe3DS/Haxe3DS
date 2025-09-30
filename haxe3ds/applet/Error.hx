@@ -120,13 +120,13 @@ typedef ErrorConfig = {
 	var type:ErrorType;
 
 	/**
-	 * Which error code to use? Can range from `0` to `9999999`
+	 * Which error code to use? Can range from `-32 Bit Integer Limit` (abstract.) to `32 Bit Integer Limit`
 	 * 
      * Example being if you set to 20102, error code will show up as 002-0102
 	 * 
 	 * Note: If this variable is set to 0, defaults to `An error occurred` instead of `Error Code: 000-0000`
 	 */
-	var errorCode:Int;
+	var errorCode:UInt32;
 
 	/**
 	 * Language specified by CFG_Language + 1, do not touch it cause it can display in a foreign language.
@@ -195,8 +195,7 @@ std::shared_ptr<haxe3ds::applet::ErrorReturnCode> rcToHX(errorReturnCode c) {
 		case ERROR_SOFTWARE_RESET: return ErrorReturnCode::SOFTWARE_RESET();
 		case ERROR_POWER_BUTTON: return ErrorReturnCode::POWER_BUTTON();
 	}
-}
-')
+}')
 class Error {
     /**
      * Setups an error configuration so that the applet can understand it and displays it for you.
