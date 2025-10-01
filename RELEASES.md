@@ -1,12 +1,13 @@
 # 1.4.0
 
-- Added ACT.
-- APT: Added `programID`
-- FRD: Added `updateComment(String)`, `halfAwake`
-- FRD: Added enum: `FRDRelationship`
-- FRD: Fix connection stuff.
-- MCUWUC: Init
-- NS: Added `terminate()`
+MODULE      | CHANGES
+------------|---------
+ACT         | Added Class.
+APT         | Added variable: `programID`
+FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`. Added Enum: `FRDRelationship`, and Fixed connection stuff.
+MCUWUC      | Added Class.
+NS          | Added `terminate()`
+Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.
 
 Other:
 - New Logo!
