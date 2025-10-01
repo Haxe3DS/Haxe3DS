@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+@:dontGenerateDynamic
 class Key {
 	@:native("KEY_START")
 	public static var START:UInt32;

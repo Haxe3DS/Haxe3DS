@@ -133,33 +133,6 @@ options:
 
             write(files, c)
 
-        if os.path.exists("output/include/dynamic/"):
-            stuff2rem = ["haxe3ds_services_HID"]
-            for hxfile in glob.glob("source/**.hx", recursive=True):
-                c = read(hxfile)
-                d = hxfile.split("\\")
-                if "@:noDynGen" in c:
-                    stuff2rem.append(d[len(d)-1][:-3])
-
-            for file in stuff2rem:
-                p = f"output/include/dynamic/Dynamic_{file}.h"
-                if os.path.exists(p):
-                    os.remove(p)
-
-                p = p.replace("dynamic/Dynamic_", "")
-                if os.path.exists(p):
-                    c = read(p).splitlines()
-
-                    for i, har in enumerate(c):
-                        if har.startswith('#include "dynamic/'):
-                            try:
-                                while True:
-                                    del c[i]
-                            except IndexError:
-                                break
-
-                    write(p, c)
-
         serverMode = "-s" if jsonStruct["settings"]["3dslink"]["debugMode"] else ""
         if serverMode == "-s":
             lol = read('output/src/_main_.cpp')
