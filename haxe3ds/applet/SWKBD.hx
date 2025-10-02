@@ -2,6 +2,9 @@ package haxe3ds.applet;
 
 import cxx.num.UInt16;
 
+/**
+ * The types that you can use for your Software Keyboard, they do stuff differently.
+ */
 enum SWKBDType {
 	/**
 	 * Normal keyboard with several pages (QWERTY/accents/symbol/mobile)
@@ -24,6 +27,9 @@ enum SWKBDType {
 	WESTERN;
 }
 
+/**
+ * A password like mode for delay hiding, or just hiding instantly.
+ */
 enum SWKBDPasswordMode {
     /**
      * Characters are not concealed.
@@ -41,6 +47,9 @@ enum SWKBDPasswordMode {
 	HIDE_DELAY;
 }
 
+/**
+ * Valid input handler.
+ */
 enum SWKBDValidInputHandler {
     /**
      * All inputs are accepted.
@@ -68,6 +77,9 @@ enum SWKBDValidInputHandler {
     FIXEDLEN;
 }
 
+/**
+ * The literal button data.
+ */
 typedef SWKBDButtonData = {
     /**
      * Current text provided, maximum 16 characters.
@@ -80,6 +92,9 @@ typedef SWKBDButtonData = {
     var buttonWillSubmit:Bool;
 }
 
+/**
+ * Dictionary Input/Output
+ */
 typedef SWKBDDict = {
     /**
      * Example would be if you use "lenny" as in.
@@ -92,6 +107,44 @@ typedef SWKBDDict = {
     var output:String;
 }
 
+/**
+ * The Callback Types that's only used for the `callbackFN` function.
+ */
+enum SWKBDCallbackTypes {
+    /**
+     * Specifies that the input is valid.
+     */
+    OK;
+
+    /**
+     * Displays an error message, then closes the keyboard.
+     */
+    CLOSE;
+
+    /**
+     * Displays an error message and continues displaying the keyboard.
+     */
+    CONTINUE;
+}
+
+/**
+ * The return typedef that can be used for the rest of the callback session.
+ */
+typedef SWKBDCallbackReturn = {
+    /**
+     * The Output Message to use, it must not be `OK` for `result`.
+     */
+    var outMessage:String;
+
+    /**
+     * Result Enum to use.
+     */
+    var resultCB:SWKBDCallbackTypes;
+}
+
+/**
+ * Filters to use in the SWKBD.
+ */
 enum SWKBDFilter {
     /**
      * Disallow the use of more than a certain number of digits (0 or more)
@@ -119,9 +172,9 @@ enum SWKBDFilter {
     PROFANITY;
 
     /**
-     * Use a callback in order to check the input. (Currently Unsupported)
+     * Use a callback in order to check the input.
      */
-    //CALLBACK;
+    CALLBACK;
 }
 
 /**
@@ -130,14 +183,14 @@ enum SWKBDFilter {
  * ~~Some of the features from SWKBD are not implemented yet, will be available in the future or so.~~
  * 
  * 1.2.0 UPDATE:
- * - Most features implemented, will not do callback because it uses an extra function that i do not know how to use correctly.
+ * - Most features implemented, ~~will not do callback because it uses an extra function that i do not know how to use correctly.~~
+ *
+ * 1.4.0 UPDATE:
+ * - Welp now i know on how to use it correctly!
  * 
  * @since 1.1.0
  */
-@:cppFileCode("
-#include <3ds.h>
-#include <iostream>
-
+@:cppFileCode('
 SwkbdType toSwkbdType(int index) {
     switch(index) {
         case 0: default: return SWKBD_TYPE_NORMAL;
@@ -155,7 +208,32 @@ SwkbdValidInput toSwkbdValidInput(int index) {
         case 3: return SWKBD_NOTBLANK;
         case 4: return SWKBD_FIXEDLEN;
     }
-}")
+}
+
+SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::staticCallbackHandler(void* user, const char** ppMessage, const char* text, size_t textlen) {
+    haxe3ds::applet::SWKBDHandler* handler = static_cast<haxe3ds::applet::SWKBDHandler*>(user);
+    return handler->callbackHandler(ppMessage, text);
+}
+
+SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackHandler(const char** ppMessage, const char* text) {
+    if (this->callbackFN != nullptr) {
+        std::shared_ptr<haxe3ds::applet::SWKBDCallbackReturn> out = this->callbackFN(std::string(text));
+        
+        *ppMessage = out->outMessage.c_str();
+        switch(out->resultCB->index) {
+            case 0: return SWKBD_CALLBACK_OK;
+            case 1: return SWKBD_CALLBACK_CLOSE;
+            case 2: return SWKBD_CALLBACK_CONTINUE;
+        }
+    }
+
+    return SWKBD_CALLBACK_OK;
+}')
+@:headerCode("#include <3ds.h>")
+@:headerClassCode("
+static SwkbdCallbackResult staticCallbackHandler(void* user, const char** ppMessage, const char* text, size_t textlen);
+SwkbdCallbackResult callbackHandler(const char** ppMessage, const char* text);
+")
 class SWKBDHandler {
     /**
      * Current type of Software Keyboard to use. (Read-Only)
@@ -303,6 +381,35 @@ class SWKBDHandler {
     public var maxDigits:Int = 0;
 
     /**
+     * Variable callback to check for custom inputs from whatever you've specified.
+     * 
+     * Example Callback:
+     * ```
+this.callbackFN = input -> {
+    if (input == "awesome") {
+        return {
+			outMessage: "Awesome Indeed.",
+			resultCB: CLOSE
+		};
+    }
+
+    return {
+        outMessage: "",
+        resultCB: OK
+    }
+};
+     */
+    public var callbackFN:String->SWKBDCallbackReturn = s -> {
+        // ok wow thanks reflaxe.cpp
+        var callback:SWKBDCallbackReturn = {
+            outMessage: "",
+            resultCB: OK
+        };
+
+        return callback;
+    };
+
+    /**
      * Initializes software keyboard status.
      * @param type Keyboard type, see `SWKBDType` enum.
      * @param numButtons Number of dialog buttons to display (1, 2 or 3).
@@ -372,6 +479,10 @@ class SWKBDHandler {
                 swkbdSetDictionary(&out, words, len);
                 swkbdSetStatusData(&out, &swkbdStatus, true, true);
                 swkbdSetLearningData(&out, &swkbdLearning, true, true);
+            }
+
+            if (this->callbackFN != nullptr) {
+                swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::staticCallbackHandler, this);
             }
 
             char output[1700];

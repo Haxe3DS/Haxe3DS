@@ -4,10 +4,12 @@ MODULE      | CHANGES
 ------------|---------
 ACT         | Added Class.
 APT         | Added variable: `programID`
-FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`. Added Enum: `FRDRelationship`, and Fixed connection stuff.
+FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`, `FRDRelationship`, and Fixed connection stuff.
 MCUWUC      | Added Class.
 NS          | Added `terminate()`
 Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.
+SWKBD       | Added `callbackFN`, `SWKBDCallbackTypes`, `SWKBDCallbackReturn`
+FSUtil      | Optimized and Increase the speed of reading files. (?)
 
 Other:
 - New Logo!

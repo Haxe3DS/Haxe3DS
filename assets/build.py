@@ -14,7 +14,8 @@ jsonStruct = {
         "libraries": ["haxe3ds"],
         "3dslink": {
             "ip": "0.0.0.0",
-            "debugMode": False
+            "debugMode": False,
+            "openEmuIfTransferFailed": False
         }
     },
     "metadata": {
@@ -92,12 +93,7 @@ options:
 
         replacers = [
             ["* _gthis", "deleteline"], # Known to throw Exceptions
-            ["_gthis",   "this"],       # Known to throw Exceptions
-            ["AnonStruct0::make();","Dynamic();"],        # Compiler failures
-            ["HCXX_LINE",        "deleteline"], # Decreasing size
-            ["HCXX_STACK_METHOD","deleteline"], # Decreasing size
-            #["	",       "deletechar"],
-            #["    ",     "deletechar"]
+            ["_gthis",   "this"]        # Known to throw Exceptions
         ]
 
         print("Revamping files to make it compatible with C++...")
@@ -126,10 +122,7 @@ options:
                                 c[ln] = c[ln].replace(repl[0], "")
                             c[ln] = c[ln].replace(repl[0], repl[1])
                             continue
-                if len(c[ln]) != 0:
-                    ln += 1
-                else:
-                    del c[ln]
+                ln += 1
 
             write(files, c)
 
@@ -203,20 +196,45 @@ options:
 
                     if ": error: " in ln:
                         lc, l = create(ln)
-                        exp = "error: expected ';' before" in ln
+                        exp = "expected ';' before" in ln
                         lnk = fc[l[1]][0]
 
-                        if "error: cannot convert 'const std::nullopt_t' to " in ln:
+                        if "cannot convert 'const std::nullopt_t' to " in ln:
                             lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
-                        elif "error: expected ',' or ';' before" in ln or exp:
+                        elif "expected ',' or ';' before" in ln or exp:
                             if not exp: lc -= 1
                             lnk[lc] += ";"
-                        elif "error: no matching function for call to" in ln:
+                        elif "no matching function for call to" in ln:
                             lnk[lc] = lnk[lc].replace(";", "(nullptr);")
-                        elif "error: conversion from '" in ln:
+                        elif "conversion from '" in ln:
                             lol = lnk[lc]
                             name = lol[lol.rfind(" ")+1:lol.find(";")]
                             lnk[lc] = lnk[lc].replace(name, f'std::dynamic_pointer_cast{lol[lol.find("<"):lol.rfind(">")+1]}({name})')
+                        elif "' is not a member of '" in ln:
+                            print("got!")
+                            nameof = ln[ln.find("r: '")+4:ln.rfind("' is")]
+                            count = len(lnk)
+                            num = lc
+                            while lc < count:
+                                if f" {nameof} {{" in lnk[lc]:
+                                    stack = []
+                                    def app():
+                                        global stack
+                                        stack.append(lnk[lc])
+                                        del lnk[lc]
+
+                                    while lnk[lc] != "};": #class end
+                                        app()
+                                    app()
+
+                                    lc = num
+                                    while not lnk[lc].startswith("namespace"):
+                                        lc -= 1
+
+                                    lnk[lc] += f'\n{"\n".join(stack)}'
+                                    break
+                                
+                                lc += 1
 
                     elif ": note: " in ln:
                         lc, l = create(ln)
@@ -251,7 +269,8 @@ options:
         ip:str = jsonStruct["settings"]["3dslink"]["ip"]
         if len(ip) > 7 and len(ip.split(".")) == 4:
             if make == "3dsx":
-                os.system(f"3dslink -a {ip} {serverMode} output.3dsx")
+                if os.system(f"3dslink -a {ip} {serverMode} output.3dsx") != 0 and jsonStruct["settings"]["3dslink"]["openEmuIfTransferFailed"]:
+                    os.system("output.3dsx")
             else:
                 os.system(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
         else:

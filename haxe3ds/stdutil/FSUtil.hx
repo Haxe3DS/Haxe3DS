@@ -7,7 +7,8 @@ import cxx.std.FileSystem;
  */
 @:cppFileCode("
 #include <fstream>
-#include <filesystem>
+using namespace std;
+using namespace std::filesystem;
 ")
 class FSUtil {
 	/**
@@ -16,12 +17,14 @@ class FSUtil {
 	 * @return Current content from file, "" if file was not found or file is 0 bytes.
 	 */
 	public static function readFile(path:String):String {
+		var str:String = "";
+
 		untyped __cpp__('
-			using namespace std;
     		ifstream ifs(path);
+			str = string(istreambuf_iterator<char>{ifs}, {})
 		');
 
-		return untyped __cpp__('istreambuf_iterator<char>{ifs}, {}');
+		return str;
 	}
 
 	/**
@@ -33,11 +36,10 @@ class FSUtil {
 	public static function readDirectory(dir:String, recursive:Bool = false):Array<String> {
 		var ret:Array<String> = [];
 		untyped __cpp__('
-			namespace fs = std::filesystem;
 			if (recursive) {
-				for (auto &&r : fs::recursive_directory_iterator(dir)) ret->push_back(r.path());
+				for (auto &&r : recursive_directory_iterator(dir)) ret->push_back(r.path());
 			} else {
-				for (auto &&r : fs::directory_iterator(dir)) ret->push_back(r.path());
+				for (auto &&r : directory_iterator(dir)) ret->push_back(r.path());
 			}
 		');
 		return ret;
@@ -49,7 +51,7 @@ class FSUtil {
 	 * @return true if it's a file, false if it's a dir or doesn't exist.
 	 */
 	public static function isFile(path:String):Bool {
-		return untyped __cpp__("std::filesystem::is_regular_file(path)");
+		return untyped __cpp__("is_regular_file(path)");
 	}
 
 	/**
@@ -58,7 +60,7 @@ class FSUtil {
 	 * @return true if it's a directory, false if it's a file or doesn't exist.
 	 */
 	public static function isDirectory(path:String):Bool {
-		return untyped __cpp__("std::filesystem::is_directory(path)");
+		return untyped __cpp__("is_directory(path)");
 	}
 
 	/**
@@ -76,7 +78,7 @@ class FSUtil {
 	 * @return true if successfully created directory, false if failed to create.
 	 */
 	public static function createDirectory(path:String):Bool {
-		return untyped __cpp__('std::filesystem::create_directories(path)');
+		return untyped __cpp__('create_directories(path)');
 	}
 
 	/**
@@ -87,7 +89,7 @@ class FSUtil {
 	 */
 	public static function saveFile(path:String, content:String):Bool {
 		untyped __cpp__('
-		    std::ofstream file(path);
+		    ofstream file(path);
     	    if (!file.is_open()) {
     	        return false;
     	    }
@@ -105,6 +107,6 @@ class FSUtil {
 	 * @return `true` if successfully copied, `false` if failed to copy.
 	 */
 	public static function copyFile(fromPath:String, toPath:String):Bool {
-		return untyped __cpp__('std::filesystem::copy_file(fromPath, toPath)');
+		return untyped __cpp__('copy_file(fromPath, toPath)');
 	}
 }
