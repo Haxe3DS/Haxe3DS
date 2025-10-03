@@ -206,7 +206,7 @@ class Error {
     public static function setup(errType:ErrorType, language:CFG_Language):ErrorConfig {
 		untyped __cpp__('
 			errorConf conf;
-	        errorInit(&conf, getFromET(errType->index), getFromCFGC(language))
+	        errorInit(&conf, getFromET(errType->index), getFromCFGC(language->index))
 		');
 
 	    return {
@@ -227,7 +227,7 @@ class Error {
     public static function display(config:ErrorConfig):ErrorResult {
 	    untyped __cpp__('
 	        errorConf conf;
-			conf.type = getFromET(config->type);
+			conf.type = getFromET(config->type->index);
 			conf.errorCode = config->errorCode;
 			conf.useLanguage = config->useLanguage;
 			conf.homeButton = config->homeButton;

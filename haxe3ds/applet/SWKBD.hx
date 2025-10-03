@@ -210,16 +210,12 @@ SwkbdValidInput toSwkbdValidInput(int index) {
     }
 }
 
-SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::staticCallbackHandler(void* user, const char** ppMessage, const char* text, size_t textlen) {
+SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen) {
     haxe3ds::applet::SWKBDHandler* handler = static_cast<haxe3ds::applet::SWKBDHandler*>(user);
-    return handler->callbackHandler(ppMessage, text);
-}
-
-SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackHandler(const char** ppMessage, const char* text) {
-    if (this->callbackFN != nullptr) {
-        std::shared_ptr<haxe3ds::applet::SWKBDCallbackReturn> out = this->callbackFN(std::string(text));
-        
+    if (handler->callbackFN != nullptr) {
+        std::shared_ptr<haxe3ds::applet::SWKBDCallbackReturn> out = handler->callbackFN(std::string(text));
         *ppMessage = out->outMessage.c_str();
+
         switch(out->resultCB->index) {
             case 0: return SWKBD_CALLBACK_OK;
             case 1: return SWKBD_CALLBACK_CLOSE;
@@ -230,10 +226,7 @@ SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackHandler(const char** 
     return SWKBD_CALLBACK_OK;
 }')
 @:headerCode("#include <3ds.h>")
-@:headerClassCode("
-static SwkbdCallbackResult staticCallbackHandler(void* user, const char** ppMessage, const char* text, size_t textlen);
-SwkbdCallbackResult callbackHandler(const char** ppMessage, const char* text);
-")
+@:headerClassCode("static SwkbdCallbackResult callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen);")
 class SWKBDHandler {
     /**
      * Current type of Software Keyboard to use. (Read-Only)
@@ -248,7 +241,7 @@ class SWKBDHandler {
     public var numButtonsM1(default, null):Int = 0;
 
     /**
-     * Total text length that can be inputted.
+     * Total text length that can be inputted. (Read-Only)
      */
     public var maxTextLen(default, null):UInt16 = 0;
 
@@ -266,9 +259,9 @@ class SWKBDHandler {
      * - 0: Left key.
      * - 1: Right key.
      * 
-     * Value:
+     * Where:
      * - 0: Hides the key.
-     * - Any Unicode: Unicode codepoint (Equivelant to using `"x".code`).
+     * - Any Number: Unicode Codepoint (Equivelant to using `"x".code`).
      */
     public var numpadKeys:Array<UInt16> = [0, 0];
 
@@ -415,7 +408,7 @@ this.callbackFN = input -> {
      * @param numButtons Number of dialog buttons to display (1, 2 or 3).
      * @param maxTextLength Maximum number of UTF-16 code units that input text can have (or -1 to let Haxe3DS use a big default).
      */
-    public function new(type:SWKBDType, numButtons:Int, maxTextLength:Int) {
+    public function new(type:SWKBDType = NORMAL, numButtons:Int = 1, maxTextLength:Int = -1) {
         untyped __cpp__('
             SwkbdState out;
             swkbdInit(&out, toSwkbdType(type2->index), numButtons, maxTextLength);
@@ -482,12 +475,13 @@ this.callbackFN = input -> {
             }
 
             if (this->callbackFN != nullptr) {
-                swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::staticCallbackHandler, this);
+                swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::callbackOut, this);
             }
 
             char output[1700];
             swkbdInputText(&out, output, 1700);
         ');
+
         return untyped __cpp__('std::string(output)');
     }
 }

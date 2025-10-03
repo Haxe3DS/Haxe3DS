@@ -1,8 +1,10 @@
 <p align="center">
   <a href="https://github.com/NAEL2XD/Haxe3DS">
-    <img src="logo.png" alt="Haxe3DS" width="300">
+    <img src="logo.png" alt="Haxe3DS" width="500">
   </a>
 </p>
+
+<small>Logo by *[avie](https://github.com/h3ath3rr)*</small>
 
 <p align="center">
 Ever wanted to make 3DS Homebrew apps without excessive use of middle level language (C/C++)? Well this library is for you!!!
@@ -28,6 +30,7 @@ Note: Tested **ONLY** on Haxe 4.3.2, I'm not planning to support Haxe 5+ and nev
 
 # Credits:
 
+- [avie](https://github.com/h3ath3rr) for the logo, thank you! <3 <3
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.
 - [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).

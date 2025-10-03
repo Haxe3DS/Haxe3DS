@@ -1,11 +1,11 @@
 {
-    "name": "Haxe3DS",
-    "url" : "https://github.com/NAEL2XD/Haxe3DS",
-    "license": "MIT",
-    "tags": ["3ds", "devkitpro", "homebrew"],
-    "description": "Compile Haxe Code to 3DS compatible apps!",
-    "version": "1.3.0",
-    "releasenote": "See https://github.com/NAEL2XD/Haxe3DS/blob/main/RELEASES.md#130 for release notes.",
-    "contributors": ["NAEL2XD"],
+    "name":         "Haxe3DS",
+    "url" :         "https://github.com/NAEL2XD/Haxe3DS",
+    "license":      "MIT",
+    "tags":         ["3ds", "devkitpro", "homebrew", "libctru", "cpp", "reflaxe", "reflaxe.cpp"],
+    "description":  "Compile Haxe Code to 3DS compatible apps!",
+    "version":      "1.4.0",
+    "releasenote":  "See https://github.com/NAEL2XD/Haxe3DS/blob/main/RELEASES.md#140 for release notes.",
+    "contributors": ["NAEL2XD", "avie"],
     "dependencies": {}
 }

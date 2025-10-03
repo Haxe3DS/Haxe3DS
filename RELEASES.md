@@ -3,16 +3,15 @@
 MODULE      | CHANGES
 ------------|---------
 ACT         | Added Class.
-APT         | Added variable: `programID`
+APT         | Added variable: `programID`.
+Compiler    | Implemented a bug fix.
 FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`, `FRDRelationship`, and Fixed connection stuff.
-MCUWUC      | Added Class.
-NS          | Added `terminate()`
-Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.
-SWKBD       | Added `callbackFN`, `SWKBDCallbackTypes`, `SWKBDCallbackReturn`
 FSUtil      | Optimized and Increase the speed of reading files. (?)
-
-Other:
-- New Logo!
+MCUWUC      | Added Class.
+NS          | Added `terminate()`.
+Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.
+REPO        | New Logo thanks to @h3ath3rr!.
+SWKBD       | Added `callbackFN`, `SWKBDCallbackTypes`, `SWKBDCallbackReturn`.
 
 # 1.3.0
 
@@ -59,6 +58,7 @@ Other:
 - Moved Installation into Wiki!
 - VSCode: Fixed typedefs not showing details about info from variables.
 - Moved other haxe files to separate folders for cleaning.
+- New Logo!
 
 # 1.2.0
 
