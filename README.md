@@ -6,11 +6,9 @@
 
 <small>Logo by *[avie](https://github.com/h3ath3rr)*</small>
 
-<p align="center">
-Ever wanted to make 3DS Homebrew apps without excessive use of middle level language (C/C++)? Well this library is for you!!!
-</p>
+Transpile and then Compile Haxe Code to 3DS Applications (3dsx, cia, any!) with easy documentation and some nifty useful tools (and too many services).
 
-Also a revival of the deleted repo named ***3DSHaxe*** by [MochaIcedTea](https://github.com/MochaIcedTea), now continued with more stuff coming it's way! If i do it.
+The goal is to implement every single LibCTRU
 
 # How does it work?
 
