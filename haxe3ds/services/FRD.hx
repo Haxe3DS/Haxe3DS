@@ -1,5 +1,7 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Returnal;
+import haxe3ds.Types.Result;
 import cxx.num.UInt8;
 import cxx.num.UInt32;
 import cxx.num.UInt64;
@@ -151,21 +153,29 @@ class FRD {
     /**
      * Variable that checks if the user is logged into Nintendo/Pretendo Network.
      */
-    public static var me_loggedIn(get, null):Bool;
-    static function get_me_loggedIn():Bool {
+    public static var me_loggedIn(get, null):Returnal<Bool>;
+    static function get_me_loggedIn():Returnal<Bool> {
         var out:Bool = false;
-        untyped __cpp__('FRD_HasLoggedIn(&out)');
-        return out;
+        var res:Result = untyped __cpp__('FRD_HasLoggedIn(&out)');
+
+        return {
+            returnal: out,
+            result: res
+        };
     }
 
     /**
      * Variable that checks if the user is connected to the internet and connected to their servers.
      */
-    public static var me_isOnline(get, null):Bool;
-    static function get_me_isOnline():Bool {
+    public static var me_isOnline(get, null):Returnal<Bool>;
+    static function get_me_isOnline():Returnal<Bool> {
         var out:Bool = false;
-        untyped __cpp__('FRD_IsOnline(&out)');
-        return out;
+        var res:Result = untyped __cpp__('FRD_IsOnline(&out)');
+
+        return {
+            returnal: out,
+            result: res
+        };
     }
 
     /**
@@ -197,15 +207,21 @@ class FRD {
      * 
      * Origin was in `*u16[10]` which was converted to a string.
      */
-    public static var me_comment(get, null):String;
-    static function get_me_comment():String {
+    public static var me_comment(get, null):Returnal<String>;
+    static function get_me_comment():Returnal<String> {
         var out:String = "";
+        var res:Result = 0;
+
         untyped __cpp__('
             FriendComment c;
-            FRD_GetMyComment(&c);
+            res = FRD_GetMyComment(&c);
             out = u16ToString(c, FRIEND_COMMENT_LEN);
         ');
-        return out;
+
+        return {
+            returnal: out,
+            result: res
+        };
     }
 
     /**
@@ -263,9 +279,9 @@ class FRD {
     /**
      * Changes the Friend List's presence.
      * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateMyPresence`).
-     * @return `true` if successful, `false` if fail.
+     * @return Result code of whetever something from the services went wrong.
      */
-    public static function updatePresence(textToUse:String):Bool {
+    public static function updatePresence(textToUse:String):Result {
         untyped __cpp__('
             FriendGameModeDescription desc;
             memset(desc, 0, sizeof(desc));
@@ -283,23 +299,24 @@ class FRD {
             frdPres.joinGameMode         = 0;
             frdPres.ownerPrincipalId     = 0;
         ');
-        return untyped __cpp__('R_SUCCEEDED(FRD_UpdateMyPresence(&frdPres, &desc))');
+
+        return untyped __cpp__('FRD_UpdateMyPresence(&frdPres, &desc)');
     }
 
     /**
      * Updates your own friend comment with the string specified. (Just to know please don't try to bypass profanity, maybe you'll get banned!)
      * @param textToUse Text to use, Maximum 16 characters.
-     * @return `true` if succeeded, `false` if failed.
+     * @return Result code of whetever something went wrong.
      * @since 1.4.0
      */
-    public static function updateComment(textToUse:String):Bool {
+    public static function updateComment(textToUse:String):Result {
         untyped __cpp__('
             FriendComment desc;
             memset(desc, 0, sizeof(desc));
             utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_COMMENT_LEN)
         ');
 
-        return untyped __cpp__('R_SUCCEEDED(FRDA_UpdateComment(&desc))');
+        return untyped __cpp__('FRDA_UpdateComment(&desc)');
     }
 
     /**

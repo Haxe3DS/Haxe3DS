@@ -18,6 +18,8 @@ class APT {
 	 * The current Program/Title ID running.
 	 * 
 	 * Homebrew Launcher's TID: `0x000400000D921E00 (1125900134522368)` (This is always different if using a CIA with a custom TID)
+	 * 
+	 * @since 1.4.0
 	 */
 	public static var programID(default, null):UInt64 = 0;
 
@@ -28,7 +30,7 @@ class APT {
 		untyped __cpp__('
 			aptInit();
 			APT_CheckNew3DS(&isNew3DS);
-			APT_GetProgramID(&programID);
+			APT_GetProgramID(&programID)
 		');
 	}
 
@@ -103,6 +105,8 @@ class APT {
 
 	/**
 	 * Handles incoming sleep mode requests.
+	 * 
+	 * Not needed to call everytime since `APT.mainLoop()` does that in loop.
 	 */
 	@:native("aptHandleSleep")
 	public static function handleSleep() {};
@@ -115,6 +119,8 @@ class APT {
 
 	/**
 	 * Handles incoming jump-to-HOME requests.
+	 * 
+	 * Not needed to call everytime since `APT.mainLoop()` does that in loop.
 	 */
 	@:native("aptHandleJumpToHome")
 	public static function handleJumpToHome() {};

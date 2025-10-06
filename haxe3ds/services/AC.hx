@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
 import cxx.num.UInt16;
 import cxx.num.UInt32;
 
@@ -128,7 +129,9 @@ class AC {
      * @param slot WiFi slot (0, 1 or 2).
      */
     @:native("ACI_LoadNetworkSetting")
-    public static function loadNetworkSetting(slot:UInt32) {}
+    public static function loadNetworkSetting(slot:UInt32):Result {
+        return 0;
+    }
 
     /**
      * Exits AC

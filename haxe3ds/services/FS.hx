@@ -1,5 +1,7 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
+
 /**
  * Archive Identifier for Filesystem.
  */
@@ -84,46 +86,46 @@ class FS {
      * 
      * *Note*: This is practically not possible if it's a 3DSX app, CIA would defidently work well.
      * 
-     * *Note 2*: Doesn't seem to be written in 3DS but can in AZAHAR?
-     * 
      * @param partition Partition of the save data to use, Leave default for `ext`
      * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
      * @param dirs Same as `files`.
-     * @return `true` if successfully mounted, `false` if FS has failed or mount has failed (shouldn't happen?)
+     * @return Result code of whetever something from the services went wrong.
      * @since 1.3.0
      */
-    public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Bool {
+    public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Result {
+        var res:Result = 0;
+
         untyped __cpp__('
             bool retry = false;
             const char* p = partition.c_str();
-            int i = getHashTableLength(dirs), j = getHashTableLength(files);
+            dirs = getHashTableLength(dirs), files = getHashTableLength(files);
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
-            Result ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
-            if (ret == 0xC8A04554 || R_FAILED(ret)) { // save format error
+            ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
+            if (ret == 0xC8A04554) { // save format error
                 ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
                 if (R_FAILED(ret)) {
-                    return false;
+                    return ret;
                 }
 
-                retry = true;
-            }
-
-            if (retry && R_FAILED(archiveMount(ARCHIVE_SAVEDATA, path, p))) {
-                return false;
+                ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
             }
         ');
-        return true;
+
+        return res;
     }
 
     /**
      * Flushes and Commits the save data to this software, this will OVERWRITE the old data and can only be restored if the user has it saved in his backups.
+     * 
+     * *Note*: Doesn't seem to be flushed in 3DS but can in AZAHAR?
+     * 
      * @param partition Partition of the save data to use, Leave default for `ext`
-     * @return `true` if success, `false` if FS has failed or partition path doesn't exist.
+     * @return Result code of whetever something from the services went wrong.
      * @since 1.3.0
      */
-    public static function flushAndCommit(partition:String = "ext"):Bool {
-        return untyped __cpp__('R_SUCCEEDED(archiveCommitSaveData(partition.c_str()))');
+    public static function flushAndCommit(partition:String = "ext"):Result {
+        return untyped __cpp__('archiveCommitSaveData(partition.c_str())');
     }
 
     /**
@@ -212,6 +214,13 @@ class FSFile {
     var id:FSArchiveID;
 
     /**
+     * The error for whetever something went wrong for this service.
+     * 
+     * @since 1.4.0
+     */
+    public var result:Result = 0;
+
+    /**
      * The current size get from for readed file.
      * 
      * This is also the offset of the amount of bytes.
@@ -227,8 +236,13 @@ class FSFile {
         id = archive;
 
         untyped __cpp__('
-            FSUSER_OpenArchive(&arch, toArchID(archive->index), fsMakePath(PATH_ASCII, "/"));
-            if (R_SUCCEEDED(FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE))) {
+            result = FSUSER_OpenArchive(&arch, toArchID(archive->index), fsMakePath(PATH_ASCII, "/"));
+            if (R_FAILED(result)) {
+                return;
+            }
+            
+            result = FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
+            if (R_SUCCEEDED(result) {
                 u64 by = 0;
                 FSFILE_GetSize(h, &by);
                 this->byteSize = (u32)by;
@@ -237,16 +251,15 @@ class FSFile {
     }
 
     /**
-     * Writes the current file running
-     * @param str String to write.
-     * @return `true` if successfully wrote, `false` if closed or unknown.
+     * Writes the current file running, this will overwrite the result code from this class.
+     * @param str String to write..
      */
-    public function write(str:String):Bool {
+    public function write(str:String) {
         if (id == ROMFS) {
-            return false;
+            return;
         }
 
-        return untyped __cpp__('R_SUCCEEDED(FSFILE_Write(h, &byteSize, byteSize, str.c_str(), str.size(), FS_WRITE_FLUSH))');
+        result = untyped __cpp__('FSFILE_Write(h, &byteSize, byteSize, str.c_str(), str.size(), FS_WRITE_FLUSH)');
     }
 
     /**
@@ -265,7 +278,7 @@ class FSFile {
         untyped __cpp__('
             u32 r = 0;
             void* shit = malloc(len);
-            FSFILE_Read(h, &r, offset, (char*)(shit), len);
+            result = FSFILE_Read(h, &r, offset, (char*)(shit), len);
             out = std::string((char*)(shit));
         ');
         return out;

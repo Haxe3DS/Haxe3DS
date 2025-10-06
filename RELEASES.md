@@ -9,9 +9,11 @@ FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`, `FRDR
 FSUtil      | Optimized and Increase the speed of reading files. (?)
 MCUWUC      | Added Class.
 NS          | Added `terminate()`.
+OS          | Added `version`, `versionToInt(String)`.
 Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.
 REPO        | New Logo thanks to @h3ath3rr!.
 SWKBD       | Added `callbackFN`, `SWKBDCallbackTypes`, `SWKBDCallbackReturn`.
+Types       | Added `Result` which is used for better debugging.
 
 # 1.3.0
 

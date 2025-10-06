@@ -1,5 +1,8 @@
 package haxe3ds;
 
+import haxe3ds.Types.Result;
+using StringTools;
+
 /**
  * OS related stuff.
  */
@@ -58,16 +61,63 @@ class OS {
 	/**
 	 * Variable property that configures the New 3DS speedup.
 	 * 
-	 * `Get` will return the current variable set.
-	 * 
 	 * `Set` will both configure `osSetSpeedupEnable` and set the variable.
 	 */
-	@:isVar public static var speedup(get, set):Bool;
-	static function get_speedup():Bool {
-		return speedup;
-	}
+	@:isVar public static var speedup(null, set):Bool;
 	static function set_speedup(speedup:Bool):Bool {
 		untyped __cpp__('osSetSpeedupEnable(speedup)');
 		return speedup;
+	}
+
+	/**
+	 * Variable that returns the system's version by this format: `%u.%u.%u-%u%c`.
+	 * 
+	 * Will return garbage bytes if using an emulator.
+	 * 
+	 * @since 1.4.0
+	 */
+	public static var version(get, null):{version:String, result:Result};
+	static function get_version():{version:String, result:Result} {
+		var out:String = "";
+		var result:Result = 0;
+
+		untyped __cpp__('
+			char in[15];
+			result = osGetSystemVersionDataString(NULL, NULL, in, 15);
+			out = in
+		');
+
+		return {
+			version: out,
+			result: result
+		}
+	}
+
+	/**
+	 * Converts a formatted version string to integer, only useful for checking versions.
+	 * @param version Version Parser to use, must be identically as this format: `%u.%u.%u-%u%c`.
+	 * @return `-1` if string is shorter than 7 or longer than 12, `0 ~ 11` if string is not formatted to the format, else becomes a integer.
+	 */
+	public static function versionToInt(version:String):Int {
+		function replWholeLetters(str:String, from:String, to:String):String {
+			for (lol in from.split("")) str = str.replace(lol, to);
+			return str;
+		}
+
+		function isNumber(i:String):Bool {
+			return Std.parseInt(i) != null;
+		}
+
+		var l:Int = version.length;
+		if (7 < l && l < 12) {
+			for (k => i in version.split("")) {
+				if (!(isNumber(i) || i == "." || i == "-") != (k+1 == l && !isNumber(i))) {
+					return k;
+				}
+			}
+
+			return Std.parseInt(replWholeLetters(version.substr(0, version.length-1), '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', ""));
+		}
+		return -1;
 	}
 }

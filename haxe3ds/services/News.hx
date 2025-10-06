@@ -1,5 +1,7 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Returnal;
+import haxe3ds.Types.Result;
 import haxe3ds.stdutil.FSUtil;
 
 using StringTools;
@@ -69,15 +71,19 @@ class News {
     /**
      * Initializes NEWS.
      */
-    public static function init() {
+    public static function init():Result {
+        var ret:Result = 0;
+
         untyped __cpp__('
-            newsInit();
+            ret = newsInit();
 
             Result r = 0;
             if (R_FAILED(r = NEWS_GetTotalNotifications(&totalNotifications))) {
                 totalNotifications = r;
             }
         ');
+
+        return ret;
     };
 
     /**
@@ -94,7 +100,7 @@ class News {
      * @return true if success, false if failed.
      * @since 1.3.0
      */
-    public static function addNotification(title:String, message:String, imagePath:String = "null"):Bool {
+    public static function addNotification(title:String, message:String, imagePath:String = "null"):Result {
         untyped __cpp__("
             u16 OutTitle[0x40] = {0};
             u16 OutMessage[0x1780] = {0}; // cause why not lool
@@ -139,7 +145,7 @@ class News {
             ');
         }
 
-        final success:Bool = untyped __cpp__('R_SUCCEEDED(NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), image, size, true))');
+        final success:Result = untyped __cpp__('NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), image, size, true)');
         untyped __cpp__('if (image != NULL) free(image)');
 
         return success;
@@ -151,22 +157,27 @@ class News {
      * @return Type-Definition for this ID.
      * @since 1.3.0
      */
-    public static function getHeader(newsID:Int):NEWSHeader {
+    public static function getHeader(newsID:Int):Returnal<NEWSHeader> {
+        var ret:Result = 0;
+
         untyped __cpp__('
             NotificationHeader h;
-            NEWS_GetNotificationHeader(newsID, &h)
+            ret = NEWS_GetNotificationHeader(newsID, &h)
         ');
 
         return {
-            dataSet:    untyped __cpp__('h.dataSet'),
-            unread:     untyped __cpp__('h.unread'),
-            enableJPEG: untyped __cpp__('h.enableJPEG'),
-            isSpotPass: untyped __cpp__('h.isSpotPass'),
-            isOptedOut: untyped __cpp__('h.isOptedOut'),
-            processID:  untyped __cpp__('h.processID'),
-            jumpParam:  untyped __cpp__('h.jumpParam'),
-            time:       untyped __cpp__('h.time'),
-            title:      untyped __cpp__('u16ToString(h.title, 64)')
+            result: ret,
+            returnal: {
+                dataSet:    untyped __cpp__('h.dataSet'),
+                unread:     untyped __cpp__('h.unread'),
+                enableJPEG: untyped __cpp__('h.enableJPEG'),
+                isSpotPass: untyped __cpp__('h.isSpotPass'),
+                isOptedOut: untyped __cpp__('h.isOptedOut'),
+                processID:  untyped __cpp__('h.processID'),
+                jumpParam:  untyped __cpp__('h.jumpParam'),
+                time:       untyped __cpp__('h.time'),
+                title:      untyped __cpp__('u16ToString(h.title, 64)')
+            }
         }
     }
 
@@ -177,7 +188,7 @@ class News {
      * @return true if success, false if failed.
      * @since 1.3.0
      */
-    public static function setHeader(newsID:Int, out:NEWSHeader):Bool {
+    public static function setHeader(newsID:Int, out:NEWSHeader):Result {
         untyped __cpp__('
             NotificationHeader h;
             NEWS_GetNotificationHeader(newsID, &h);
@@ -193,7 +204,7 @@ class News {
             utf8_to_utf16(h.title, (const u8*)out->title.c_str(), out->title.size());
         ');
 
-        return untyped __cpp__('R_SUCCEEDED(NEWS_SetNotificationHeader(newsID, &h))');
+        return untyped __cpp__('NEWS_SetNotificationHeader(newsID, &h)');
     }
 
     /**

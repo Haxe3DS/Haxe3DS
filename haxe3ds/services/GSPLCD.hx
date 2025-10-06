@@ -1,5 +1,7 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Returnal;
+import haxe3ds.Types.Result;
 import cxx.num.UInt8;
 import cxx.num.UInt32;
 
@@ -67,11 +69,15 @@ class GSPLCD {
      * @param screen Screen to use.
      * @param enable Whetever or not you want to enable it.
      */
-    public static function setBacklight(screen:GSPLCDScreen, enable:Bool) {
+    public static function setBacklight(screen:GSPLCDScreen, enable:Bool):Result {
+        var res:Result = 0;
+        
         untyped __cpp__('
             u32 s = screenToU32(screen);
-            enable ? GSPLCD_PowerOnBacklight(s) : GSPLCD_PowerOffBacklight(s)
+            res = (enable ? GSPLCD_PowerOnBacklight(s) : GSPLCD_PowerOffBacklight(s))
         ');
+
+        return res;
     }
 
     /**
@@ -79,13 +85,19 @@ class GSPLCD {
      * @param screen Screen to use, top or bottom only.
      * @return Brightness from screen. (`0x10 (16)` - `0xAC (172)`)
      */
-    public static function getScreenBrightness(screen:GSPLCDScreen):UInt8 {
+    public static function getScreenBrightness(screen:GSPLCDScreen):Returnal<UInt8> {
         var r:UInt32 = 0;
+        var res:Result = 0;
+
         untyped __cpp__('
             u32 s = screenToU32(screen);
-            GSPLCD_GetBrightness(s, &r)
+            res = GSPLCD_GetBrightness(s, &r)
         ');
-        return r;
+
+        return {
+            returnal: r,
+            result: res
+        };
     }
 
     /**
@@ -94,12 +106,15 @@ class GSPLCD {
      * @param screen Screen to use, top or bottom only.
      * @param brightness Brightness variable to set as. (`0x10 (16)` - `0xAC (172)`), will clamp into compatible values.
      */
-    public static function setScreenBrightness(screen:GSPLCDScreen, brightness:UInt8) {
-        brightness = brightness < 16 ? 16 : brightness > 172 ? 172 : brightness;
+    public static function setScreenBrightness(screen:GSPLCDScreen, brightness:UInt8):Result {
+        var res:Result = 0;
+
         untyped __cpp__('
             u32 s = screenToU32(screen);
-            GSPLCD_SetBrightnessRaw(s, (u32)brightness)
+            res = GSPLCD_SetBrightnessRaw(s, (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))
         ');
+
+        return res;
     }
 
     /**
