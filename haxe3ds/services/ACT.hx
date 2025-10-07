@@ -53,6 +53,11 @@ typedef ACTAccountInfo = {
      * Note: If using `pnid` and no date is specified, it returns `1/1/1990`.
      */
     var birthDate:String;
+
+    /**
+     * The URL Path to the image of your mii.
+     */
+    var miiImageURL:String;
 }
 
 /**
@@ -91,7 +96,8 @@ class ACT {
         miiName: "",
         countryName: "",
         principalID: 0,
-        birthDate: ""
+        birthDate: "",
+        miiImageURL: ""
     };
 
     /**
@@ -105,7 +111,8 @@ class ACT {
         miiName: "",
         countryName: "",
         principalID: 0,
-        birthDate: ""
+        birthDate: "",
+        miiImageURL: ""
     };
 
     /**
@@ -123,31 +130,33 @@ class ACT {
             auto nidU = nnid, pidU = pnid;
 
             int j[2] = {1, 3};
-            typedef char country[3];
             for (int i = 0; i < 2; i++) {
                 u16           userAge;
                 bool          ads;
-                country       cn;
+                char          cn[3];
                 AccountInfo   info;
+                char          url[257];
 
                 int k = j[i];
                 ACT_GetAccountInfo(&userAge,  2, k, INFO_TYPE_AGE);
                 ACT_GetAccountInfo(&ads,      1, k, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
                 ACT_GetAccountInfo(&cn,       3, k, INFO_TYPE_COUNTRY_NAME);
                 ACT_GetAccountInfo(&info,   160, k, INFO_TYPE_ACCOUNT_INFO);
+                ACT_GetAccountInfo(&url,    257, k, INFO_TYPE_MII_IMAGE_URL);
 
                 char str[11];
 				snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
 
                 auto set = i == 0 ? nidU : pidU;
-                set->username    = info.accountId;
-                set->userAge     = userAge;
-                set->receiveAds  = ads;
-                set->male        = !info.mii.miiData.mii_details.sex;
-                set->miiName     = u16ToString(info.screenName, 11);
-                set->countryName = reinterpret_cast<char*>(cn);
-                set->principalID = info.principalId;
-                set->birthDate   = str;
+                set->username     = info.accountId;
+                set->userAge      = userAge;
+                set->receiveAds   = ads;
+                set->male         = !info.mii.miiData.mii_details.sex;
+                set->miiName      = u16ToString(info.screenName, 11);
+                set->countryName  = reinterpret_cast<char*>(cn);
+                set->principalID  = info.principalId;
+                set->birthDate    = str;
+                set->miiImageURL  = url;
             }
         ');
 

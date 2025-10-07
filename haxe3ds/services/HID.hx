@@ -1,7 +1,7 @@
 package haxe3ds.services;
 
 @:dontGenerateDynamic
-class Key {
+abstract Key(UInt32) from UInt32 to UInt32 {
 	@:native("KEY_START")
 	public static var START:UInt32;
 	
@@ -200,6 +200,8 @@ class HID {
 
 	/**
 	 * Scans HID for input data.
+	 * 
+	 * Automatically called from `APT.mainLoop()`
 	 */
 	public static function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
 
@@ -208,21 +210,21 @@ class HID {
 	 * @param key The key from extern Button to check whetever it's pressed.
 	 * @return true if pressed, false if not.
 	 */
-	public static function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & key");
+	public static function keyPressed(key:Key):Bool return untyped __cpp__("hidKeysDown() & key");
 
 	/**
 	 * Checks whetever a key is held or not.
 	 * @param key The key from extern Button to check whetever it's held.
 	 * @return true if held, false if not.
 	 */
-	public static function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & key");
+	public static function keyHeld(key:Key):Bool return untyped __cpp__("hidKeysHeld() & key");
 
 	/**
 	 * Checks whetever a key is up or not.
 	 * @param key The key from extern Button to check whetever it's up.
 	 * @return true if up, false if not.
 	 */
-	public static function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & key");
+	public static function keyUp(key:Key):Bool return untyped __cpp__("hidKeysUp() & key");
 
 	/**
 	 * Returns a large variety of key pressed/held/up.
@@ -230,11 +232,11 @@ class HID {
 	 * @param typeof Integer typeof, 1 = held, 2 = up, other = pressed.
 	 * @return Lists of UInt32 keys pressed.
 	 */
-	public static function keyArray(typeof:Int = 0):Array<UInt32> {
-		var ret:Array<UInt32> = [];
-		final f:UInt32->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
+	public static function keyArray(typeof:Int = 0):Array<Key> {
+		var ret:Array<Key> = [];
+		final f:Key->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
 
-		final arr:Array<UInt32> = [Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL];
+		final arr:Array<Key> = [Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL];
 		for (key in arr) {
 			if (f(key)) {
 				ret.push(key);
@@ -323,8 +325,6 @@ class HID {
 
 	/**
 	 * Variable property that gets or sets the accelerometer's status.
-	 * 
-	 * `Get` will return the variable.
 	 * 
 	 * `Set` will call either `HIDUSER_EnableAccelerometer` if true, or `HIDUSER_DisableAccelerometer` if false.
 	 */

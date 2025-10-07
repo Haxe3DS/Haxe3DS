@@ -70,10 +70,15 @@ class APT {
 
 	/**
 	 * Main function which handles sleep mode and HOME/power buttons - call this at the beginning of every frame.
+	 * 
+	 * This internally calls `HID.scanInput()`
+	 * 
 	 * @return true if the application should keep running, false otherwise.
 	 */
-	@:native("aptMainLoop")
-	public static function mainLoop():Bool return false;
+	public static function mainLoop():Bool {
+		HID.scanInput();
+		return untyped __cpp__('aptMainLoop()');
+	}
 
 	/**
 	 * Returns true if the application is currently in the foreground.

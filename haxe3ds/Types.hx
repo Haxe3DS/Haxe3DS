@@ -245,7 +245,7 @@ const char* descriptionToString(uint32_t res) {
             } break;
         case RM_FRIENDS:
             switch(description) {
-                case 225: return "Comment/Presence Updated Successfully";
+                case 225: return "Updated Successfully";
                 default: break;
             }
         default: break;
