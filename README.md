@@ -8,7 +8,7 @@
 
 Transpile and then Compile Haxe Code to 3DS Applications (3dsx, cia, any!) with easy documentation and some nifty useful tools (and too many services).
 
-The goal is to implement every single LibCTRU
+The goal is to implement every single libctru functions to here and make it as less functions to make homebrew easier, some will be in separate functions.
 
 # How does it work?
 
