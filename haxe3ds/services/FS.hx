@@ -101,14 +101,14 @@ class FS {
             dirs = getHashTableLength(dirs), files = getHashTableLength(files);
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
-            ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
-            if (ret == 0xC8A04554) { // save format error
-                ret = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
-                if (R_FAILED(ret)) {
-                    return ret;
+            res = archiveMount(ARCHIVE_SAVEDATA, path, p);
+            if (res == 0xC8A04554) { // save format error
+                res = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
+                if (R_FAILED(res)) {
+                    return res;
                 }
 
-                ret = archiveMount(ARCHIVE_SAVEDATA, path, p);
+                res = archiveMount(ARCHIVE_SAVEDATA, path, p);
             }
         ');
 
@@ -242,7 +242,7 @@ class FSFile {
             }
             
             result = FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
-            if (R_SUCCEEDED(result) {
+            if (R_SUCCEEDED(result)) {
                 u64 by = 0;
                 FSFILE_GetSize(h, &by);
                 this->byteSize = (u32)by;
