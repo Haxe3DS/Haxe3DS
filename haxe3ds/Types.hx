@@ -323,7 +323,3 @@ enum abstract Result(UInt32) from UInt32 to UInt32 {
         return out;
     }
 }
-
-typedef Returnal<T> = {
-    var returnal:T; var result:Result;
-}

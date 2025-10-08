@@ -1,6 +1,5 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Returnal;
 import haxe3ds.Types.Result;
 import cxx.num.UInt8;
 import cxx.num.UInt32;
@@ -153,29 +152,21 @@ class FRD {
     /**
      * Variable that checks if the user is logged into Nintendo/Pretendo Network.
      */
-    public static var me_loggedIn(get, null):Returnal<Bool>;
-    static function get_me_loggedIn():Returnal<Bool> {
+    public static var me_loggedIn(get, null):Bool;
+    static function get_me_loggedIn():Bool {
         var out:Bool = false;
-        var res:Result = untyped __cpp__('FRD_HasLoggedIn(&out)');
-
-        return {
-            returnal: out,
-            result: res
-        };
+        untyped __cpp__('FRD_HasLoggedIn(&out)');
+        return out;
     }
 
     /**
      * Variable that checks if the user is connected to the internet and connected to their servers.
      */
-    public static var me_isOnline(get, null):Returnal<Bool>;
-    static function get_me_isOnline():Returnal<Bool> {
+    public static var me_isOnline(get, null):Bool;
+    static function get_me_isOnline():Bool {
         var out:Bool = false;
-        var res:Result = untyped __cpp__('FRD_IsOnline(&out)');
-
-        return {
-            returnal: out,
-            result: res
-        };
+        untyped __cpp__('FRD_IsOnline(&out)');
+        return out;
     }
 
     /**
@@ -207,21 +198,17 @@ class FRD {
      * 
      * Origin was in `*u16[10]` which was converted to a string.
      */
-    public static var me_comment(get, null):Returnal<String>;
-    static function get_me_comment():Returnal<String> {
+    public static var me_comment(get, null):String;
+    static function get_me_comment():String {
         var out:String = "";
-        var res:Result = 0;
 
         untyped __cpp__('
             FriendComment c;
-            res = FRD_GetMyComment(&c);
+            FRD_GetMyComment(&c);
             out = u16ToString(c, FRIEND_COMMENT_LEN);
         ');
 
-        return {
-            returnal: out,
-            result: res
-        };
+        return out;
     }
 
     /**

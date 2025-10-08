@@ -10,6 +10,7 @@ FS          | Added `deleteFile(String)`, `renameFile(String, String)`
 FSUtil      | Optimized and Increase the speed of reading files. (?)
 FSFile      | Added `resize()` and `result`, added argument on `write`, fixed constructor?
 MCUWUC      | Added Class.
+News        | Added `dumpImage(UInt32, String)`, reworded some vars/functions.
 NS          | Added `terminate()`.
 OS          | Added `version`, `versionToInt(String)`.
 Reflaxe.CPP | Fixed `Anon.hx` dynamic behavior that causes too much compiler errors.

@@ -1,6 +1,5 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Returnal;
 import haxe3ds.Types.Result;
 import haxe3ds.stdutil.FSUtil;
 
@@ -14,36 +13,44 @@ using StringTools;
 typedef NEWSHeader = {
     /**
      * Whetever or not the data's fully set or not.
+     * 
+     * Useless?
      */
     var dataSet:Bool;
 
     /**
      * Whetever or not the notification is unread by the News Applet.
+     * 
+     * If it's still unread, it would show a `blue` or `green` circle light.
      */
     var unread:Bool;
 
     /**
-     * Whetever or not the image is a jpeg or not.
+     * Whetever or not the image is a JPEG or not.
      */
     var enableJPEG:Bool;
 
     /**
-     * Whetever or not the notification is a SpotPass or a StreetPass using CECD
+     * Whetever or not the notification is a SpotPass or a StreetPass using CECD.
+     * 
+     * Note: If set to `true`, shows a "Opt out of notifications for this software" in the Notification Applet.
      */
     var isSpotPass:Bool;
 
     /**
      * Whetever or not this notification was opted out.
+     * 
+     * This could only be found if notification has `isSpotPass` to `true` or the app has it available.
      */
     var isOptedOut:Bool;
 
     /**
-     * Notification source (zero for system notifications) 
+     * Notification Program ID Source (`0` if it's System Notifications) 
      */
     var processID:UInt64;
 
     /**
-     * Specified by source app and later retrieved via APT to identify which notification, if any, it was launched from 
+     * Specified by source app and later retrieved via APT to identify which notification, if any it was launched from.
      */
     var jumpParam:UInt64;
 
@@ -53,9 +60,16 @@ typedef NEWSHeader = {
     var time:UInt64;
 
     /**
-     * UTF-16 to string converted for the notification title.
+     * UTF-16 to String Converted for the notification title.
      */
     var title:String;
+
+    /**
+     * The result code called from `News.getHeader`.
+     * 
+     * This is not used anywhere.
+     */
+    var result:Result;
 }
 
 /**
@@ -157,7 +171,7 @@ class News {
      * @return Type-Definition for this ID.
      * @since 1.3.0
      */
-    public static function getHeader(newsID:Int):Returnal<NEWSHeader> {
+    public static function getHeader(newsID:Int):NEWSHeader {
         var ret:Result = 0;
 
         untyped __cpp__('
@@ -166,18 +180,16 @@ class News {
         ');
 
         return {
-            result: ret,
-            returnal: {
-                dataSet:    untyped __cpp__('h.dataSet'),
-                unread:     untyped __cpp__('h.unread'),
-                enableJPEG: untyped __cpp__('h.enableJPEG'),
-                isSpotPass: untyped __cpp__('h.isSpotPass'),
-                isOptedOut: untyped __cpp__('h.isOptedOut'),
-                processID:  untyped __cpp__('h.processID'),
-                jumpParam:  untyped __cpp__('h.jumpParam'),
-                time:       untyped __cpp__('h.time'),
-                title:      untyped __cpp__('u16ToString(h.title, 64)')
-            }
+            dataSet:    untyped __cpp__('h.dataSet'),
+            unread:     untyped __cpp__('h.unread'),
+            enableJPEG: untyped __cpp__('h.enableJPEG'),
+            isSpotPass: untyped __cpp__('h.isSpotPass'),
+            isOptedOut: untyped __cpp__('h.isOptedOut'),
+            processID:  untyped __cpp__('h.processID'),
+            jumpParam:  untyped __cpp__('h.jumpParam'),
+            time:       untyped __cpp__('h.time'),
+            title:      untyped __cpp__('u16ToString(h.title, 64)'),
+            result:     ret
         }
     }
 
@@ -185,7 +197,7 @@ class News {
      * Sets a header from the specified news ID and output. Todo: fix returning false everytime
      * @param newsID Identification of the current news.
      * @param out Header Type-Definition to use.
-     * @return true if success, false if failed.
+     * @return Result code to check if something went wrong.
      * @since 1.3.0
      */
     public static function setHeader(newsID:Int, out:NEWSHeader):Result {
@@ -205,6 +217,55 @@ class News {
         ');
 
         return untyped __cpp__('NEWS_SetNotificationHeader(newsID, &h)');
+    }
+
+    /**
+     * Dumps the MPO image to `SDMC` from the specified news.
+     * 
+     * Possible Result Code(s):
+     * - `0xC8804470` - News MPO image was not found and cannot be dumped.
+     * - `0xD8E007F7` - Invalid handle, it's either `News` or `FS` that was not initialized.
+     * 
+     * @param newsID News Identification to Use.
+     * @param dumpDest Dump Path Destination to Use.
+     * @return Result code to check if something went wrong.
+     */
+    public static function dumpImage(newsID:UInt32, dumpDest:String):Result {
+        var ret:Result = 0;
+
+        untyped __cpp__('
+            u32 total;
+            FS_Archive arch;
+            Handle h;
+            u32 size;
+            void* data = malloc(0x10000);
+            u32 bw;
+
+            ret = NEWS_GetNotificationImage(newsID, data, &size);
+            if (R_FAILED(ret)) {
+                goto fail1;
+            }
+
+            ret = FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+            if (R_FAILED(ret)) {
+                goto fail1;
+            }
+
+            ret = FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, dumpDest.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
+            if (R_FAILED(ret)) {
+                goto fail2;
+            }
+
+            ret = FSFILE_Write(h, &bw, 0, data, size, FS_WRITE_FLUSH);
+
+            FSFILE_Close(h);
+            fail2:
+            FSUSER_CloseArchive(arch);
+            fail1:
+            free(data);
+        ');
+
+        return ret;
     }
 
     /**

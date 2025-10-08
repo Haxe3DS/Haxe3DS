@@ -113,6 +113,8 @@ class FS {
     /**
      * Variable for the concurrent Play Coins in your system found by `/gamecoin.dat`.
      * 
+     * Minimum 0, Maximum 300.
+     * 
      * Note: If any of the FS API failed, `-1` will be returned!
      * 
      * @since 1.3.0
@@ -189,6 +191,10 @@ class FS {
 
     /**
      * Renames a file in SDMC from `source` to `destination`.
+     * 
+     * Possible Result Code(s):
+     * - `0xC82047EF` - File's source does not exist, destination already exist or it's source/destination had illegal characters.
+     * 
      * @param source The source file to find and rename.
      * @param destination The new file name to use.
      * @return Result of whetever the function succeded or not.

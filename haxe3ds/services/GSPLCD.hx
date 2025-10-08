@@ -1,6 +1,5 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Returnal;
 import haxe3ds.Types.Result;
 import cxx.num.UInt8;
 import cxx.num.UInt32;
@@ -85,19 +84,10 @@ class GSPLCD {
      * @param screen Screen to use, top or bottom only.
      * @return Brightness from screen. (`0x10 (16)` - `0xAC (172)`)
      */
-    public static function getScreenBrightness(screen:GSPLCDScreen):Returnal<UInt8> {
+    public static function getScreenBrightness(screen:GSPLCDScreen):UInt8 {
         var r:UInt32 = 0;
-        var res:Result = 0;
-
-        untyped __cpp__('
-            u32 s = screenToU32(screen);
-            res = GSPLCD_GetBrightness(s, &r)
-        ');
-
-        return {
-            returnal: r,
-            result: res
-        };
+        untyped __cpp__('GSPLCD_GetBrightness(screenToU32(screen), &r)');
+        return r;
     }
 
     /**
@@ -109,10 +99,7 @@ class GSPLCD {
     public static function setScreenBrightness(screen:GSPLCDScreen, brightness:UInt8):Result {
         var res:Result = 0;
 
-        untyped __cpp__('
-            u32 s = screenToU32(screen);
-            res = GSPLCD_SetBrightnessRaw(s, (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))
-        ');
+        untyped __cpp__('res = GSPLCD_SetBrightnessRaw(screenToU32(screen), (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))');
 
         return res;
     }
