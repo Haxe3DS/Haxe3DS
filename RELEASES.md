@@ -6,7 +6,9 @@ ACT         | Added Class.
 APT         | Added variable: `programID`.
 Compiler    | Implemented a bug fix.
 FRD         | Added functions: `updateComment(String)`, `halfAwake(Bool)`, `FRDRelationship`, and Fixed connection stuff.
+FS          | Added `deleteFile(String)`, `renameFile(String, String)`
 FSUtil      | Optimized and Increase the speed of reading files. (?)
+FSFile      | Added `resize()` and `result`, added argument on `write`, fixed constructor?
 MCUWUC      | Added Class.
 NS          | Added `terminate()`.
 OS          | Added `version`, `versionToInt(String)`.

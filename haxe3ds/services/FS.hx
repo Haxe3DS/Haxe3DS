@@ -3,21 +3,6 @@ package haxe3ds.services;
 import haxe3ds.Types.Result;
 
 /**
- * Archive Identifier for Filesystem.
- */
-enum FSArchiveID {
-    /**
-     * SD Card.
-     */
-    SDMC;
-
-    /**
-     * ROM Filesystem (assets)
-     */
-    ROMFS;
-}
-
-/**
  * File System Service.
  * 
  * This service includes features such as mounting a save, getting and setting the play coins, and SDMC utility!
@@ -45,13 +30,8 @@ int getHashTableLength(int numEntries) {
 	}
 	return count;
 }
-
-FS_ArchiveID toArchID(int ind) {
-    switch(ind) {
-        case 0: default: return ARCHIVE_SDMC;
-        case 1: return ARCHIVE_ROMFS;
-    }
-}")
+    
+static FS_Archive sdmcRoot;")
 @:headerCode('#include <3ds.h>')
 class FS {
     /**
@@ -61,7 +41,9 @@ class FS {
         untyped __cpp__('
             fsInit();
             FSUSER_IsSdmcDetected(&isSDMCDetected);
-            FSUSER_IsSdmcWritable(&isSDMCWritable)
+            FSUSER_IsSdmcWritable(&isSDMCWritable);
+
+            FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))
         ');
     }
 
@@ -98,7 +80,7 @@ class FS {
         untyped __cpp__('
             bool retry = false;
             const char* p = partition.c_str();
-            dirs = getHashTableLength(dirs), files = getHashTableLength(files);
+            int i = getHashTableLength(dirs), j = getHashTableLength(files);
 
             FS_Path path = fsMakePath(PATH_EMPTY, "");
             res = archiveMount(ARCHIVE_SAVEDATA, path, p);
@@ -163,6 +145,8 @@ class FS {
     }
     
     static function set_playCoins(playCoins:UInt16):UInt16 {
+        playCoins = playCoins > 300 ? 300 : playCoins < 0 ? 0 : playCoins;
+
         untyped __cpp__('
             FS_Archive archive;
             u32 path[3] = {MEDIATYPE_NAND, 0xF000000B, 0x00048000};
@@ -177,7 +161,6 @@ class FS {
                 goto end2;
             }
             
-            playCoins = playCoins > 300 ? 300 : playCoins < 0 ? 0 : playCoins;
             u32 _;
 
             fail = R_FAILED(FSFILE_Write(fileHandle, &_, 4, coinBytes, sizeof(coinBytes), FS_WRITE_FLUSH));
@@ -195,10 +178,34 @@ class FS {
     }
 
     /**
-     * Exits FS.
+     * Deletes a file located in SDMC
+     * @param path Path to delete.
+     * @return Result of whetever the function succeded or not.
+     * @since 1.4.0
      */
-    @:native("fsExit")
-    public static function exit() {}
+    public static function deleteFile(path:String):Result {
+        return untyped __cpp__('FSUSER_DeleteFile(sdmcRoot, fsMakePath(PATH_ASCII, path.c_str()))');
+    }
+
+    /**
+     * Renames a file in SDMC from `source` to `destination`.
+     * @param source The source file to find and rename.
+     * @param destination The new file name to use.
+     * @return Result of whetever the function succeded or not.
+     */
+    public static function renameFile(source:String, destination:String):Result {
+        return untyped __cpp__('FSUSER_RenameFile(sdmcRoot, fsMakePath(PATH_ASCII, source.c_str()), sdmcRoot, fsMakePath(PATH_ASCII, destination.c_str()))');
+    }
+
+    /**
+     * Closes SDMC Archive and Exits FS.
+     */
+    public static function exit() {
+        untyped __cpp__('
+            FSUSER_CloseArchive(sdmcRoot);
+            fsExit()
+        ');
+    }
 }
 
 /**
@@ -206,12 +213,9 @@ class FS {
  * 
  * @since 1.3.0
  */
-@:headerClassCode('
-    FS_Archive arch = 0;
-    Handle h = 0;
-')
+@:headerClassCode('Handle h = 0;')
 class FSFile {
-    var id:FSArchiveID;
+    var path:String;
 
     /**
      * The error for whetever something went wrong for this service.
@@ -228,21 +232,15 @@ class FSFile {
     public var byteSize:UInt32 = 0;
 
     /**
-     * Creates a new file handler.
+     * Creates a new file handler from `SDMC`.
      * @param path Path to open in.
-     * @param archive Archive mode, Using `ROMFS` will block you from using `write`!
      */
-    public function new(path:String, archive:FSArchiveID) {
-        id = archive;
+    public function new(path:String) {
+        this.path = path;
 
         untyped __cpp__('
-            result = FSUSER_OpenArchive(&arch, toArchID(archive->index), fsMakePath(PATH_ASCII, "/"));
-            if (R_FAILED(result)) {
-                return;
-            }
-            
-            result = FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
-            if (R_SUCCEEDED(result)) {
+            this->result = FSUSER_OpenFile(&h, sdmcRoot, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
+            if (R_SUCCEEDED(this->result)) {
                 u64 by = 0;
                 FSFILE_GetSize(h, &by);
                 this->byteSize = (u32)by;
@@ -251,21 +249,26 @@ class FSFile {
     }
 
     /**
-     * Writes the current file running, this will overwrite the result code from this class.
-     * @param str String to write..
+     * Writes the current file handle running, this will overwrite the result code from this class.
+     * @param str String to write.
+     * @param offset Offset of the string to use, if a number is negative then uses `this.byteSize`.
      */
-    public function write(str:String) {
-        if (id == ROMFS) {
-            return;
+    public function write(str:String, offset:UInt32 = -1) {
+        if (offset < 0) {
+            offset = byteSize;
         }
 
-        result = untyped __cpp__('FSFILE_Write(h, &byteSize, byteSize, str.c_str(), str.size(), FS_WRITE_FLUSH)');
+        untyped __cpp__('
+            u32 bw = 0;
+            result = FSFILE_Write(h, &bw, offset, str.c_str(), str.size(), FS_WRITE_FLUSH);
+            byteSize += bw
+        ');
     }
 
     /**
-     * Reada a file from the archive.
+     * Reads a file from the handle, also updates the result code.
      * @param offset Offset to use
-     * @param len Length to read.
+     * @param len Length to read, if `-1` then uses `this.byteSize`.
      * @return String read from file.
      */
     public function read(offset:UInt32 = 0, len:UInt32 = -1):String {
@@ -277,20 +280,29 @@ class FSFile {
         var out:String = "";
         untyped __cpp__('
             u32 r = 0;
-            void* shit = malloc(len);
+            const char* shit = "";
             result = FSFILE_Read(h, &r, offset, (char*)(shit), len);
-            out = std::string((char*)(shit));
+            out = std::string((char*)(shit))
         ');
         return out;
     }
 
     /**
-     * Closes a file and closes the archive (saves memory?)
+     * Resize the file to whatever you want, also resizes `this.byteSize`! It will also update the result code.
+     * @param amount The amount to resize.
+     * @since 1.4.0
+     */
+    public function resize(amount:UInt64) {
+        byteSize = amount;
+        result = untyped __cpp__('FSFILE_SetSize(h, amount)');
+    }
+
+    /**
+     * Closes a file and closes the archive (saves memory?).
+     * 
+     * Also updates the result code.
      */
     public function close() {
-        untyped __cpp__('
-            FSFILE_Close(h);
-            FSUSER_CloseArchive(arch)
-        ');
+        result = untyped __cpp__('FSFILE_Close(h)');
     }
 }
