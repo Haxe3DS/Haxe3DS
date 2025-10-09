@@ -87,12 +87,6 @@ class APT {
 	public static function isActive():Bool return false;
 
 	/**
-	 * Returns true if the system has told the application to close.
-	 */
-	@:native("aptShouldClose")
-	public static function shouldClose():Bool return false;
-
-	/**
 	 * Variable property for the sleeping functionality.
 	 * 
 	 * If `canSleep` is true, 3DS can be allowed to sleep, else cannot sleep.
@@ -109,24 +103,8 @@ class APT {
 	}
 
 	/**
-	 * Handles incoming sleep mode requests.
-	 * 
-	 * Not needed to call everytime since `APT.mainLoop()` does that in loop.
-	 */
-	@:native("aptHandleSleep")
-	public static function handleSleep() {};
-
-	/**
 	 * Returns true if the system requires the application to jump back to the HOME menu.
 	 */
 	@:native("aptShouldJumpToHome")
 	public static function shouldJumpToHome():Bool return false;
-
-	/**
-	 * Handles incoming jump-to-HOME requests.
-	 * 
-	 * Not needed to call everytime since `APT.mainLoop()` does that in loop.
-	 */
-	@:native("aptHandleJumpToHome")
-	public static function handleJumpToHome() {};
 }
