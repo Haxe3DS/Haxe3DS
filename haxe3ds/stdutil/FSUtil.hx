@@ -99,14 +99,4 @@ class FSUtil {
 		');
 		return true;
 	}
-
-	/**
-	 * Copies a file to their desired location, NOTE: Copying only works on SDMC or in SAVE DATA!
-	 * @param fromPath Path to the file that's located at the partition.
-	 * @param toPath Path to copy from the path.
-	 * @return `true` if successfully copied, `false` if failed to copy.
-	 */
-	public static function copyFile(fromPath:String, toPath:String):Bool {
-		return untyped __cpp__('copy_file(fromPath, toPath)');
-	}
 }

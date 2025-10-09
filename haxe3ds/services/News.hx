@@ -110,7 +110,7 @@ class News {
      * Adds a notification to the home menu Notifications applet. TODO: fix images.
      * @param title String title of the notification, maximum `0x40` or `64` characters.
      * @param message String message of the notification, or `""` for no message. maximum `0x1780` or `6016` characters.
-     * @param imagePath Path to the image, make sure the image is less than 0xC800 (or 65536) bytes! **NOTE**: only supports sdmc.
+     * @param imagePath Path to the image, make sure the image is less than 0xC800 (or 65536) bytes, and must be an MPO file! **Warning**: Causes crashes.
      * @return true if success, false if failed.
      * @since 1.3.0
      */
@@ -129,8 +129,13 @@ class News {
             u8* image = NULL;
         ");
 
-        if (imagePath != "null" && FSUtil.exists(imagePath) && (imagePath.endsWith("jpg") || imagePath.endsWith("jpeg"))) {
-            imagePath.startsWith("/") ? null : imagePath = '/$imagePath';
+        if (imagePath != "null" && FSUtil.exists(imagePath) && imagePath.endsWith("mpo")) {
+            if (imagePath.startsWith("romfs")) {
+                FSUtil.saveFile("sdmc:/_news.mpo", FSUtil.readFile(imagePath));
+                imagePath = "/_news.mpo";
+            } else if (!imagePath.startsWith("/")) {
+                imagePath = '/$imagePath';
+            }
 
             untyped __cpp__('
                 Handle h;
@@ -149,17 +154,20 @@ class News {
                 if (size < 0xC800) {
                     u32 u;
 					FSFILE_Read(h, &u, 0, &image, size);
-                    FSFILE_Close(h);
                 }
-
-                svcCloseHandle(h);
+                    
+                FSFILE_Close(h);
                 fail2:
                 FSUSER_CloseArchive(arch);
                 fail1:
             ');
+
+            if (imagePath == "/_news.mpo") {
+                FS.deleteFile("/_news.mpo");
+            }
         }
 
-        final success:Result = untyped __cpp__('NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), image, size, true)');
+        final success:Result = untyped __cpp__('NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), image, size, false)');
         untyped __cpp__('if (image != NULL) free(image)');
 
         return success;
@@ -168,7 +176,7 @@ class News {
     /**
      * Gets the ID Header for the news.
      * @param newsID ID to use.
-     * @return Type-Definition for this ID.
+     * @return The header for this news.
      * @since 1.3.0
      */
     public static function getHeader(newsID:Int):NEWSHeader {
