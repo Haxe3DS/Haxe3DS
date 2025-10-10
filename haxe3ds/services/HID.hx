@@ -255,8 +255,8 @@ class HID {
 		untyped __cpp__("
 			circlePosition temp;
 			hidCircleRead(&temp);
-			pos->dx = -temp.dx;
-			pos->dy = temp.dy
+			pos->dx = temp.dx;
+			pos->dy = -temp.dy
 		");
 		return pos;
 	}
