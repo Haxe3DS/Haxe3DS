@@ -1,3 +1,9 @@
+# 1.5.0
+
+MODULE      | CHANGES
+------------|---------
+Compiler    | Used multi threading to decrease compile time by 3x.
+
 # 1.4.0
 
 MODULE      | CHANGES

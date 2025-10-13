@@ -5,7 +5,7 @@ import shutil
 import glob
 import time
 import subprocess
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 jsonStruct = {
     "settings": {
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 options:
   -g      Generates a Struct JSON and saves it to the current CWD.
   -c      Compiles to 3DS with 3dsSettings.json provided
-  -e      Helper function to search exception""")
+  -e      Helper function to search exceptions""")
         sys.exit(0)
 
     arg = sys.argv[1]
@@ -150,54 +150,43 @@ options:
             c = c.replace("[AUTHOR_JSON]",      jsonStruct["metadata"]["author"])
             write(f"output/{file}", c)
 
-        finished = False
-        tries = 1
-        def thr():
-            estimate = 0
-            for i in ["src", "include"]: estimate += len(glob.glob(f"{i}/**", recursive=True))
-            estimate = round(estimate / 1.19, 5)
-            while not finished: print(f"Compile Status: OK, Time: {round(time.time() - oldTime, 5)} (Estimate: {estimate}), Tries: {tries}", end='\r')
-            print(" " * (os.get_terminal_size().columns - 2), end='\r')
-
         print("\nDone! Compiling...")
         make = jsonStruct["settings"]["makeAs"]
         os.chdir("output")
-        threading.Thread(target=thr).start()
 
-        while True:
-            process = subprocess.Popen(f"make {make}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd = "arm-none-eabi-g++ -MMD -MP -MF build/{0}.d -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -Iinclude -IC:/devkitpro/portlibs/3ds/include -IC:/devkitpro/libctru/include -D__3DS__ -std=c++23 -Wno-unused-variable -g -w -c src/{0}.cpp -o build/{0}.o"
+        def compileCPPFile(file:str) -> int:
+            process = subprocess.Popen(cmd.format(file), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             _, stderr = process.communicate()
 
             if process.returncode == 0:
-                break
+                return 0
 
             fc:dict = {}
-            cc = []
             def create(ln:str) -> tuple:
-                global cc
                 lc = 0
                 l = []
                 try:
                     l = ln.split(":")
-                    l[1] = f"{l[0]}:{l[1]}"
-                    lc = int(l[2])-1
-                    if l[1] not in fc:
-                        v = read(l[1]).splitlines()
-                        fc[l[1]] = [v, v.copy()]
+                    lc = int(l[1])-1
+                    if l[0] not in fc:
+                        v = read(l[0]).splitlines()
+                        fc[l[0]] = [v, v.copy()]
                 except ValueError:
                     return None, None
                 
                 return lc, l
                 
             try:
-                for ln in stderr.splitlines():
+                arr = stderr.splitlines()
+                for indi, ln in enumerate(arr):
                     if any(x in ln for x in ["/devkitPro/libctru/", "/arm-none-eabi/include/"]): # dangerous, so i added a check
                         continue
 
                     if ": error: " in ln:
                         lc, l = create(ln)
                         exp = "expected ';' before" in ln
-                        lnk = fc[l[1]][0]
+                        lnk = fc[l[0]][0]
 
                         if "cannot convert 'const std::nullopt_t' to " in ln:
                             lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
@@ -205,13 +194,21 @@ options:
                             if not exp: lc -= 1
                             lnk[lc] += ";"
                         elif "no matching function for call to" in ln:
-                            lnk[lc] = lnk[lc].replace(";", "(nullptr);")
+                            if "haxe::Dynamic" in ln:
+                                if "haxe::Dynamic" in arr[indi+1]:
+                                    lnk[lc] = lnk[lc].replace(";", "(nullptr);")
+                                else:
+                                    while lc > 1 and "static Dynamic" not in lnk[lc]:
+                                        lc -= 1
+                                    lc -= 1
+                                    lnk[lc] += f'template<{", ".join([f"typename Dyn{x+1}" for x in range(2)])}>'
+                            else:
+                                lnk[lc] = lnk[lc].replace(";", "(nullptr);")
                         elif "conversion from '" in ln:
                             lol = lnk[lc]
                             name = lol[lol.rfind(" ")+1:lol.find(";")]
                             lnk[lc] = lnk[lc].replace(name, f'std::dynamic_pointer_cast{lol[lol.find("<"):lol.rfind(">")+1]}({name})')
                         elif "' is not a member of '" in ln:
-                            print("got!")
                             nameof = ln[ln.find("r: '")+4:ln.rfind("' is")]
                             count = len(lnk)
                             num = lc
@@ -219,7 +216,6 @@ options:
                                 if f" {nameof} {{" in lnk[lc]:
                                     stack = []
                                     def app():
-                                        global stack
                                         stack.append(lnk[lc])
                                         del lnk[lc]
 
@@ -238,16 +234,16 @@ options:
 
                     elif ": note: " in ln:
                         lc, l = create(ln)
-                        hFile = l[1].replace(".cpp", ".h").replace("src", "include")
-                        lnk = fc[l[1]][0]
+                        hFile = l[0].replace(".cpp", ".h").replace("src", "include")
+                        lnk = fc[l[0]][0]
 
                         if "note: candidate 1: 'template<class Dyn1, class Dyn2>" in ln:
                             bartSimpson = read(hFile)
                             for i in [f"Dyn{x}" for x in range(10)]:
                                 bartSimpson = bartSimpson.replace(i, "haxe::Dynamic")
-                            fc[l[1]][0] = bartSimpson.split("\n")
-                            del fc[l[1]][0][lc-1]
-            except ValueError: # Linker Error
+                            fc[l[0]][0] = bartSimpson.split("\n")
+                            del fc[l[0]][0][lc-1]
+            except Exception: # Linker Error
                 pass
 
             redo = False
@@ -258,12 +254,37 @@ options:
                     redo = True
             
             if not redo:
-                finished = True
                 print(f"Compile Failure: STDERR:\n{stderr}")
-                exit(1)
-            tries += 1
+                return 2
 
-        finished = True
+            return 1
+        
+        def cmp(cppfiles:str):
+            while True:
+                cppfiles = cppfiles[4:-4]
+                if len(cppfiles) < 2:
+                    break
+
+                print(f"{cppfiles}.cpp")
+                result = compileCPPFile(cppfiles)
+                if result == 0:
+                    print(f"Success: {cppfiles}")
+                    break
+                elif result == 1:
+                    continue
+                else:
+                    print(f"Fail: {cppfiles}")
+                    exit(1)
+        
+        os.makedirs("build/", exist_ok=True)
+        with ThreadPoolExecutor() as worker:
+            for cppfiles in glob.glob("src/**.cpp"):
+                worker.submit(cmp, cppfiles)
+
+        if os.system(f"make {make}") != 0:
+            print("Massive Fail! Exiting...")
+            exit(1)
+
         os.chdir("output")
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
         ip:str = jsonStruct["settings"]["3dslink"]["ip"]
