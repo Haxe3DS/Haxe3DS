@@ -2,6 +2,7 @@
 
 MODULE      | CHANGES
 ------------|---------
+FS          | Added `deleteDir(String)`
 Compiler    | Used multi threading to decrease compile time by 3x.
 
 # 1.4.0

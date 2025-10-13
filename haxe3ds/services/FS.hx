@@ -204,6 +204,17 @@ class FS {
     }
 
     /**
+     * Deletes a directory or even recursively deletes a directory!
+     * @param source Source Directory to Use.
+     * @param recursive Whetever or not should recursively delete the directory.
+     * @return Result of whetever the function succeded or not.
+     */
+    public static function deleteDir(source:String, recursive:Bool = false):Result {
+        untyped __cpp__('FS_Path p = fsMakePath(PATH_ASCII, source.c_str())');
+        return untyped __cpp__('recursive ? FSUSER_DeleteDirectoryRecursively(sdmcRoot, p) : FSUSER_DeleteDirectory(sdmcRoot, p)');
+    }
+
+    /**
      * Closes SDMC Archive and Exits FS.
      */
     public static function exit() {
