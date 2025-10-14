@@ -65,10 +65,7 @@ typedef ACTAccountInfo = {
  * 
  * @since 1.4.0
  */
-@:cppFileCode('
-#include <3ds.h>
-#include "haxe3ds_Utils.h"
-')
+@:cppInclude('haxe3ds_Utils.h')
 class ACT {
     /**
      * The total count of accounts the console has.

@@ -168,7 +168,6 @@ typedef ErrorConfig = {
  * This class has been fully implemented and fully documented!
  */
 @:cppFileCode('
-#include <3ds.h>
 #include "haxe3ds_Utils.h"
 
 errorType getFromET(int e) {

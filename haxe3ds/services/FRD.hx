@@ -144,7 +144,6 @@ typedef FRDFriendDetail = {
  * @since 1.2.0
  */
 @:cppFileCode('
-#include <3ds.h>
 #include <cstring>
 #include "haxe3ds_Utils.h"
 ')

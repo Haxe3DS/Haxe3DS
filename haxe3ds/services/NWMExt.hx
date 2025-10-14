@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+@:cppInclude("haxe3ds_services_GFX.h")
 class NWMExt {
     /**
      * Initializes NWMEXT.

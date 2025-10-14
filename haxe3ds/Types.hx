@@ -7,7 +7,7 @@ package haxe3ds;
  */
 // THE ENTIRE cppFileCode THING WAS TAKEN FROM https://github.com/Steveice10/FBI/blob/ec259153e25fc77ee999b8caadac7e73d2e5e41a/source/core/ui/error.c#L757
 @:cppFileCode('
-#include <3ds.h>
+#include "haxe3ds_services_GFX.h"
 
 const char* levelToString(uint32_t res) {
     switch(R_LEVEL(res)) {

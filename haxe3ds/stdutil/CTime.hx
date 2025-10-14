@@ -1,5 +1,12 @@
 package haxe3ds.stdutil;
 
+/**
+ * Standard Library using `ctime`.
+ * 
+ * This is not the same as `haxe.std.Date`!
+ * 
+ * @since 1.3.0
+ */
 @:cppFileCode('
 #include <ctime>
 using namespace std;
@@ -8,16 +15,7 @@ tm getNow() {
     time_t timestamp = time(&timestamp);
     struct tm datetime = *localtime(&timestamp);
     return datetime;
-}
-')
-
-/**
- * Standard Library using `ctime`.
- * 
- * This is not the same as `haxe.std.Date`!
- * 
- * @since 1.3.0
- */
+}')
 class CTime {
     /**
      * Gets the current second.

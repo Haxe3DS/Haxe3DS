@@ -26,10 +26,7 @@ enum CFG_Language {
 /**
  * CFGU (Configuration) Service, home to system languge and the checker for 2DS Models
  */
-@:cppFileCode('
-#include <3ds.h>
-#include "haxe3ds_Utils.h"
-')
+@:cppInclude('haxe3ds_Utils.h')
 class CFGU {
     /**
      * Initializes CFGU and sets up other variables for it to register.

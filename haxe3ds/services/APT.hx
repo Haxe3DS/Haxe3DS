@@ -5,7 +5,7 @@ package haxe3ds.services;
  * 
  * This is where the most popular functions (such as `mainLoop`) is located.
  */
-@:cppInclude("3ds.h")
+@:cppInclude("haxe3ds_services_GFX.h")
 class APT {
 	/**
 	 * Variable if the 3DS model is the NEW 3DS instead of OLD 3DS.
@@ -24,11 +24,12 @@ class APT {
 	public static var programID(default, null):UInt64 = 0;
 
 	/**
-	 * Initializes APT.
+	 * Initializes APT, well not really just sets up the other variables.
+	 * 
+	 * Which would be `isNew3DS` and `programID`
 	 */
 	public static function init() {
 		untyped __cpp__('
-			aptInit();
 			APT_CheckNew3DS(&isNew3DS);
 			APT_GetProgramID(&programID)
 		');

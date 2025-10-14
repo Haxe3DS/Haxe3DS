@@ -5,9 +5,7 @@ package haxe3ds.services;
  * 
  * @since 1.4.0
  */
-@:cppFileCode('
-#include <3ds.h>
-')
+@:cppInclude("haxe3ds_services_GFX.h")
 class MCUWUC {
     /**
      * Initializes MCUHWC for other variables to work.

@@ -6,7 +6,7 @@ using StringTools;
 /**
  * OS related stuff.
  */
-@:cppInclude("3ds.h")
+@:cppInclude("haxe3ds_services_GFX.h")
 class OS {
 	/**
 	 * Variable property that returns the number of milliseconds since 1st Jan 1900 00:00.

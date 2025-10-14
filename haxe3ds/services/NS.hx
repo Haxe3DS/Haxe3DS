@@ -3,6 +3,7 @@ package haxe3ds.services;
 /**
  * NS (Nintendo Shell) service.
  */
+@:cppInclude("haxe3ds_services_GFX.h")
 class NS {
     /**
      * Initializes NS.

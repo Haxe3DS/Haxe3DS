@@ -34,7 +34,7 @@ typedef ACProxy = {
 /**
  * AC service.
  */
-@:cppFileCode("#include <3ds.h>")
+@:cppInclude("haxe3ds_services_GFX.h")
 class AC {
     /**
      * `(AC:U)` Current Wifi Status.

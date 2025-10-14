@@ -225,7 +225,7 @@ SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackOut(void* user, const
 
     return SWKBD_CALLBACK_OK;
 }')
-@:headerCode("#include <3ds.h>")
+@:headerInclude("haxe3ds_services_GFX.h")
 @:headerClassCode("static SwkbdCallbackResult callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen);")
 class SWKBDHandler {
     /**

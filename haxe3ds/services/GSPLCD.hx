@@ -27,7 +27,7 @@ enum GSPLCDScreen {
  * @since 1.2.0
  */
 @:cppFileCode('
-#include <3ds.h>
+#include "haxe3ds_services_GFX.h"
 
 u32 screenToU32(std::shared_ptr<haxe3ds::services::GSPLCDScreen> i) {
     switch(i->index) {

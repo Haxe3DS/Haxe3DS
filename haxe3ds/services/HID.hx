@@ -184,7 +184,7 @@ typedef AngularRate = {
  * 
  * @since 1.0.0 only for C-Stick Support
  */
-@:cppInclude("3ds.h")
+@:cppInclude("haxe3ds_services_GFX.h")
 class HID {
 	/**
 	 * Initializes HID.
