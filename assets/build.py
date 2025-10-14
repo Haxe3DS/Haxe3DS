@@ -33,11 +33,7 @@ options:
   -g      Generates a Struct JSON and saves it to the current CWD.
   -c      Compiles to 3DS with 3dsSettings.json provided
   -e      Helper function to search exceptions""")
-<<<<<<< HEAD
         exit(0)
-=======
-        sys.exit(0)
->>>>>>> bb12b34ab44244137c4984da0be29e4c781ab7e4
 
     arg = sys.argv[1]
     if "-g" in arg:
@@ -162,7 +158,6 @@ options:
         make = jsonStruct["settings"]["makeAs"]
         os.chdir("output")
 
-<<<<<<< HEAD
         arm = os.getenv("DEVKITARM")
         if "win" in sys.platform:
             arm = arm.replace("/opt/", "C:/")
@@ -170,11 +165,6 @@ options:
         cmd = "{1}/arm-none-eabi-g++ -MMD -MP -MF build/{0}.d -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -Iinclude -IC:/devkitpro/portlibs/3ds/include -IC:/devkitpro/libctru/include -D__3DS__ -std=c++23 -Wno-unused-variable -g -w {2} -c src/{0}.cpp -o build/{0}.o"
         def compileCPPFile(file:str) -> int:
             process = subprocess.Popen(cmd.format(file, f"{arm}/bin", extraArgs).replace("[DKP]", arm[:-10]), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-=======
-        cmd = "arm-none-eabi-g++ -MMD -MP -MF build/{0}.d -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -Iinclude -IC:/devkitpro/portlibs/3ds/include -IC:/devkitpro/libctru/include -D__3DS__ -std=c++23 -Wno-unused-variable -g -w -c src/{0}.cpp -o build/{0}.o"
-        def compileCPPFile(file:str) -> int:
-            process = subprocess.Popen(cmd.format(file), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
->>>>>>> bb12b34ab44244137c4984da0be29e4c781ab7e4
             _, stderr = process.communicate()
 
             if process.returncode == 0:
@@ -286,34 +276,21 @@ options:
                 print(f"{cppfiles}.cpp")
                 result = compileCPPFile(cppfiles)
                 if result == 0:
-<<<<<<< HEAD
                     print(f"Success: {cppfiles}.cpp")
-=======
-                    print(f"Success: {cppfiles}")
->>>>>>> bb12b34ab44244137c4984da0be29e4c781ab7e4
                     break
                 elif result == 1:
                     continue
                 else:
-<<<<<<< HEAD
                     print(f"Fail: {cppfiles}.cpp")
                     raise Exception("Exiting")
-=======
-                    print(f"Fail: {cppfiles}")
-                    exit(1)
->>>>>>> bb12b34ab44244137c4984da0be29e4c781ab7e4
         
         os.makedirs("build/", exist_ok=True)
         with ThreadPoolExecutor() as worker:
             for cppfiles in glob.glob("src/**.cpp"):
-<<<<<<< HEAD
                 try:
                     worker.submit(cmp, cppfiles)
                 except Exception:
                     exit(1)
-=======
-                worker.submit(cmp, cppfiles)
->>>>>>> bb12b34ab44244137c4984da0be29e4c781ab7e4
 
         if os.system(f"make {make}") != 0:
             print("Massive Fail! Exiting...")
