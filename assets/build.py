@@ -33,7 +33,7 @@ options:
   -g      Generates a Struct JSON and saves it to the current CWD.
   -c      Compiles to 3DS with 3dsSettings.json provided
   -e      Helper function to search exceptions""")
-        exit(0)
+        sys.exit(0)
 
     arg = sys.argv[1]
     if "-g" in arg:
@@ -47,7 +47,7 @@ options:
         
         if not os.path.exists("3dsSettings.json"):
             print("3dsSettings.json doesn't exist!! Consider generating the Json!")
-            exit(1)
+            sys.exit(1)
 
         def read(file:str) -> str:
             c = ""
@@ -84,7 +84,7 @@ options:
 
         if os.system("haxe build.hxml") != 0:
             print("Error! Stopping...")
-            exit(1)
+            sys.exit(1)
 
         blockedStuff = [
             "throw haxe::Exception",
@@ -133,7 +133,7 @@ options:
             dictation = list(lol)
             dictation[0] = "#include <3ds.h>\n#include <malloc.h> /"
             dictation[l] = 'u8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();'
-            dictation[l+28] = ';socExit();\nfree(buf);'
+            dictation[l+28] = ';socsys.exit();\nfree(buf);'
             write("output/src/_main_.cpp", ''.join(dictation))
             print("d")
 
@@ -164,7 +164,7 @@ options:
 
         cmd = "{1}/arm-none-eabi-g++ -MMD -MP -MF build/{0}.d -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -Iinclude -IC:/devkitpro/portlibs/3ds/include -IC:/devkitpro/libctru/include -D__3DS__ -std=c++23 -Wno-unused-variable -g -w {2} -c src/{0}.cpp -o build/{0}.o"
         def compileCPPFile(file:str) -> int:
-            process = subprocess.Popen(cmd.format(file, f"{arm}/bin", extraArgs).replace("[DKP]", arm[:-10]), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.Popen(cmd.format(file, f"{arm}/bin", extraArgs), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             _, stderr = process.communicate()
 
             if process.returncode == 0:
@@ -268,33 +268,29 @@ options:
             return 1
         
         def cmp(cppfiles:str):
+            tries = 0
+            cppfiles = cppfiles[4:-4]
+            print(f"{cppfiles}.cpp")
             while True:
-                cppfiles = cppfiles[4:-4]
-                if len(cppfiles) < 2:
-                    break
-
-                print(f"{cppfiles}.cpp")
                 result = compileCPPFile(cppfiles)
                 if result == 0:
                     print(f"Success: {cppfiles}.cpp")
                     break
-                elif result == 1:
+                elif result == 1 and tries != 2:
+                    tries += 1
                     continue
                 else:
                     print(f"Fail: {cppfiles}.cpp")
-                    raise Exception("Exiting")
+                    sys.exit(1)
         
         os.makedirs("build/", exist_ok=True)
         with ThreadPoolExecutor() as worker:
             for cppfiles in glob.glob("src/**.cpp"):
-                try:
-                    worker.submit(cmp, cppfiles)
-                except Exception:
-                    exit(1)
+                worker.submit(cmp, cppfiles)
 
         if os.system(f"make {make}") != 0:
             print("Massive Fail! Exiting...")
-            exit(1)
+            sys.exit(1)
 
         os.chdir("output")
         print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
@@ -313,6 +309,6 @@ options:
         for x in sys.argv:
             if x.startswith("0x"):
                 a += f"{x} "
-        exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
+        sys.exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
     
-    exit(0)
+    sys.exit(0)
