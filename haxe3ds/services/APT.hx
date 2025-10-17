@@ -24,6 +24,21 @@ class APT {
 	public static var programID(default, null):UInt64 = 0;
 
 	/**
+	 * This gets/sets the amount of syscore CPU time available to the running application. It can range from 5% to 89%. Maximum value depends on the ExHeader. Setting a value higher than 30% does not seem to improve performance on Old 3DS, however it definitely does on New 3DS. 
+	 * 
+	 * @since 1.5.0
+	 */
+	public static var cpuTimeLimit(get, set):UInt32;
+	static function get_cpuTimeLimit():UInt32 {
+		var out:UInt32 = 0;
+		untyped __cpp__('APT_GetAppCpuTimeLimit(&out)');
+		return out;
+	}
+	static function set_cpuTimeLimit(cpuTimeLimit:UInt32):UInt32 {
+		return untyped __cpp__('APT_SetAppCpuTimeLimit(cpuTimeLimit)');
+	}
+
+	/**
 	 * Initializes APT, well not really just sets up the other variables.
 	 * 
 	 * Which would be `isNew3DS` and `programID`

@@ -208,6 +208,7 @@ class FS {
      * @param source Source Directory to Use.
      * @param recursive Whetever or not should recursively delete the directory.
      * @return Result of whetever the function succeded or not.
+     * @since 1.5.0
      */
     public static function deleteDir(source:String, recursive:Bool = false):Result {
         untyped __cpp__('FS_Path p = fsMakePath(PATH_ASCII, source.c_str())');

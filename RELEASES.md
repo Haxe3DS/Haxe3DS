@@ -2,8 +2,10 @@
 
 MODULE      | CHANGES
 ------------|---------
+APT         | Added `cpuTimeLimit`
 Compiler    | Used multi threading to decrease compile time by 3x.
 Compiler    | Heavily lowered build size by 4x.
+Env         | Added `isUsing3DS`
 FS          | Added `deleteDir(String)`.
 
 # 1.4.0

@@ -14,4 +14,20 @@ class Env {
     static function get_is3DSX():Bool {
         return untyped __cpp__('envIsHomebrew()');
     }
+
+    /**
+     * Getter Variable that checks if it's using from a console and not from an emulator (aka tries to connect to port "hb:ldr" and closes if success).
+     * 
+     * @since 1.5.0
+     */
+    public static var isUsing3DS(get, null):Bool;
+    static function get_isUsing3DS():Bool {
+        var isLuma:Bool = false;
+        untyped __cpp__('
+            Handle lumaCheck;
+            isLuma = R_SUCCEEDED(svcConnectToPort(&lumaCheck, "hb:ldr"));
+            if(isLuma) svcCloseHandle(lumaCheck)
+        ');
+        return isLuma;
+    }
 }
