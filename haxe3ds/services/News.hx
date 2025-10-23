@@ -77,10 +77,7 @@ typedef NEWSHeader = {
  * 
  * Currently a total train wreck caused by LibCTRU devs, so this is broken atm, unless you know how to fix this (which is just replacing `news:u` to `news:s`), this will never work.
  */
-@:cppFileCode('
-#include <string.h>
-#include "haxe3ds_Utils.h"
-')
+@:cppInclude("haxe3ds_Utils.h")
 class News {
     /**
      * Initializes NEWS.

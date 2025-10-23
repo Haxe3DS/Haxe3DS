@@ -258,7 +258,6 @@ options:
             for i in fc.keys():
                 if fc[i][0] != fc[i][1]:
                     write(i, fc[i][0])
-                    print(f"Error ({i}) is fixed. Recompiling...")
                     redo = True
             
             if not redo:
@@ -270,11 +269,10 @@ options:
         def cmp(cppfiles:str):
             tries = 0
             cppfiles = cppfiles[4:-4]
-            print(f"{cppfiles}.cpp")
             while True:
                 result = compileCPPFile(cppfiles)
                 if result == 0:
-                    print(f"Success: {cppfiles}.cpp")
+                    print(f"- src/{cppfiles.replace("_", "/")}.cpp")
                     break
                 elif result == 1 and tries != 2:
                     tries += 1
@@ -310,5 +308,3 @@ options:
             if x.startswith("0x"):
                 a += f"{x} "
         sys.exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
-    
-    sys.exit(0)

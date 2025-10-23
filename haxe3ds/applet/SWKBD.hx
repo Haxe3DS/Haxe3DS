@@ -32,17 +32,17 @@ enum SWKBDType {
  */
 enum SWKBDPasswordMode {
     /**
-     * Characters are not concealed.
+     * Characters are not concealed/masked.
      */
     NONE;
 
     /**
-     * Characters are concealed immediately.
+     * Characters are concealed/masked immediately.
      */
 	HIDE;
 
     /**
-     * Characters are concealed a second after they've been typed.
+     * Characters are concealed/masked a second after they've been typed.
      */
 	HIDE_DELAY;
 }
@@ -147,46 +147,40 @@ typedef SWKBDCallbackReturn = {
  */
 enum SWKBDFilter {
     /**
-     * Disallow the use of more than a certain number of digits (0 or more)
+     * The number of numbers that can be input is restricted.
      */
     DIGITS;
 
     /**
-     * Disallow the use of the @ sign.
+     * Input of the at sign (@) is prohibited.
      */
     AT;
 
     /**
-     * Disallow the use of the % sign.
+     * Input of the percent symbol (%) is prohibited.
      */
     PERCENT;
 
     /**
-     * Disallow the use of the \ sign.
+     * Input of the backslash (\\) is prohibited.
      */
     BACKSLASH;
 
     /**
-     * Disallow profanity using Nintendo's profanity filter.
+     * Input of profanity in strings that are displayed on the screen is prohibited.
      */
     PROFANITY;
 
     /**
-     * Use a callback in order to check the input.
+     * Text checking is performed by the application.
      */
     CALLBACK;
 }
 
 /**
- * Software keyboard applet.
+ * The class of the applet call-up library for the LIBCTRU software keyboard.
  * 
- * ~~Some of the features from SWKBD are not implemented yet, will be available in the future or so.~~
- * 
- * 1.2.0 UPDATE:
- * - Most features implemented, ~~will not do callback because it uses an extra function that i do not know how to use correctly.~~
- *
- * 1.4.0 UPDATE:
- * - Welp now i know on how to use it correctly!
+ * If the version of the software keyboard applet library used by the application does not match the SDK version supported by the System Updater in use, the software keyboard applet will sometimes fail to start. If the software keyboard applet does not start, apply the most recent System Updater.
  * 
  * @since 1.1.0
  */
@@ -289,14 +283,14 @@ class SWKBDHandler {
     /**
      * Allow the usage of a software-reset combination.
      */
-    public var swReset:Bool = false;
+    public var softwareReset:Bool = false;
 
     /**
      * Allow the usage of the POWER button.
      * 
      * If it's set to false, pressing the power button will not bring you to the "In Sleep Mode, the system can..." screen.
      */
-    public var power:Bool = false;
+    public var powerButton:Bool = false;
 
     /**
      * If it's set to true, the screen from above will be darken so that the SWKBD will be more focused.
@@ -455,8 +449,8 @@ this.callbackFN = input -> {
             out.multiline = this->multiline;
             out.fixed_width = this->fixedWidth;
             out.allow_home = this->homeMenu;
-            out.allow_reset = this->swReset;
-            out.allow_power = this->power;
+            out.allow_reset = this->softwareReset;
+            out.allow_power = this->powerButton;
             out.darken_top_screen = this->darkenTopScreen ? 1 : 0;
             out.default_qwerty = this->defaultQWERTY ? 1 : 0;
             out.predictive_input = this->predictiveInput;

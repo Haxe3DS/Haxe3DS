@@ -139,6 +139,60 @@ typedef FRDFriendDetail = {
 }
 
 /**
+ * Type of the notification that was triggered by the friend list.
+ * 
+ * @since 1.5.0
+ */
+enum abstract FRDNotifTypes(Int) {
+    /**
+     * The console went online.
+     */
+    var SELF_ONLINE = 1;
+
+    /**
+     * The console went offline.
+     */
+    var SELF_OFFLINE = 2;
+
+    /**
+     * A friend is now present (went online). 
+     */
+    var FRIEND_ONLINE = 3;
+
+    /**
+     * A friend changed their presence, and the current system's JoinGameID is the same as their new or old JoinGameID.
+     */
+    var FRIEND_PRESENCE_CHANGED = 4;
+
+    /**
+     * A friend changed their Mii.
+     */
+    var FRIEND_MII_CHANGED = 5;
+
+    /**
+     * A friend changed their Profile.
+     * 
+     * @see FRDProfile Struct.
+     */
+    var FRIEND_PROFILE_CHANGED = 6;
+
+    /**
+     * A friend is no longer present (went offline).
+     */
+    var FRIEND_OFFLINE = 7;
+
+    /**
+     * A friend has added you back as a friend (if you had added them before as a "provisionally registered" friend).
+     */
+    var FRIEND_REGISTERED = 8;
+
+    /**
+     * A friend sent you an invitation, and the current system's JoinGameID matches that of the friend.
+     */
+    var FRIEND_GOT_INVITED = 9;
+}
+
+/**
  * Friend Services.
  * 
  * @since 1.2.0
@@ -146,7 +200,59 @@ typedef FRDFriendDetail = {
 @:cppFileCode('
 #include <cstring>
 #include "haxe3ds_Utils.h"
-')
+
+Handle frd_Handle;
+Thread frd_Thread;
+
+void threadStart(void* _) {
+    while (true) {
+        if (svcWaitSynchronization(frd_Handle, 1e10) == 0) {
+            NotificationEvent event;
+            u32 totalNotifs;
+            if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) {
+                continue;
+            }
+
+            FriendInfo f;
+            if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) {
+                continue;
+            }
+
+			std::shared_ptr<haxe3ds::services::FRDRelationship> relation = haxe3ds::services::FRDRelationship::UNKNOWN();
+			switch(f.relationship) {
+				case 0: {
+					relation = haxe3ds::services::FRDRelationship::NOT_REGISTERED();
+					break;
+				}
+				case 1: {
+					relation = haxe3ds::services::FRDRelationship::REGISTERED();
+					break;
+				}
+				case 2: {
+					relation = haxe3ds::services::FRDRelationship::NOT_FOUND();
+					break;
+				}
+				case 3: {
+					relation = haxe3ds::services::FRDRelationship::DELETED();
+					break;
+				}
+				case 4: {
+					relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();
+					break;
+				}
+				default: {}
+			};
+
+			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage)), u16ToString(f.screenName, sizeof(f.screenName)), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
+
+			if (haxe3ds::services::FRD::notifCallback != nullptr) {
+				haxe3ds::services::FRD::notifCallback(x, event.type);
+			}
+        }
+    }
+    
+    threadExit(0);
+}')
 class FRD {
     /**
      * Variable that checks if the user is logged into Nintendo/Pretendo Network.
@@ -237,6 +343,17 @@ class FRD {
     }
 
     /**
+     * Callback handler for notifications called from friends.
+     * 
+     * ### Args:
+     * - `FRDFriendDetail` - The details of the friend that triggered this notification.
+     * - `FRDNotifTypes` - Type of notification it is caused.
+     * 
+     * @since 1.5.0
+     */
+    public static var notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void;
+
+    /**
      * Initializes friend services.
      */
     public static function init() {
@@ -259,6 +376,14 @@ class FRD {
             me_miiName = u16ToString(n, MII_NAME_LEN);
 
             FRD_GetMyLocalAccountId(&me_localAccountId);
+
+            svcCreateEvent(&frd_Handle, RESET_ONESHOT);
+            FRD_AttachToEventNotification(frd_Handle);
+
+            s32 priority;
+            svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
+            priority -= 1;
+            frd_Thread   = threadCreate(threadStart, NULL, 32768, priority < 0x18 ? 0x18 : priority > 0x3F ? 0x3F : priority, -1, false)
         ');
     }
 
@@ -316,12 +441,10 @@ class FRD {
 
     /**
      * Gets the whole friend profile specified.
-     * @param maskNonAscii Whether or not to replace all non-ASCII characters with question marks ('?') if the given character set doesn't match that of the corresponding friend's Mii data.
-     * @param profanityFlag Setting this to true replaces the screen names with all question marks ('?') if profanityFlag is also set in the corresponding friend's Mii data.
      * @return Array of typedef `FRDFriendDetail`, will return 0 if one of the FRD functions failed, or has 0 friends total.
      * @since 1.4.0
      */
-    public static function getFriendsProfile(maskNonAscii:Bool = false, profanityFlag:Bool = false):Array<FRDFriendDetail> {
+    public static function getFriendsProfile():Array<FRDFriendDetail> {
         var out:Array<FRDFriendDetail> = [];
 
         untyped __cpp__('
@@ -372,8 +495,13 @@ class FRD {
     }
 
     /**
-     * Exits friend services.
+     * Frees Thread, Closes handle and Exits friend services.
      */
-    @:native("frdExit")
-    public static function exit() {}
+    public static function exit() {
+        untyped __cpp__('
+            threadFree(frd_Thread);
+            svcCloseHandle(frd_Handle);
+            frdExit()
+        ');
+    }
 }

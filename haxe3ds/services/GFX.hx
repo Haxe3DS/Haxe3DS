@@ -1,7 +1,5 @@
 package haxe3ds.services;
 
-import haxe3ds.applet.Error;
-
 /**
  * Simple framebuffer API
  *
@@ -19,9 +17,7 @@ class GFX {
 	 * Initializes the LCD framebuffers with default parameters
 	 */
 	@:native("gfxInitDefault")
-	public static function initDefault() {
-		Error.setup(TEXT, Default);
-	};
+	public static function initDefault() {};
 
 	/**
 	 * Variable property for the GFX's 3D stereoscopic effect.

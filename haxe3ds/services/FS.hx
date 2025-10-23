@@ -10,7 +10,6 @@ import haxe3ds.Types.Result;
  * @since 1.1.0
  */
 @:cppFileCode('
-#include "haxe3ds_services_GFX.h"
 // https://www.3dbrew.org/wiki/RomFS#Hash_Table_Structure
 int getHashTableLength(int numEntries) {
 	int count = numEntries;
@@ -33,6 +32,7 @@ int getHashTableLength(int numEntries) {
 }
     
 static FS_Archive sdmcRoot;')
+@:headerInclude("haxe3ds_services_GFX.h")
 class FS {
     /**
      * Initializes FS.
