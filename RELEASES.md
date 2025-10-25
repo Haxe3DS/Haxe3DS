@@ -7,7 +7,8 @@ Compiler    | Used multi threading to decrease compile time by 3x.
 Compiler    | Heavily lowered build size by 4x.
 Env         | Added `isUsing3DS`
 FRD         | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`
-FS          | Added `deleteDir(String)`.
+FS          | Added `deleteDir(String)`, added new argument in FSFile.write();
+HTTPS       | Added Class.
 
 # 1.4.0
 

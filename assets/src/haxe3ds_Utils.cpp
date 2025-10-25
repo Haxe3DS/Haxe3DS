@@ -25,3 +25,10 @@ std::string u16ToString(u16* i, size_t ln) {
     out[l] = '\0';
     return std::string(reinterpret_cast<char*>(out));
 }
+
+Thread fastCreateThread(ThreadFunc function, void* arg) {
+    s32 priority;
+    svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
+    priority -= 1;
+    return threadCreate(function, arg, 32768, priority < 0x18 ? 0x18 : priority > 0x3F ? 0x3F : priority, -1, false);
+}

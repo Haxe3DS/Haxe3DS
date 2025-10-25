@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import cxx.VoidPtr;
 import haxe3ds.Types.Result;
 
 /**
@@ -269,16 +270,17 @@ class FSFile {
     /**
      * Writes the current file handle running, this will overwrite the result code from this class.
      * @param str String to write.
+     * @param size Size of the binary (if needed), if < 0 then uses string size.
      * @param offset Offset of the string to use, if a number is negative then uses `this.byteSize`.
      */
-    public function write(str:String, offset:UInt32 = -1) {
+    public function write(str:String, size:Int = -1, offset:UInt32 = -1) {
         if (offset < 0) {
             offset = byteSize;
         }
 
         untyped __cpp__('
             u32 bw = 0;
-            result = FSFILE_Write(h, &bw, offset, str.c_str(), str.size(), FS_WRITE_FLUSH);
+            result = FSFILE_Write(h, &bw, offset, str.c_str(), size < 0 ? str.size() : size, FS_WRITE_FLUSH);
             byteSize += bw
         ');
     }

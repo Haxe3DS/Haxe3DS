@@ -380,10 +380,7 @@ class FRD {
             svcCreateEvent(&frd_Handle, RESET_ONESHOT);
             FRD_AttachToEventNotification(frd_Handle);
 
-            s32 priority;
-            svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
-            priority -= 1;
-            frd_Thread   = threadCreate(threadStart, NULL, 32768, priority < 0x18 ? 0x18 : priority > 0x3F ? 0x3F : priority, -1, false)
+            fastCreateThread(threadStart, NULL);
         ');
     }
 
