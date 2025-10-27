@@ -81,7 +81,7 @@ void HTTPHandler(haxe3ds::services::HTTPContext* cont) {
             goto fail;
         }
 
-        httpcAddRequestHeaderField(&context, "User-Agent", "httpc-example/1.0.0");
+        httpcAddRequestHeaderField(&context, "User-Agent", "haxe-3ds/1.5.0");
         httpcAddRequestHeaderField(&context, "Connection", "Keep-Alive");
 
         cont->result = httpcBeginRequest(&context);
@@ -206,16 +206,17 @@ class HTTPContext {
      */
     public function new(url:String, callback:(HTTPCInfo, Array<VoidPtr>)->Void) {
         this.url = url;
-        this.file = url.substr(url.lastIndexOf("/"), url.indexOf("?")-1);
+
+        // Strip path to get the file name.
+        final last:Int = url.lastIndexOf("/");
+        this.file = url.substr(last, url.indexOf("?")-last);
         this.callback = callback;
     }
 
     /**
      * Starts requesting using this HTTP Context.
      * 
-     * ## WARNING:
-     * 
-     * If downloading in bytes, this is in very work in progress!
+     * Note: If downloading in bytes and saving to a file, Use `FSFile.writeVoid`!
      */
     public function request() {
         untyped __cpp__('HTTPHandler(this)');
