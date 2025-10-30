@@ -244,7 +244,6 @@ void threadStart(void* _) {
 			};
 
 			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage)), u16ToString(f.screenName, sizeof(f.screenName)), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
-
 			if (haxe3ds::services::FRD::notifCallback != nullptr) {
 				haxe3ds::services::FRD::notifCallback(x, event.type);
 			}
@@ -257,8 +256,8 @@ class FRD {
     /**
      * Variable that checks if the user is logged into Nintendo/Pretendo Network.
      */
-    public static var me_loggedIn(get, null):Bool;
-    static function get_me_loggedIn():Bool {
+    public static var loggedIn(get, null):Bool;
+    static function get_loggedIn():Bool {
         var out:Bool = false;
         untyped __cpp__('FRD_HasLoggedIn(&out)');
         return out;
@@ -267,80 +266,26 @@ class FRD {
     /**
      * Variable that checks if the user is connected to the internet and connected to their servers.
      */
-    public static var me_isOnline(get, null):Bool;
-    static function get_me_isOnline():Bool {
+    public static var isOnline(get, null):Bool;
+    static function get_isOnline():Bool {
         var out:Bool = false;
         untyped __cpp__('FRD_IsOnline(&out)');
         return out;
     }
 
     /**
-     * The Principal ID Tied to your account.
+     * Variable for this ID of the user's current local account.
      */
-    public static var me_principalID(default, null):UInt32 = 0;
+    public static var localAccountId(default, null):UInt8 = 0;
 
     /**
-     * Listing of the current user's profile, including their region, language, area and country.
-     */
-    public static var me_profile(default, null):FRDProfile = {
-        region: 0, language: 0, area: 0, country: 0
-    }
-
-    /**
-     * Variable that gets the current mii name from Friend List.
+     * Variable for this user's profile.
      * 
-     * Origin was in `*u16[10]` which was converted to a string.
-     */
-    public static var me_miiName(default, null):String = "";
-
-    /**
-     * Variable for this ID of the current local account.
-     */
-    public static var me_localAccountId(default, null):UInt8 = 0;
-
-    /**
-     * Variable that gets the current comment from Friend List, this is received from `Friend List` > `Your Profile`.
+     * Can only be usable *if* FRD is initialized, if not initialized yet used anyway: CRASH!
      * 
-     * Origin was in `*u16[10]` which was converted to a string.
+     * Note that it is not going to be updated everytime.
      */
-    public static var me_comment(get, null):String;
-    static function get_me_comment():String {
-        var out:String = "";
-
-        untyped __cpp__('
-            FriendComment c;
-            FRD_GetMyComment(&c);
-            out = u16ToString(c, FRIEND_COMMENT_LEN);
-        ');
-
-        return out;
-    }
-
-    /**
-     * Variable struct for your current preference usage that can be set on `Friend List` > `Settings`
-     * 
-     * To edit your preference, you just do this:
-     * ```
-     * var prefs = FRD.me_preference;
-     * prefs.publicMode = false;
-     * prefs.showPlayedGame = false;
-     * FRD.me_preference = prefs;
-     * ```
-     */
-    public static var me_preference(get, set):FRDPreference;
-    static function get_me_preference():FRDPreference {
-        var prefs:FRDPreference = {
-            publicMode: false,
-            showGameName: false,
-            showPlayedGame: false
-        }
-        untyped __cpp__('FRD_GetMyPreference(&prefs->publicMode, &prefs->showGameName, &prefs->showPlayedGame)');
-        return prefs;
-    }
-    static function set_me_preference(me_preference:FRDPreference):FRDPreference {
-        untyped __cpp__('FRDA_UpdatePreference(me_preference->publicMode, me_preference->showGameName, me_preference->showPlayedGame)');
-        return me_preference;
-    }
+    public static var myProfile(default, null):FRDFriendDetail;
 
     /**
      * Callback handler for notifications called from friends.
@@ -359,33 +304,56 @@ class FRD {
     public static function init() {
         untyped __cpp__('
             frdInit(false);
-
-            FriendKey key;
-            FRD_GetMyFriendKey(&key);
-            me_principalID = key.principalId;
-
-            Profile prof;
-            FRD_GetMyProfile(&prof);
-            me_profile->region = prof.region;
-            me_profile->language = prof.language;
-            me_profile->area = prof.area;
-            me_profile->country = prof.country;
-
-            MiiScreenName n;
-            FRD_GetMyScreenName(&n);
-            me_miiName = u16ToString(n, MII_NAME_LEN);
-
-            FRD_GetMyLocalAccountId(&me_localAccountId);
-
+            
             svcCreateEvent(&frd_Handle, RESET_ONESHOT);
             FRD_AttachToEventNotification(frd_Handle);
-
             fastCreateThread(threadStart, NULL);
+            
+            FriendKey key;
+            FriendInfo f;
+
+            FRD_GetMyFriendKey(&key);
+            FRD_GetFriendInfo(&f, &key, 1, false, false);
+            FRD_GetMyLocalAccountId(&localAccountId);
         ');
+
+        // reflaxe.cpp is dumb so i gotta do this to fix compiler error yaywoo
+        function fix(fix:FRDProfile) {};
+        fix({
+            region: 5,
+            language: 4,
+            area: 1,
+            country: 2
+        });
+
+        final relation:FRDRelationship = switch(untyped __cpp__('f.relationship')) {
+            case 0: NOT_REGISTERED;
+            case 1: REGISTERED;
+            case 2: NOT_FOUND;
+            case 3: DELETED;
+            case 4: LOCAL_ADDED;
+            default: UNKNOWN;
+        };
+
+        myProfile = {
+            comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage))'),
+            displayName: untyped __cpp__('u16ToString(f.screenName, sizeof(f.screenName))'),
+            profile: {
+                region: untyped __cpp__('f.friendProfile.profile.region'),
+                country: untyped __cpp__('f.friendProfile.profile.country'),
+                area: untyped __cpp__('f.friendProfile.profile.area'),
+                language: untyped __cpp__('f.friendProfile.profile.language')
+            },
+            addedTimestamp: untyped __cpp__('f.addedTimestamp'),
+            principalID: untyped __cpp__('f.friendKey.principalId'),
+            male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
+            relationship: relation,
+            favoriteGameTID: untyped __cpp__('f.friendProfile.favoriteGame.titleId')
+        };
     }
 
     /**
-     * Changes the Friend List's presence.
+     * Changes the Friend List's presence that is present in the Friend List.
      * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateMyPresence`).
      * @return Result code of whetever something from the services went wrong.
      */
@@ -393,7 +361,7 @@ class FRD {
         untyped __cpp__('
             FriendGameModeDescription desc;
             memset(desc, 0, sizeof(desc));
-            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN);
+            utf8_to_utf16(desc, (const u8*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN);
             
             Presence frdPres;
             memset(&frdPres, 0, sizeof(frdPres));
@@ -421,7 +389,7 @@ class FRD {
         untyped __cpp__('
             FriendComment desc;
             memset(desc, 0, sizeof(desc));
-            utf8_to_utf16(desc, (const uint8_t*)textToUse.c_str(), FRIEND_COMMENT_LEN)
+            utf8_to_utf16(desc, (const u8*)textToUse.c_str(), FRIEND_COMMENT_LEN)
         ');
 
         return untyped __cpp__('FRDA_UpdateComment(&desc)');
@@ -462,13 +430,13 @@ class FRD {
                 FriendInfo f = prof[{0}]
             ', i);
 
-            var relation:FRDRelationship = UNKNOWN;
-            switch(untyped __cpp__('f.relationship')) {
-                case 0: relation = NOT_REGISTERED;
-                case 1: relation = REGISTERED;
-                case 2: relation = NOT_FOUND;
-                case 3: relation = DELETED;
-                case 4: relation = LOCAL_ADDED;
+            final relation:FRDRelationship = switch(untyped __cpp__('f.relationship')) {
+                case 0: NOT_REGISTERED;
+                case 1: REGISTERED;
+                case 2: NOT_FOUND;
+                case 3: DELETED;
+                case 4: LOCAL_ADDED;
+                default: UNKNOWN;
             };
 
             out.push({

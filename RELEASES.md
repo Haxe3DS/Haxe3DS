@@ -6,9 +6,10 @@ APT         | Added `cpuTimeLimit`
 Compiler    | Used multi threading to decrease compile time by 3x.
 Compiler    | Heavily lowered build size by 4x.
 Env         | Added `isUsing3DS`
-FRD         | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`
+FRD         | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`, Optimized by removing vars to place in `FRDFriendDetail`.
 FS          | Added `deleteDir(String)`, added function being FSFILE.writeVoid(VoidPtr, Int, Int) and renamed FSFILE.write() to FSFILE.writeString();
 HTTPC       | Added Class.
+OS          | Added `getKernelConfig()`, and added struct: `OSConfig`, and enums too: `OSBootEnv`, `OSRunningHW`, `OSNetwork`.
 
 # 1.4.0
 

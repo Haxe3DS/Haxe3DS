@@ -81,7 +81,7 @@ void HTTPHandler(haxe3ds::services::HTTPContext* cont) {
             goto fail;
         }
 
-        httpcAddRequestHeaderField(&context, "User-Agent", "haxe-3ds/1.5.0");
+        httpcAddRequestHeaderField(&context, "User-Agent", "httpc-example/1.0.0");
         httpcAddRequestHeaderField(&context, "Connection", "Keep-Alive");
 
         cont->result = httpcBeginRequest(&context);
