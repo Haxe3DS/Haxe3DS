@@ -57,7 +57,7 @@ enum CFGURestrictBitmask {
 	/**
 	 * `BIT 3`
 	 * 
-	 * Sharing Images/Audio/Video/Long Text Data
+	 * Sharing Images/Audio/Video/Long Text Data (UGC)
 	 */
 	SHARING;
 
@@ -172,6 +172,11 @@ typedef CFGUParental = {
 	 * The secret answer that is used.
 	 */
 	var secretAnswer:String;
+
+	/**
+	 * Whetever or not if Parental Controls is enabled or not.
+	 */
+	var enabled:Bool;
 }
 
 /**
@@ -210,7 +215,7 @@ class CFGU {
 				u32 ngWord;
 			};
 			Block usern;
-			CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, std::addressof(usern));
+			CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, &usern);
 			systemUsername = u16ToString(usern.username, 10);
 
 			struct Birth {
@@ -218,11 +223,13 @@ class CFGU {
 				u8 day;
 			};
 			Birth birt;
-			CFGU_GetConfigInfoBlk2(sizeof(Birth), 0x000A0001, std::addressof(birt));
+			CFGU_GetConfigInfoBlk2(sizeof(Birth), 0x000A0001, &birt);
 			arr = {"January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"};
 			char date[15];
 			std::snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
-			systemBirthday = date
+			systemBirthday = date;
+
+			CFGU_GetConfigInfoBlk2(1, 0x00070001, &soundOutput);
 		');
 	};
 	
@@ -334,6 +341,16 @@ class CFGU {
 	public static var supportsNFC(default, null):Bool;
 
 	/**
+	 * The current sound output mode that's set by the user from `System Settings` > `Other Settings` > `Page 2`.
+	 * 
+	 * Possible Values:
+	 * - `0` - Mono.
+	 * - `1` - Stereo.
+	 * - `2` - 3D Surround Sound.
+	 */
+	public static var soundOutput(default, null):UInt8;
+
+	/**
 	 * Clears parental controls
 	 * 
 	 * @since 1.2.0
@@ -346,7 +363,7 @@ class CFGU {
 	 * @return A nicely structured CFGU Parental.
 	 * @since 1.5.0
 	 */
-	public static function getParentalControlInfo():CFGUParental {
+	public static function getParentalControlInfo():Null<CFGUParental> {
 		untyped __cpp__('
 			using namespace haxe3ds::services;
 			struct Parental {
@@ -406,7 +423,8 @@ class CFGU {
 			maxAllowedAge: untyped __cpp__('out.maxAllowedAge'),
 			secretQuestion: untyped __cpp__('out.secretQuestion'),
 			pin: untyped __cpp__('pin'),
-			secretAnswer: untyped __cpp__('strOut')
+			secretAnswer: untyped __cpp__('strOut'),
+			enabled: untyped __cpp__('*(u64*)&out & 1')
 		};
 	}
 }

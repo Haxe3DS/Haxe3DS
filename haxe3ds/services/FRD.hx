@@ -318,13 +318,8 @@ class FRD {
 		');
 
 		// reflaxe.cpp is dumb so i gotta do this to fix compiler error yaywoo
-		function fix(fix:FRDProfile) {};
-		fix({
-			region: 5,
-			language: 4,
-			area: 1,
-			country: 2
-		});
+		final _:FRDProfile = null;
+		untyped __cpp__('UNUSED_VAR({0})', _);
 
 		final relation:FRDRelationship = switch(untyped __cpp__('f.relationship')) {
 			case 0: NOT_REGISTERED;

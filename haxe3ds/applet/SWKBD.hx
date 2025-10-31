@@ -59,22 +59,22 @@ enum SWKBDValidInputHandler {
 	/**
 	 * Empty inputs are not accepted.
 	 */
-	NOTEMPTY;
+	NOT_EMPTY;
 
 	/**
 	 * Empty or blank inputs (consisting solely of whitespace) are not accepted.
 	 */
-	NOTEMPTY_NOTBLANK;
+	NOT_EMPTY_OR_BLANK;
 
 	/**
 	 * Blank inputs (consisting solely of whitespace) are not accepted, but empty inputs are.
 	 */
-	NOTBLANK;
+	NOT_BLANK;
 
 	/**
 	 * The input must have a fixed length (specified by maxTextLength in `maxTextLen`).
 	 */
-	FIXEDLEN;
+	FIXED_LEN;
 }
 
 /**
@@ -139,7 +139,7 @@ typedef SWKBDCallbackReturn = {
 	/**
 	 * Result Enum to use.
 	 */
-	var resultCB:SWKBDCallbackTypes;
+	var resultCallback:SWKBDCallbackTypes;
 }
 
 /**
@@ -210,7 +210,7 @@ SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackOut(void* user, const
 		std::shared_ptr<haxe3ds::applet::SWKBDCallbackReturn> out = handler->callbackFN(std::string(text));
 		*ppMessage = out->outMessage.c_str();
 
-		switch(out->resultCB->index) {
+		switch(out->resultCallback->index) {
 			case 0: return SWKBD_CALLBACK_OK;
 			case 1: return SWKBD_CALLBACK_CLOSE;
 			case 2: return SWKBD_CALLBACK_CONTINUE;
@@ -219,7 +219,7 @@ SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackOut(void* user, const
 
 	return SWKBD_CALLBACK_OK;
 }')
-@:headerInclude("haxe3ds_services_GFX.h")
+@:headerInclude("haxe3ds_Utils.h")
 @:headerClassCode("static SwkbdCallbackResult callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen);")
 class SWKBDHandler {
 	/**
@@ -276,7 +276,7 @@ class SWKBDHandler {
 	/**
 	 * Allow the usage of the HOME button.
 	 * 
-	 * If it's set to false, HOME Menu will be disabled and a icon will appear.
+	 * If it's set to `false`, HOME Menu will be disabled and a HOME Menu Icon with a Forbidden Logo will appear.
 	 */
 	public var homeMenu:Bool = false;
 
@@ -288,7 +288,7 @@ class SWKBDHandler {
 	/**
 	 * Allow the usage of the POWER button.
 	 * 
-	 * If it's set to false, pressing the power button will not bring you to the "In Sleep Mode, the system can..." screen.
+	 * If it's set to `false`, pressing the power button will not bring you to the "In Sleep Mode, the system can..." screen.
 	 */
 	public var powerButton:Bool = false;
 
@@ -305,7 +305,7 @@ class SWKBDHandler {
 	/**
 	 * Enable predictive input (necessary for Kanji input in JPN systems).
 	 * 
-	 * If disabled, predictive input will be hidden and won't be able to choose a variety of words. This also disables `dict`
+	 * If disabled, predictive input will be hidden and won't be able to choose a variety of words, This also disables `dict`.
 	 */
 	public var predictiveInput:Bool = true;
 
@@ -321,7 +321,7 @@ class SWKBDHandler {
 	 * 
 	 * Popping/Removing something from an array or length is less than 3 will THROW AN EXCEPTION!
 	 */
-	public var buttonData:Array<SWKBDButtonData> = [];
+	public var buttonData:Array<SWKBDButtonData> = [for (_ in 0...3) {input: "OK", buttonWillSubmit: true}];
 
 	/**
 	 * Current initial text that a software keyboard will display on launch.
@@ -372,29 +372,21 @@ class SWKBDHandler {
 	 * 
 	 * Example Callback:
 	 * ```
-this.callbackFN = input -> {
-	if (input == "awesome") {
-		return {
-			outMessage: "Awesome Indeed.",
-			resultCB: CLOSE
-		};
-	}
-
-	return {
-		outMessage: "",
-		resultCB: OK
-	}
-};
+	 * this.callbackFN = input -> {
+	 * 	if (input == "awesome") {
+	 * 		return {
+	 * 			outMessage: "Awesome Indeed.",
+	 * 			resultCallback: CLOSE
+	 * 		};
+	 * 	}
+	 * 
+	 * 	return {
+	 * 		outMessage: "",
+	 * 		resultCallback: OK
+	 * 	}
+	 * };
 	 */
-	public var callbackFN:String->SWKBDCallbackReturn = s -> {
-		// ok wow thanks reflaxe.cpp
-		var callback:SWKBDCallbackReturn = {
-			outMessage: "",
-			resultCB: OK
-		};
-
-		return callback;
-	};
+	public var callbackFN:String->SWKBDCallbackReturn;
 
 	/**
 	 * Initializes software keyboard status.
@@ -403,20 +395,20 @@ this.callbackFN = input -> {
 	 * @param maxTextLength Maximum number of UTF-16 code units that input text can have (or -1 to let Haxe3DS use a big default).
 	 */
 	public function new(type:SWKBDType = NORMAL, numButtons:Int = 1, maxTextLength:Int = -1) {
+		var callback:SWKBDCallbackReturn = {
+			outMessage: "",
+			resultCallback: OK
+		};
+
 		untyped __cpp__('
 			SwkbdState out;
 			swkbdInit(&out, toSwkbdType(type2->index), numButtons, maxTextLength);
 			this->type = out.type;
 			this->numButtonsM1 = out.num_buttons_m1;
 			this->maxTextLen = out.max_text_len;
-		');
 
-		for (i in 0...3) {
-			buttonData.push({
-				input: "OK",
-				buttonWillSubmit: true
-			});
-		}
+			UNUSED_VAR({0})
+		', callback);
 	}
 
 	/**
@@ -468,14 +460,12 @@ this.callbackFN = input -> {
 				swkbdSetLearningData(&out, &swkbdLearning, true, true);
 			}
 
-			if (this->callbackFN != nullptr) {
-				swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::callbackOut, this);
-			}
+			if (this->callbackFN != nullptr) swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::callbackOut, this);
 
 			char output[1700];
-			swkbdInputText(&out, output, 1700);
+			swkbdInputText(&out, output, 1700)
 		');
 
-		return untyped __cpp__('std::string(output)');
+		return untyped __cpp__('output');
 	}
 }
