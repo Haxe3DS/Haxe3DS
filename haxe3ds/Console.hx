@@ -7,7 +7,7 @@ enum GfxScreen_t {
 	/**
 	 * The 3DS's top screen. Resolution at 400x240.
 	 */
-	@:native("GFX_TOP")    GFX_TOP;
+	@:native("GFX_TOP")	GFX_TOP;
 
 	/**
 	 * The 3DS's bottom screen. Resolution at 320x240.
@@ -50,24 +50,24 @@ class ConsolePUA {
 	public static var buttonX:String   = "\uE003";
 	public static var buttonL:String   = "\uE004";
 	public static var buttonR:String   = "\uE005";
-	public static var dpad:String      = "\uE006";
-	public static var target:String    = "\uE01D";
-	public static var camera:String    = "\uE01E";
+	public static var dpad:String	  = "\uE006";
+	public static var target:String	= "\uE01D";
+	public static var camera:String	= "\uE01E";
 	public static var dpadAny:String   = "\uE041";
-	public static var back:String      = "\uE072";
-	public static var home:String      = "\uE073";
-	public static var steps:String     = "\uE074";
+	public static var back:String	  = "\uE072";
+	public static var home:String	  = "\uE073";
+	public static var steps:String	 = "\uE074";
 	public static var playCoin:String  = "\uE075";
-	public static var film:String      = "\uE076";
+	public static var film:String	  = "\uE076";
 	public static var circlePad:String = "\uE077";
-	public static var power:String     = "\uE078";
-	public static var dpadUp:String    = "\uE079";
+	public static var power:String	 = "\uE078";
+	public static var dpadUp:String	= "\uE079";
 	public static var dpadDown:String  = "\uE07A";
 	public static var dpadLeft:String  = "\uE07B";
 	public static var dpadRight:String = "\uE07C";
 	public static var dpadVert:String  = "\uE07D";
 	public static var dpadHori:String  = "\uE07E";
-	public static var close:String     = "\uE070";
+	public static var close:String	 = "\uE070";
 	public static var closeHighlight:String = "\uE071";
 	public static var questionBlock:String  = "\uE06B";
 }

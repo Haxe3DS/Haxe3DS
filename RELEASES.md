@@ -3,8 +3,8 @@
 MODULE      | CHANGES
 ------------|---------
 APT         | Added `cpuTimeLimit`
-Compiler    | Used multi threading to decrease compile time by 3x.
-Compiler    | Heavily lowered build size by 4x.
+Compiler    | Used multi threading to decrease compile time by 3x and ~~Heavily lowered build size by 4x.~~
+CFGU        | Added enum: `CFGURestrictBitmask`, typedef: `CFGUParental`, function: `getParentalControlInfo`.
 Env         | Added `isUsing3DS`
 FRD         | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`, Optimized by removing vars to place in `FRDFriendDetail`.
 FS          | Added `deleteDir(String)`, added function being FSFILE.writeVoid(VoidPtr, Int, Int) and renamed FSFILE.write() to FSFILE.writeString();

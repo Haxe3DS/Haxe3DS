@@ -20,7 +20,7 @@ class FSUtil {
 		var str:String = "";
 
 		untyped __cpp__('
-    		ifstream ifs(path);
+			ifstream ifs(path);
 			str = string(istreambuf_iterator<char>{ifs}, {})
 		');
 
@@ -89,13 +89,13 @@ class FSUtil {
 	 */
 	public static function saveFile(path:String, content:String):Bool {
 		untyped __cpp__('
-		    ofstream file(path);
-    	    if (!file.is_open()) {
-    	        return false;
-    	    }
-    
-    	    file << content;
-    	    file.close()
+			ofstream file(path);
+			if (!file.is_open()) {
+				return false;
+			}
+	
+			file << content;
+			file.close()
 		');
 		return true;
 	}

@@ -22,7 +22,7 @@ enum ErrorType {
 	 * Displays the EULA.
 	 */
 	EULA;
-    
+	
 	/**
 	 * Displays a network error message in a specified language.
 	 */
@@ -122,7 +122,7 @@ typedef ErrorConfig = {
 	/**
 	 * Which error code to use? Can range from `-32 Bit Integer Limit` (abstract.) to `32 Bit Integer Limit`
 	 * 
-     * Example being if you set to 20102, error code will show up as 002-0102
+	 * Example being if you set to 20102, error code will show up as 002-0102
 	 * 
 	 * Note: If this variable is set to 0, defaults to `An error occurred` instead of `Error Code: 000-0000`
 	 */
@@ -171,16 +171,16 @@ typedef ErrorConfig = {
 #include "haxe3ds_Utils.h"
 
 errorType getFromET(int e) {
-    switch(e) {
-        case 0: default: return ERROR_CODE;
-        case 1: return ERROR_TEXT;
-        case 2: return ERROR_EULA;
-        case 3: return ERROR_CODE_LANGUAGE;
-        case 4: return ERROR_TEXT_LANGUAGE;
-        case 5: return ERROR_EULA_LANGUAGE;
-        case 6: return ERROR_TEXT_WORD_WRAP;
-        case 7: return ERROR_TEXT_LANGUAGE_WORD_WRAP;
-    }
+	switch(e) {
+		case 0: default: return ERROR_CODE;
+		case 1: return ERROR_TEXT;
+		case 2: return ERROR_EULA;
+		case 3: return ERROR_CODE_LANGUAGE;
+		case 4: return ERROR_TEXT_LANGUAGE;
+		case 5: return ERROR_EULA_LANGUAGE;
+		case 6: return ERROR_TEXT_WORD_WRAP;
+		case 7: return ERROR_TEXT_LANGUAGE_WORD_WRAP;
+	}
 }
 
 std::shared_ptr<haxe3ds::applet::ErrorReturnCode> rcToHX(errorReturnCode c) {
@@ -196,19 +196,19 @@ std::shared_ptr<haxe3ds::applet::ErrorReturnCode> rcToHX(errorReturnCode c) {
 	}
 }')
 class Error {
-    /**
-     * Setups an error configuration so that the applet can understand it and displays it for you.
-     * @param errType The Error Type enum to use.
-     * @param language On which language do you want it say on.
-     * @return A crafted Error Configuration struct.
-     */
-    public static function setup(errType:ErrorType, language:CFG_Language):ErrorConfig {
+	/**
+	 * Setups an error configuration so that the applet can understand it and displays it for you.
+	 * @param errType The Error Type enum to use.
+	 * @param language On which language do you want it say on.
+	 * @return A crafted Error Configuration struct.
+	 */
+	public static function setup(errType:ErrorType, language:CFG_Language):ErrorConfig {
 		untyped __cpp__('
 			errorConf conf;
-	        errorInit(&conf, getFromET(errType->index), getFromCFGC(language->index))
+			errorInit(&conf, getFromET(errType->index), getFromCFGC(language->index))
 		');
 
-	    return {
+		return {
 			type: errType,
 			appJump: untyped __cpp__('conf.appJump'),
 			softwareReset: untyped __cpp__('conf.softwareReset'),
@@ -219,22 +219,22 @@ class Error {
 		};
 	}
 
-    /**
-     * Begins displaying the error applet configuration.
-     * @param config The error config setted up.
-     */
-    public static function display(config:ErrorConfig):ErrorResult {
-	    untyped __cpp__('
-	        errorConf conf;
+	/**
+	 * Begins displaying the error applet configuration.
+	 * @param config The error config setted up.
+	 */
+	public static function display(config:ErrorConfig):ErrorResult {
+		untyped __cpp__('
+			errorConf conf;
 			conf.type = getFromET(config->type->index);
 			conf.errorCode = config->errorCode;
 			conf.useLanguage = config->useLanguage;
 			conf.homeButton = config->homeButton;
 			conf.softwareReset = config->softwareReset;
 			conf.appJump = config->appJump;
-	        errorText(&conf, config->text.c_str());
-	        errorDisp(&conf)
-	    ');
+			errorText(&conf, config->text.c_str());
+			errorDisp(&conf)
+		');
 
 		return {
 			returnCode: untyped __cpp__('rcToHX(conf.returnCode)'),
