@@ -1,18 +1,19 @@
 # 1.5.0
 
-MODULE      | CHANGES
-------------|---------
-APT         | Added `cpuTimeLimit`
-Compiler    | Used multi threading to decrease compile time by 3x and ~~Heavily lowered build size by 4x.~~
-CFGU        | Added enum: `CFGURestrictBitmask`, typedef: `CFGUParental`, function: `getParentalControlInfo`, variable: `soundOutput`
-Env         | Added `isUsing3DS`
-Error       | Rewording and moved typedef variables to Class instead.
-FRD         | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`, Optimized by removing vars to place in `FRDFriendDetail`.
-FS          | Added `deleteDir(String)`, added function being FSFILE.writeVoid(VoidPtr, Int, Int) and renamed FSFILE.write() to FSFILE.writeString();
-HTTPC       | Added Class.
-OS          | Added `getKernelConfig()`, and added struct: `OSConfig`, and enums too: `OSBootEnv`, `OSRunningHW`, `OSNetwork`.
-SWKBD       | Rewording because it didn't make sense or just removed useless pieces of data.
-WebBrowser  | Added Class.
+MODULE        | CHANGES
+--------------|---------
+APT           | Added `cpuTimeLimit`
+Compiler      | Used multi threading to decrease compile time by 3x and ~~Heavily lowered build size by 4x.~~
+CFGU          | Added enum: `CFGURestrictBitmask`, typedef: `CFGUParental`, function: `getParentalControlInfo`, variable: `soundOutput`
+Env           | Added `isUsing3DS`
+Error         | Rewording and moved typedef variables to Class instead.
+FRD           | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`, Optimized by removing vars to place in `FRDFriendDetail`.
+FS            | Added `deleteDir(String)`, added function being FSFILE.writeVoid(VoidPtr, Int, Int) and renamed FSFILE.write() to FSFILE.writeString();
+HTTPC         | Added Class.
+OS            | Added `getKernelConfig()`, and added struct: `OSConfig`, and enums too: `OSBootEnv`, `OSRunningHW`, `OSNetwork`.
+SWKBD         | Rewording because it didn't make sense or just removed useless pieces of data.
+WebBrowser    | Added Class.
+VoiceSelector | Added Class.
 
 # 1.4.0
 

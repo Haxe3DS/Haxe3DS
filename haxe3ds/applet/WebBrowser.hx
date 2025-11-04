@@ -7,6 +7,8 @@ using StringTools;
 
 /**
  * Class for the Internet Browser API.
+ * 
+ * @since 1.5.0
  */
 @:cppInclude("haxe3ds_services_GFX.h")
 @:cppInclude("cstring")
@@ -40,7 +42,7 @@ class WebBrowser {
 		) return false;
 	
 		try {
-			var host:String = url.split("://")[1].split("/")[0];
+			final host:String = url.split("://")[1].split("/")[0];
 			if (host.length == 0 || !host.contains(".")) return false;
 		} catch(e:Exception) {
 			return false;
@@ -50,10 +52,12 @@ class WebBrowser {
 	}
 
 	/**
-	 * Launches the URL, and by that i mean it launches the applet "SPIDER" or "SKATER".
-	 * @param url The URL to launch, make sure to verify it using `isURLValid`.
+	 * Launches the URL, and by that i mean it launches the applet "SPIDER" or "SKATER", this also calls `isURLValid` and skips if it it's invalid.
+	 * @param url The URL to launch.
 	 */
 	public static function launchURL(url:String) {
+		if (!isURLValid(url)) return;
+
 		untyped __cpp__('
 			size_t urlLen = url.size() + 1, bSize = urlLen + 1;
 			u8* buffer = (u8*)malloc(bSize);

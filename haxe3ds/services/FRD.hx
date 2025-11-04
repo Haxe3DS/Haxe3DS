@@ -208,45 +208,24 @@ void threadStart(void* _) {
 	while (true) {
 		if (svcWaitSynchronization(frd_Handle, 1e10) == 0) {
 			NotificationEvent event;
-			u32 totalNotifs;
-			if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) {
-				continue;
-			}
-
 			FriendInfo f;
-			if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) {
-				continue;
-			}
+			u32 totalNotifs;
+
+			if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) continue;
+			if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) continue;
 
 			std::shared_ptr<haxe3ds::services::FRDRelationship> relation = haxe3ds::services::FRDRelationship::UNKNOWN();
 			switch(f.relationship) {
-				case 0: {
-					relation = haxe3ds::services::FRDRelationship::NOT_REGISTERED();
-					break;
-				}
-				case 1: {
-					relation = haxe3ds::services::FRDRelationship::REGISTERED();
-					break;
-				}
-				case 2: {
-					relation = haxe3ds::services::FRDRelationship::NOT_FOUND();
-					break;
-				}
-				case 3: {
-					relation = haxe3ds::services::FRDRelationship::DELETED();
-					break;
-				}
-				case 4: {
-					relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();
-					break;
-				}
+				case 0: {relation = haxe3ds::services::FRDRelationship::NOT_REGISTERED();break;}
+				case 1: {relation = haxe3ds::services::FRDRelationship::REGISTERED();break;}
+				case 2: {relation = haxe3ds::services::FRDRelationship::NOT_FOUND();break;}
+				case 3: {relation = haxe3ds::services::FRDRelationship::DELETED();break;}
+				case 4: {relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();break;}
 				default: {}
 			};
 
 			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage)), u16ToString(f.screenName, sizeof(f.screenName)), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
-			if (haxe3ds::services::FRD::notifCallback != nullptr) {
-				haxe3ds::services::FRD::notifCallback(x, event.type);
-			}
+			if (haxe3ds::services::FRD::notifCallback != nullptr) haxe3ds::services::FRD::notifCallback(x, event.type);
 		}
 	}
 	
@@ -409,30 +388,15 @@ class FRD {
 
 		untyped __cpp__('
 			FriendKey list[FRIEND_LIST_SIZE] = {};
-			u32 l = 0;
-			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, FRIEND_LIST_SIZE))) {
-				return {};
-			}
-
 			FriendInfo prof[100] = {};
-			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) {
-				return {};
-			}
+			u32 l = 0;
+
+			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, FRIEND_LIST_SIZE))) return {};
+			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) return {};
 		');
 
 		for (i in 0...untyped __cpp__('l')) {
-			untyped __cpp__('
-				FriendInfo f = prof[{0}]
-			', i);
-
-			final relation:FRDRelationship = switch(untyped __cpp__('f.relationship')) {
-				case 0: NOT_REGISTERED;
-				case 1: REGISTERED;
-				case 2: NOT_FOUND;
-				case 3: DELETED;
-				case 4: LOCAL_ADDED;
-				default: UNKNOWN;
-			};
+			untyped __cpp__('FriendInfo f = prof[{0}]', i);
 
 			out.push({
 				comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage))'),
@@ -446,7 +410,14 @@ class FRD {
 				addedTimestamp: untyped __cpp__('f.addedTimestamp'),
 				principalID: untyped __cpp__('f.friendKey.principalId'),
 				male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
-				relationship: relation,
+				relationship:  switch(untyped __cpp__('f.relationship')) {
+					case 0: NOT_REGISTERED;
+					case 1: REGISTERED;
+					case 2: NOT_FOUND;
+					case 3: DELETED;
+					case 4: LOCAL_ADDED;
+					default: UNKNOWN;
+				},
 				favoriteGameTID: untyped __cpp__('f.friendProfile.favoriteGame.titleId')
 			});
 		}

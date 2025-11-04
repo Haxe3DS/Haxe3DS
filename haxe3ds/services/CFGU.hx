@@ -211,7 +211,7 @@ class CFGU {
 
 			struct Block {
 				u16 username[10];
-				u32 zero;
+				u32 pad;
 				u32 ngWord;
 			};
 			Block usern;
@@ -412,7 +412,6 @@ class CFGU {
 			for (int i = 0; i < 34; i++) {
 				u16 digit = out.secretAnswer[i];
 				if (digit == 0) break;
-
 				strOut += digit;
 			}
 		');

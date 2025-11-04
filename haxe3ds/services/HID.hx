@@ -237,11 +237,9 @@ class HID {
 		final f:UInt32->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
 
 		final arr:Array<UInt32> = [Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL];
-		for (key in arr) {
-			if (f(cast(key : UInt32))) {
+		for (key in arr)
+			if (f(key))
 				ret.push(key);
-			}
-		}
 
 		return ret;
 	}
