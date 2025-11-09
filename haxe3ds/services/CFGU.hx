@@ -179,6 +179,23 @@ typedef CFGUParental = {
 	var enabled:Bool;
 }
 
+typedef CFGUUsername = {
+	/**
+	 * The current console's username.
+	 */
+	var name:String;
+
+	/**
+	 * Whetever or not this username contains profanity or not.
+	 */
+	var hasProfanity:Bool;
+
+	/**
+	 * NGWord version the username was last checked with. If this value is less than the u32 stored in the NGWord CFA "romfs:/version.dat", the system then checks the username string with the bad-word list CFA again, then updates this field with the value from the CFA.
+	 */
+	var version:UInt32;
+}
+
 /**
  * CFGU (Configuration) Service, home to system languge and the checker for 2DS Models
  */
@@ -194,11 +211,11 @@ class CFGU {
 			u8 r;
 			std::deque<std::string> arr = {"Japanese","English","French","German","Italian","Spanish","Simplified Chinese","Korean","Dutch","Portuguese","Russian","Traditional Chinese"};
 			CFGU_GetSystemLanguage(&r);
-			systemLanguage = arr[r];
+			language = arr[r];
 
 			arr = {"JPN","USA","EUR","AUS","CHN","KOR","TWN"};
 			CFGU_SecureInfoGetRegion(&r);
-			systemRegion = arr[r];
+			region = arr[r];
 
 			CFGU_GetRegionCanadaUSA(&r);
 			isCanadaUSA = r == 1;
@@ -207,16 +224,19 @@ class CFGU {
 
 			arr = {"CTR","SPR","KTR","FTR","RED","JAN"};
 			CFGU_GetSystemModel(&r);
-			systemModel = arr[r];
+			model = arr[r];
 
 			struct Block {
-				u16 username[10];
-				u32 pad;
-				u32 ngWord;
+				u16 user[10];
+				u8 nullterm;
+				u16 ngWord;
+				u32 ngWordv;
 			};
 			Block usern;
 			CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, &usern);
-			systemUsername = u16ToString(usern.username, 10);
+			username->name = u16ToString(usern.user, 10);
+			username->hasProfanity = (bool)usern.ngWord;
+			username->version = usern.ngWordv;
 
 			struct Birth {
 				u8 month;
@@ -227,7 +247,7 @@ class CFGU {
 			arr = {"January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"};
 			char date[15];
 			std::snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
-			systemBirthday = date;
+			birthday = date;
 
 			CFGU_GetConfigInfoBlk2(1, 0x00070001, &soundOutput);
 		');
@@ -242,16 +262,12 @@ class CFGU {
 	/**
 	 * Variable that gets the System's Current Username set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
 	 * 
-	 * Special thanks to [this repo](https://github.com/joel16/3DSident/blob/next/source/config.cpp#L37) for finding it out.
-	 * 
 	 * @since 1.3.0
 	 */
-	public static var systemUsername(default, null):String;
+	public static var username:CFGUUsername = {name: "", version: 0, hasProfanity: false};
 
 	/**
 	 * Variable that gets the System's Current Birthday set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
-	 * 
-	 * Special thanks to [this repo](https://github.com/joel16/3DSident/blob/next/source/config.cpp#L51) for finding it out.
 	 * 
 	 * Format for string examples:
 	 * ```
@@ -262,7 +278,7 @@ class CFGU {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var systemBirthday(default, null):String;
+	public static var birthday(default, null):String;
 
 	/**
 	 * Variable string for the current model.
@@ -279,7 +295,7 @@ class CFGU {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var systemModel(default, null):String;
+	public static var model(default, null):String;
 
 	/**
 	 * Variable string for the current region of this system.
@@ -297,7 +313,7 @@ class CFGU {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var systemRegion(default, null):String;
+	public static var region(default, null):String;
 
 	/**
 	 * Variable for the current system language used.
@@ -322,7 +338,7 @@ class CFGU {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var systemLanguage(default, null):String;
+	public static var language(default, null):String;
 
 	/**
 	 * Whetever or not the system is in canada or USA. This is also known as `CFG:IsCoppacsSupported`
@@ -351,14 +367,6 @@ class CFGU {
 	public static var soundOutput(default, null):UInt8;
 
 	/**
-	 * Clears parental controls
-	 * 
-	 * @since 1.2.0
-	 */
-	@:native("CFGI_ClearParentalControls")
-	public static function clearParentalControls():Result return 0;
-
-	/**
 	 * Gets the current parental control information, note that if `CFG_GetConfigInfoBlk4` failed, it will return as null.
 	 * @return A nicely structured CFGU Parental.
 	 * @since 1.5.0
@@ -369,10 +377,10 @@ class CFGU {
 			struct Parental {
 				u32 restrictionBitmask;
 				u32 unknown0x4;
-				u8  ratingSystem;
-				u8  maxAllowedAge;
-				u8  secretQuestion;
-				u8  unknown0xB;
+				u8 ratingSystem;
+				u8 maxAllowedAge;
+				u8 secretQuestion;
+				u8 unknown0xB;
 				u16 pinCode[4];
 				u16 secretAnswer[34];
 			};
@@ -425,5 +433,16 @@ class CFGU {
 			secretAnswer: untyped __cpp__('strOut'),
 			enabled: untyped __cpp__('*(u64*)&out & 1')
 		};
+	}
+
+	/**
+	 * Checks if the pin code matches with the Parental Controls pin.
+	 * @param code The pin in U16 to use.
+	 * @return `true` if it exactly matches, `false` if it ain't.
+	 */
+	public static function checkPCPinCode(code:UInt16):Bool {
+		final pin:CFGUParental = getParentalControlInfo();
+		if (pin == null) return true;
+		return pin.pin == code;
 	}
 }

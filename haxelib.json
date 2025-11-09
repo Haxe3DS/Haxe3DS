@@ -4,8 +4,8 @@
     "license":      "Public",
     "tags":         ["3ds", "devkitpro", "homebrew", "libctru", "cpp", "reflaxe", "reflaxe.cpp"],
     "description":  "Transpile then Compile Haxe Code to 3DS Applications in vastly amount of options easily!",
-    "version":      "1.4.0",
-    "releasenote":  "See https://github.com/Haxe3DS/Haxe3DS/blob/main/RELEASES.md#140 for release notes.",
+    "version":      "1.5.0",
+    "releasenote":  "See https://github.com/Haxe3DS/Haxe3DS/blob/main/RELEASES.md#150 for release notes.",
     "contributors": ["NAEL2XD"],
     "dependencies": {}
 }

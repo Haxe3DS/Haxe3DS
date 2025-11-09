@@ -2,9 +2,10 @@
 
 MODULE        | CHANGES
 --------------|---------
+ACT           | Added `isConnected(Bool)`
 APT           | Added `cpuTimeLimit`
 Compiler      | Used multi threading to decrease compile time by 3x and ~~Heavily lowered build size by 4x.~~
-CFGU          | Added enum: `CFGURestrictBitmask`, typedef: `CFGUParental`, function: `getParentalControlInfo`, variable: `soundOutput`
+CFGU          | Added enum: `CFGURestrictBitmask`, typedef: `CFGUParental` and `CFGUUsername`, function: `getParentalControlInfo`, variable: `soundOutput`, and renamed a lot of variables.
 Env           | Added `isUsing3DS`
 Error         | Rewording and moved typedef variables to Class instead.
 FRD           | Added `FRDNotifTypes`, `notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void`, Optimized by removing vars to place in `FRDFriendDetail`.

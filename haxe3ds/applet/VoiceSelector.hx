@@ -115,30 +115,21 @@ typedef VoiceSelResult = {
 #include "haxe3ds_Utils.h"
 #include <string.h>
 
-struct VCSELConfig {
+struct VCSELParameter {
+    u32 version;
+
     bool homeButton;
     bool softwareReset;
     u8 padding1[6];
-    u8 reserved[24];
-};
+    u8 reserved1[24];
 
-struct VCSELInput {
     u16 titleText[64];
     u32 filterFillType;
-    u8 reserved[256 - 2 * 64 - 1];
-};
+    u8 reserved2[127];
 
-struct VCSELOutput {
     u32 returnCode;
     u16 filePath[262];
     u8 reserved[496];
-};
-
-struct VCSELParameter {
-    u32 version;
-    VCSELConfig config;
-    VCSELInput input;
-    VCSELOutput output;
 };
 ')
 class VoiceSelector {
@@ -184,17 +175,17 @@ class VoiceSelector {
             VCSELParameter param;
             memset(&param, 0, sizeof(VCSELParameter));
 
-            param.config.homeButton = this->homeMenu;
-            param.config.softwareReset = this->softwareReset;
-            utf8_to_utf16(param.input.titleText, (u8*)this->text.c_str(), 64);
-            param.input.filterFillType = this->filter;
+            param.homeButton = this->homeMenu;
+            param.softwareReset = this->softwareReset;
+            utf8_to_utf16(param.titleText, (u8*)this->text.c_str(), 64);
+            param.filterFillType = this->filter;
 
             ret = APT_PrepareToStartLibraryApplet(APPID_SNOTE_AP);
             if (R_FAILED(ret)) {
                 goto cleanup;
             }
 
-            aptSetMessageCallback(NULL, &param.output);
+            aptSetMessageCallback(NULL, &param);
             aptLaunchLibraryApplet(APPID_SNOTE_AP, (void*)&param, 0x524, 0);
             aptSetMessageCallback(NULL, NULL);
 
@@ -203,7 +194,7 @@ class VoiceSelector {
 
         return {
             result: ret,
-            returnCode: switch (untyped __cpp__('param.output.returnCode')) {
+            returnCode: switch (untyped __cpp__('param.returnCode')) {
                 case -1: UNKNOWN;
                 case -2: INVALID_CONFIG;
                 case -3: OUT_OF_MEMORY;
@@ -214,8 +205,8 @@ class VoiceSelector {
                 case 12: POWER_BUTTON;
                 default: UNKNOWN;
             },
-            codeInt: untyped __cpp__('param.output.returnCode'),
-            filePath: untyped __cpp__('u16ToString(param.output.filePath, sizeof(param.output.filePath))')
+            codeInt: untyped __cpp__('param.returnCode'),
+            filePath: untyped __cpp__('u16ToString(param.filePath, sizeof(param.filePath))')
         };
     }
 }

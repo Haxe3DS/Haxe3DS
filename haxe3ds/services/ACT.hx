@@ -119,7 +119,7 @@ class ACT {
 		untyped __cpp__('
 			actInit(false);
 
-			ACT_GetCommonInfo(&numAccount,		 1, INFO_TYPE_COMMON_NUM_ACCOUNTS);
+			ACT_GetCommonInfo(&numAccount, 1, INFO_TYPE_COMMON_NUM_ACCOUNTS);
 			ACT_GetCommonInfo(&currentAccountSlot, 1, INFO_TYPE_COMMON_CURRENT_ACCOUNT_SLOT);
 			ACT_GetCommonInfo(&networkTimeDiff,	8, INFO_TYPE_COMMON_NETWORK_TIME_DIFF);
 
@@ -128,37 +128,46 @@ class ACT {
 
 			int j[2] = {1, 3};
 			for (int i = 0; i < 2; i++) {
-				u16		   userAge;
-				bool		  ads;
-				char		  cn[3];
-				AccountInfo   info;
-				char		  url[257];
+				u16 userAge;
+				bool ads;
+				char cn[3];
+				AccountInfo info;
+				char url[257];
 
 				int k = j[i];
-				ACT_GetAccountInfo(&userAge,  2, k, INFO_TYPE_AGE);
-				ACT_GetAccountInfo(&ads,	  1, k, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
-				ACT_GetAccountInfo(&cn,	   3, k, INFO_TYPE_COUNTRY_NAME);
-				ACT_GetAccountInfo(&info,   160, k, INFO_TYPE_ACCOUNT_INFO);
-				ACT_GetAccountInfo(&url,	257, k, INFO_TYPE_MII_IMAGE_URL);
+				ACT_GetAccountInfo(&userAge, 2, k, INFO_TYPE_AGE);
+				ACT_GetAccountInfo(&ads, 1, k, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
+				ACT_GetAccountInfo(&cn, 3, k, INFO_TYPE_COUNTRY_NAME);
+				ACT_GetAccountInfo(&info, 160, k, INFO_TYPE_ACCOUNT_INFO);
+				ACT_GetAccountInfo(&url, 257, k, INFO_TYPE_MII_IMAGE_URL);
 
 				char str[11];
 				snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
 
 				auto set = i == 0 ? nidU : pidU;
-				set->username	 = info.accountId;
+				set->username	  = info.accountId;
 				set->userAge	  = userAge;
 				set->receiveAds   = ads;
-				set->male		 = !info.mii.miiData.mii_details.sex;
+				set->male		  = !info.mii.miiData.mii_details.sex;
 				set->miiName	  = u16ToString(info.screenName, 11);
 				set->countryName  = reinterpret_cast<char*>(cn);
 				set->principalID  = info.principalId;
-				set->birthDate	= str;
+				set->birthDate	  = str;
 				set->miiImageURL  = url;
 			}
 		');
 
 		nnid = untyped __cpp__('nidU');
 		pnid = untyped __cpp__('pidU');
+	}
+
+	/**
+	 * Checks if an account from Nintendo or Pretendo is linked to the console's account.
+	 * @param isPretendo If you want it to check if it's from pretendo or not.
+	 * @return true if logged in (as if length of `username` is *not* 0).
+	 */
+	public static function isConnected(isPretendo:Bool = true):Bool {
+		return (isPretendo ? pnid : nnid).username.length != 0;
 	}
 
 	/**

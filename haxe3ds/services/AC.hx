@@ -40,11 +40,16 @@ class AC {
 	 * `(AC:U)` Current Wifi Status.
 	 * 
 	 * List of Point Types:
-	 * - `0`:  No access point/none allowed.
-	 * - `1`:  Slot 1 in System Settings.
-	 * - `2`:  Slot 2 in System Settings.
-	 * - `4`:  Slot 3 in System Settings.
+	 * - `0`: No access point/none allowed.
+	 * - `1`: Slot 1 in System Settings.
+	 * - `2`: Slot 2 in System Settings.
+	 * - `4`: Slot 3 in System Settings.
+	 * - `8`: Nintendo Wi-Fi USB Connector.
 	 * - `16`: Nintendo Zone AP.
+	 * - `32`: Wi-Fi Station.
+	 * - `64`: FreeSpot.
+	 * - `128`: Hotspot.
+	 * - `256`: Application-specified temporary settings.
 	 * 
 	 * If none of the value in `wifiStatus` match, it's likely intended to be a error code.
 	 * 
