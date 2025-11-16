@@ -1,7 +1,5 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Result;
-
 /**
  * Configuration language values.
  */
@@ -179,6 +177,10 @@ typedef CFGUParental = {
 	var enabled:Bool;
 }
 
+/**
+ * The username for this console.
+ * @since 1.5.0
+ */
 typedef CFGUUsername = {
 	/**
 	 * The current console's username.
@@ -195,6 +197,24 @@ typedef CFGUUsername = {
 	 */
 	var version:UInt32;
 }
+
+/**
+ * Settings for the screen brightness and power saving.
+ * @since 1.6.0
+ */
+typedef CFGUBacklightControl = {
+	/**
+	 * Whether or not power saving is enabled by the option in `HOME Menu Settings` > `Power-Saving Mode`.
+	 */
+	var powerSaving:Bool;
+
+	/**
+	 * The backlight brightness of the screen that's used, can be set easily in `HOME Menu Settings` > `Screen Brightness`.
+	 * 
+	 * Minumum 1, Maximum 5.
+	 */
+	var brightness:UInt8;
+};
 
 /**
  * CFGU (Configuration) Service, home to system languge and the checker for 2DS Models
@@ -322,17 +342,17 @@ class CFGU {
 	 * 
 	 * Possible Values:
 	 * ```
-	 * - "Japanese"            // 0
-	 * - "English"             // 1
-	 * - "French"              // 2
-	 * - "German"              // 3
-	 * - "Italian"             // 4
-	 * - "Spanish"             // 5
+	 * - "Japanese"			// 0
+	 * - "English"			 // 1
+	 * - "French"			  // 2
+	 * - "German"			  // 3
+	 * - "Italian"			 // 4
+	 * - "Spanish"			 // 5
 	 * - "Simplified Chinese"  // 6
-	 * - "Korean"              // 7
-	 * - "Dutch"               // 8
-	 * - "Portuguese"          // 9
-	 * - "Russian"             // 10
+	 * - "Korean"			  // 7
+	 * - "Dutch"			   // 8
+	 * - "Portuguese"		  // 9
+	 * - "Russian"			 // 10
 	 * - "Traditional Chinese" // 11
 	 * ```
 	 * 
@@ -363,6 +383,8 @@ class CFGU {
 	 * - `0` - Mono.
 	 * - `1` - Stereo.
 	 * - `2` - 3D Surround Sound.
+	 * 
+	 * @since 1.5.0
 	 */
 	public static var soundOutput(default, null):UInt8;
 
@@ -439,10 +461,34 @@ class CFGU {
 	 * Checks if the pin code matches with the Parental Controls pin.
 	 * @param code The pin in U16 to use.
 	 * @return `true` if it exactly matches, `false` if it ain't.
+	 * @since 1.5.0
 	 */
 	public static function checkPCPinCode(code:UInt16):Bool {
 		final pin:CFGUParental = getParentalControlInfo();
 		if (pin == null) return true;
 		return pin.pin == code;
+	}
+
+	/**
+	 * Gets the backlight control typedef settings stored in block 0x00050001.
+	 * @return `null` if `CFG_GetConfigInfoBlk8` failed to get, else returns the contents.
+	 * @since 1.6.0
+	 */
+	public static function getBacklightControl():Null<CFGUBacklightControl> {
+		untyped __cpp__('
+			struct BCB {
+				bool pse;
+				u8 bl;
+			};
+			BCB block;
+
+			if (R_FAILED(CFG_GetConfigInfoBlk8(sizeof(BCB), 0x00050001, &block)))
+				return nullptr;
+		');
+
+		return {
+			powerSaving: untyped __cpp__('block.pse'),
+			brightness: untyped __cpp__('block.bl')
+		}
 	}
 }

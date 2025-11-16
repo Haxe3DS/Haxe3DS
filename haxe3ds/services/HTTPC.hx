@@ -14,9 +14,9 @@ enum abstract HTTPCInfo(Int) {
 	 * 
 	 * Array arguments (by index):
 	 * - 0: `UInt8`  Bytes Downloaded.
-	 * - 1: `Uint32` The content size that got downloaded.
-	 * - 2: `Uint32` Total downloaded size.
-	 * - 3: `Uint32` The length of the content.
+	 * - 1: `UInt32` The content size that got downloaded.
+	 * - 2: `UInt32` Total downloaded size.
+	 * - 3: `UInt32` The length of the content.
 	 */
 	var DOWNLOAD_PENDING = 1;
 

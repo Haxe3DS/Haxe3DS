@@ -1,3 +1,14 @@
+# 1.6.0
+
+MODULE        | CHANGES
+--------------|---------
+APT           | Added enum: `APTSystemSettingsFlag`, and function: `jumpToSystemSettingsWithFlag(APTSystemSettingsFlag)`
+CFGU          | Added typedef: `CFGUBacklightControl`, and function: `getBacklightControl()`.
+FS            | Added `ctrRootPath`.
+HID           | Switch to using vars instead of functions for gyroscope, touch position, etc.
+MCU           | Renamed CLASS and added `temperature`.
+reflaxe.CPP   | Added support string for typedef.
+
 # 1.5.0
 
 MODULE        | CHANGES

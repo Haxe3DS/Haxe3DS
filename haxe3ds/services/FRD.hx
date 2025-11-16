@@ -205,6 +205,8 @@ Handle frd_Handle;
 Thread frd_Thread;
 
 void threadStart(void* _) {
+	UNUSED_VAR(_);
+
 	while (true) {
 		if (svcWaitSynchronization(frd_Handle, 1e10) == 0) {
 			NotificationEvent event;
@@ -221,7 +223,6 @@ void threadStart(void* _) {
 				case 2: {relation = haxe3ds::services::FRDRelationship::NOT_FOUND();break;}
 				case 3: {relation = haxe3ds::services::FRDRelationship::DELETED();break;}
 				case 4: {relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();break;}
-				default: {}
 			};
 
 			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage)), u16ToString(f.screenName, sizeof(f.screenName)), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);

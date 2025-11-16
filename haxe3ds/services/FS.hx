@@ -44,7 +44,11 @@ class FS {
 			FSUSER_IsSdmcDetected(&isSDMCDetected);
 			FSUSER_IsSdmcWritable(&isSDMCWritable);
 
-			FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""))
+			FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
+
+			u16 root[256] = {0};
+			FSUSER_GetSdmcCtrRootPath((u8*)root, 512);
+			ctrRootPath = u16ToString(root, 256);
 		');
 	}
 
@@ -215,6 +219,15 @@ class FS {
 		untyped __cpp__('FS_Path p = fsMakePath(PATH_ASCII, source.c_str())');
 		return untyped __cpp__('recursive ? FSUSER_DeleteDirectoryRecursively(sdmcRoot, p) : FSUSER_DeleteDirectory(sdmcRoot, p)');
 	}
+
+	/**
+	 * The current CTR Root Path in `sdmc` with this format: `/Nintendo 3DS/<id0>/<id1>`
+	 * 
+	 * ID0 and ID1 are randomly generated Base16 codes with the length of 32, example: `0d8f84f6c9a6af5ab0f61111e952aa9d`.
+	 * 
+	 * @since 1.6.0
+	 */
+	public static var ctrRootPath(default, null):String = "";
 
 	/**
 	 * Closes SDMC Archive and Exits FS.

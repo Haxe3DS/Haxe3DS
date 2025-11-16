@@ -1,11 +1,100 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
+
+/**
+ * The flags that can be used to launch for System Settings.
+ * @since 1.6.0
+ */
+enum abstract APTSystemSettingsFlag(UInt8) {
+	/**
+	 * Normally jumps to the default place of System Settings, like launching System Settings in the HOME Menu.
+	 */
+	var NORMAL;
+
+	/**
+	 * A setup flag that internally calls if it's unboxing a new 3ds or formatting it and turning it on.
+	 */
+	var SETUP;
+
+	/**
+	 * Shortcut to `Internet Settings` > `Connection Settings`, this is where the user can configure their internet settings.
+	 */
+	var INTERNET_SETTINGS_CONFIGURATION_PAGE = 0xF;
+
+	/**
+	 * Shortcut to `Internet Settings` > `Other Information`, stuff like `"User Agreement"` and `"Confirm MAC address"`.
+	 */
+	var INTERNET_SETTINGS_OTHER_SETTINGS;
+
+	/**
+	 * Shortcut to `Internet Settings`, this is where the user can configure their internet.
+	 */
+	var INTERNET_SETTINGS = 0x6E;
+
+	/**
+	 * Shortcut to `Parental Controls` like setting up or changing the settings on there.
+	 */
+	var PARENTAL_CONTROLS;
+
+	/**
+	 * Shortcut to `Data Management`, to backup saves, delete softwares, and more.
+	 */
+	var DATA_MANAGEMENT = 113;
+
+	/**
+	 * Shortcut to `Data Management` > `Nintendo 3DS` > `Softwares`, to delete software stuff.
+	 */
+	var SOFTWARE_MANAGEMENT_SOFTWARES;
+
+	/**
+	 * Shortcut to `Data Management` > `Nintendo 3DS` > `Extra Data`, to delete extra data you don't need.
+	 */
+	var SOFTWARE_MANAGEMENT_EXTRA_DATA;
+
+	/**
+	 * Shortcut to `Data Management` > `DSiWare`, to backup, delete, transfer DSi Softwares.
+	 */
+	var NINTENDO_DSI_SOFTWARES;
+
+	/**
+	 * Shortcut to `Data Management` > `StreetPass Data Management`.
+	 */
+	var STREETPASS_DATA_MANAGEMENT;
+
+	/**
+	 * Shortcut to `Other Settings` > `Page 4`, Relates to updating the system?
+	 */
+	var OTHER_SETTINGS_PAGE_4 = 119;
+
+	/**
+	 * Shortcut to `Other Settings` > `Page 1` > `Touch Screen`, to calibrate your touches.
+	 */
+	var OTHER_SETTINGS_TOUCH_CALIBRATION;
+
+	/**
+	 * Shortcut to `Other Settings` > `Page 4` > `Circle Pad`, to calibrate your circle pad.
+	 */
+	var OTHER_SETTINGS_CIRCLE_PAD;
+
+	/**
+	 * Shortcut to `Other Settings` > `Page 5` > `System Update`, with the prompt of asking you to connect to the internet.
+	 */
+	var OTHER_SETTINGS_SYSTEM_UPDATE;
+	
+	/**
+	 * Shortcut to `Other Settings` > `Page 5` > `Format System Memory`, with something that's risky.
+	 */
+	var OTHER_SETTINGS_FORMAT_SYSTEM = 124;
+}
+
 /**
  * APT (Applet) service.
  * 
  * This is where the most popular functions (such as `mainLoop`) is located.
  */
 @:cppInclude("haxe3ds_services_GFX.h")
+@:cppInclude("string.h")
 class APT {
 	/**
 	 * Variable if the 3DS model is the NEW 3DS instead of OLD 3DS.
@@ -123,4 +212,47 @@ class APT {
 	 */
 	@:native("aptShouldJumpToHome")
 	public static function shouldJumpToHome():Bool return false;
+
+	/**
+	 * Jumps to System Settings with region support and with flags!
+	 * 
+	 * Notes:
+	 * - Call `CFGU.init` to enable support for regions, not doing it will launch the wrong Title ID and throw an exception!
+	 * - This will QUIT the application running.
+	 * - Doing it one works fine, doing it twice returns `0xC8A0CFF0 (3365982192)` if calling `APT_PrepareToDoApplicationJump`.
+	 * - Emulators like AZAHAR has region set to `Auto-Select` instead of the proper region, and can cause a restart.
+	 * 
+	 * @param flag Flag to use for System Settings.
+	 * @return Result to indicate if something went wrong or not.
+	 * @see APTSystemSettingsFlag enum
+	 * @since 1.6.0
+	 */
+	public static function jumpToSystemSettingsWithFlag(flag:APTSystemSettingsFlag = NORMAL):Result {
+		final lowTID:UInt32 = switch (CFGU.region) {
+			case "JPN": 0x00020000;
+			case "USA" | "AUS": 0x00021000;
+			case "EUR": 0x00022000;
+			case "CHN": 0x00026000;
+			case "KOR": 0x00027000;
+			case "TWN": 0x00028000;
+			default: 0x00021000;
+		};
+
+		var ret:Result = 0;
+		untyped __cpp__('
+			u8 paramBuffer[0x300] = {0};
+			u8 workBuffer[0x20] = {0};
+			u32 sceneParam = (u32)flag;
+			memcpy(paramBuffer, &sceneParam, 4U);
+
+			ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | lowTID, MEDIATYPE_NAND);
+			if (R_FAILED(ret)) goto fail;
+
+			ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer);
+			if (R_FAILED(ret)) goto fail;
+
+			fail:
+		');
+		return ret;
+	}
 }

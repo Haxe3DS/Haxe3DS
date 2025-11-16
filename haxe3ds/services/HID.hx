@@ -245,80 +245,85 @@ class HID {
 	}
 
 	/**
-	 * Reads the current circle pad position.
-	 * @return CirclePosition Data for dx and dy
+	 * Variable for the Circle Pad Data.
 	 */
-	public static function circlePadRead():CirclePosition {
-		var pos:CirclePosition = {dx: 0, dy: 0};
+	public static var circlePad(get, null):CirclePosition;
+	static function get_circlePad():CirclePosition {
 		untyped __cpp__("
 			circlePosition temp;
-			hidCircleRead(&temp);
-			pos->dx = temp.dx;
-			pos->dy = -temp.dy
+			hidCircleRead(&temp)
 		");
-		return pos;
+
+		return {
+			dx: untyped __cpp__('temp.dx'),
+			dy: untyped __cpp__('temp.dy')
+		};
 	}
 
 	/**
-	 * Reads the current C-Stick position, ONLY is available in New 3DS Models!!!.
-	 * @return CirclePosition Data for dx and dy
+	 * Variable for the C Stick Data, this is only available for the New Nintendo 3DS.
 	 */
-	public static function cStickRead():CirclePosition {
-		var pos:CirclePosition = {dx: 0, dy: 0};
+	public static var cStick(get, null):CirclePosition;
+	static function get_cStick():CirclePosition {
 		untyped __cpp__("
 			circlePosition temp;
-			irrstCstickRead(&temp);
-			pos->dx = temp.dx;
-			pos->dy = temp.dy
+			irrstCstickRead(&temp)
 		");
-		return pos;
+
+		return {
+			dx: untyped __cpp__('temp.dx'),
+			dy: untyped __cpp__('temp.dy')
+		};
 	}
 
 	/**
-	 * Reads the current touch position.
-	 * @return TouchPosition Data for px and py.
+	 * Variable for the C Stick Data, this is only available for the New Nintendo 3DS.
 	 */
-	public static function touchPadRead():TouchPosition {
-		var pos:TouchPosition = {px: 0, py: 0};
+	public static var touch(get, null):TouchPosition;
+	static function get_touch():TouchPosition {
 		untyped __cpp__("
 			touchPosition temp;
-			hidTouchRead(&temp);
-			pos->px = temp.px;
-			pos->py = temp.py
+			hidTouchRead(&temp)
 		");
-		return pos;
+
+		return {
+			px: untyped __cpp__('temp.px'),
+			py: untyped __cpp__('temp.py')
+		};
 	}
 
 	/**
-	 * Reads the current accelerometer data.
-	 * @return Output of the accelerometer data.
+	 * Variable for the acceleration from the 3DS system.
 	 */
-	public static function accelRead():AccelVector {
-		var acc:AccelVector = {x: 0, y: 0, z: 0};
+	public static var accel(get, null):AccelVector;
+	static function get_accel():AccelVector {
 		untyped __cpp__("
 			accelVector temp;
-			hidAccelRead(&temp);
-			acc->x = temp.x;
-			acc->y = temp.y;
-			acc->z = temp.z
+			hidAccelRead(&temp)
 		");
-		return acc;
+
+		return {
+			x: untyped __cpp__('temp.x'),
+			y: untyped __cpp__('temp.y'),
+			z: untyped __cpp__('temp.z')
+		};
 	}
 
 	/**
-	 * Reads the current gyroscope data.
-	 * @return Output of the gyroscope data.
+	 * Variable for the gyroscope data from the 3DS system.
 	 */
-	public static function gyroRead():AngularRate {
-		var ang:AngularRate = {x: 0, y: 0, z: 0};
+	public static var angular(get, null):AngularRate;
+	static function get_angular():AngularRate {
 		untyped __cpp__("
 			angularRate temp;
 			hidGyroRead(&temp);
-			ang->x = temp.x;
-			ang->y = temp.y;
-			ang->z = temp.z
 		");
-		return ang;
+
+		return {
+			x: untyped __cpp__('temp.x'),
+			y: untyped __cpp__('temp.y'),
+			z: untyped __cpp__('temp.z')
+		};
 	}
 
 	/**

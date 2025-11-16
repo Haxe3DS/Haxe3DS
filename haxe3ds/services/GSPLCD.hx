@@ -92,15 +92,12 @@ class GSPLCD {
 
 	/**
 	 * Sets the Screen Brightness from screen provided.
-	 * 
 	 * @param screen Screen to use, top or bottom only.
 	 * @param brightness Brightness variable to set as. (`0x10 (16)` - `0xAC (172)`), will clamp into compatible values.
 	 */
 	public static function setScreenBrightness(screen:GSPLCDScreen, brightness:UInt8):Result {
 		var res:Result = 0;
-
 		untyped __cpp__('res = GSPLCD_SetBrightnessRaw(screenToU32(screen), (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))');
-
 		return res;
 	}
 

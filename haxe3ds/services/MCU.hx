@@ -1,7 +1,7 @@
 package haxe3ds.services;
 
 /**
- * mcuHwc service.
+ * MCU service.
  * 
  * @since 1.4.0
  */
@@ -66,4 +66,26 @@ class MCUWUC {
 	 * - It starts with `HI-LO`.
 	 */
 	public static var mcuVersion(default, null):String = "";
+
+	/**
+	 * The current temperature for the 3DS, this can also be found in Luma3DS by holding down `L + DPAD DOWN + SELECT` and seeing the bottom screen.
+	 * @since 1.6.0
+	 */
+	public static var temperature(get, null):UInt8;
+	static function get_temperature():UInt8 {
+		var temp:UInt8 = 0;
+
+		untyped __cpp__('
+			Result ret = 0;
+			u32 *cmdbuf = getThreadCommandBuffer();
+
+			cmdbuf[0] = IPC_MakeHeader(0xE,2,0);
+			if (R_FAILED(ret = svcSendSyncRequest(*mcuHwcGetSessionHandle())))
+				return ret;
+		
+			temp = cmdbuf[2];
+		');
+
+		return temp;
+	}
 }

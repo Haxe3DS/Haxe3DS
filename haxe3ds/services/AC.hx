@@ -33,6 +33,9 @@ typedef ACProxy = {
 
 /**
  * AC service.
+ * 
+ * Lists of error codes:
+ * - `0xE0A09D2E (3768622382)`: Happens if the hardware wifi switch is set to off or when the system is connecting to the Internet, happens on variable `wifiStatus`.
  */
 @:cppInclude("haxe3ds_services_GFX.h")
 class AC {
@@ -52,9 +55,6 @@ class AC {
 	 * - `256`: Application-specified temporary settings.
 	 * 
 	 * If none of the value in `wifiStatus` match, it's likely intended to be a error code.
-	 * 
-	 * Lists of error codes from this variable:
-	 * - `0xE0A09D2E (3768622382)`: Happens if the hardware wifi switch is set to off or when the system is connecting to the Internet.
 	 * 
 	 * @see https://www.3dbrew.org/wiki/ACU:GetWifiStatus
 	 */
