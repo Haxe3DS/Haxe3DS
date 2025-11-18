@@ -3,6 +3,7 @@
 MODULE        | CHANGES
 --------------|---------
 APT           | Added enum: `APTSystemSettingsFlag`, and function: `jumpToSystemSettingsWithFlag(APTSystemSettingsFlag)`
+Builder       | Fixed a bug that i didn't notice???
 CFGU          | Added typedef: `CFGUBacklightControl`, and function: `getBacklightControl()`.
 FS            | Added `ctrRootPath`.
 HID           | Switch to using vars instead of functions for gyroscope, touch position, etc.

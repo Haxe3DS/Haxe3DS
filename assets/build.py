@@ -99,10 +99,6 @@ options:
 		print("Revamping files to make it compatible with C++...")
 		shutil.copytree("assets/", "output/", dirs_exist_ok=True)
 		for files in glob.glob("output/src/**"):
-			# skip files starting with "haxe_"
-			if "haxe_" in files:
-				continue
-
 			c = read(files).splitlines()
 			c[0] = "// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler\n" + c[0]
 
@@ -128,12 +124,12 @@ options:
 
 		serverMode = "-s" if jsonStruct["settings"]["3dslink"]["debugMode"] else ""
 		if serverMode == "-s":
-			lol = read('output/src/_main_.cpp')
+			lol:str = read('output/src/_main_.cpp')
 			l = lol.index("_Main::Main_Fields_::main();")-1
 			dictation = list(lol)
 			dictation[0] = "#include <3ds.h>\n#include <malloc.h> /"
 			dictation[l] = 'u8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();'
-			dictation[l+28] = ';socsys.exit();\nfree(buf);'
+			dictation[l+28] = ';socExit();\nfree(buf);'
 			write("output/src/_main_.cpp", ''.join(dictation))
 			print("d")
 

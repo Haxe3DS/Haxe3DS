@@ -14,6 +14,9 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 
 	/**
 	 * A setup flag that internally calls if it's unboxing a new 3ds or formatting it and turning it on.
+	 * 
+	 * ### WARNING:
+	 * - It will erase the console's whole Mii Maker Data, including your personal MII!!! Use it with caution.
 	 */
 	var SETUP;
 
@@ -64,6 +67,8 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 
 	/**
 	 * Shortcut to `Other Settings` > `Page 4`, Relates to updating the system?
+	 * 
+	 * Note: Softlocks on Hardware 3DS?
 	 */
 	var OTHER_SETTINGS_PAGE_4 = 119;
 
@@ -79,6 +84,8 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 
 	/**
 	 * Shortcut to `Other Settings` > `Page 5` > `System Update`, with the prompt of asking you to connect to the internet.
+	 * 
+	 * This is also used for the "Safe Mode".
 	 */
 	var OTHER_SETTINGS_SYSTEM_UPDATE;
 	
@@ -176,13 +183,13 @@ class APT {
 	/**
 	 * Main function which handles sleep mode and HOME/power buttons - call this at the beginning of every frame.
 	 * 
-	 * This internally calls `HID.scanInput()`
+	 * This internally calls `HID.scanInput()`, `gspWaitForVBlank()` and `gfxSwapBuffers()`.
 	 * 
 	 * @return true if the application should keep running, false otherwise.
 	 */
 	public static function mainLoop():Bool {
 		HID.scanInput();
-		return untyped __cpp__('aptMainLoop()');
+		return untyped __cpp__('(gspWaitForVBlank(), gfxSwapBuffers(), aptMainLoop())');
 	}
 
 	/**
@@ -219,8 +226,9 @@ class APT {
 	 * Notes:
 	 * - Call `CFGU.init` to enable support for regions, not doing it will launch the wrong Title ID and throw an exception!
 	 * - This will QUIT the application running.
-	 * - Doing it one works fine, doing it twice returns `0xC8A0CFF0 (3365982192)` if calling `APT_PrepareToDoApplicationJump`.
+	 * - Sometimes softlocks the 3DS for apparently no reason, even if system settings isn't launched.
 	 * - Emulators like AZAHAR has region set to `Auto-Select` instead of the proper region, and can cause a restart.
+	 * - Booting to System Settings is slow and takes ~10 seconds to launch.
 	 * 
 	 * @param flag Flag to use for System Settings.
 	 * @return Result to indicate if something went wrong or not.
