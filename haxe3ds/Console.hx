@@ -3,7 +3,7 @@ package haxe3ds;
 /**
  * Screen Graphical Enum
  */
-enum GfxScreen_t {
+enum GFXScreen {
 	/**
 	 * The 3DS's top screen. Resolution at 400x240.
 	 */
@@ -80,11 +80,10 @@ class ConsolePUA {
  */
 class Console {
 	/**
-	 * Initialise the console.
-	 * @param screen The screen to use for the console.
+	 * Initialise the console, enabling tracing or printing to the console.
+	 * @param screen The GFX Screen to use to initialize.
 	 */
-	@:native("consoleInit")
-	public static function init(screen:GfxScreen_t, _:String = null) {};
+	public static function init(screen:GFXScreen) untyped __cpp__('consoleInit(screen, NULL)');
 
 	/**
 	 * Clears the screen by using iprintf("\x1b[2J");

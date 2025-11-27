@@ -208,7 +208,7 @@ void threadStart(void* _) {
 	UNUSED_VAR(_);
 
 	while (true) {
-		if (svcWaitSynchronization(frd_Handle, 1e10) == 0) {
+		if (svcWaitSynchronization(frd_Handle, U64_MAX) == 0) {
 			NotificationEvent event;
 			FriendInfo f;
 			u32 totalNotifs;
@@ -225,7 +225,7 @@ void threadStart(void* _) {
 				case 4: {relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();break;}
 			};
 
-			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage)), u16ToString(f.screenName, sizeof(f.screenName)), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
+			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage), u16ToString(f.screenName), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
 			if (haxe3ds::services::FRD::notifCallback != nullptr) haxe3ds::services::FRD::notifCallback(x, event.type);
 		}
 	}
@@ -311,8 +311,8 @@ class FRD {
 		};
 
 		myProfile = {
-			comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage))'),
-			displayName: untyped __cpp__('u16ToString(f.screenName, sizeof(f.screenName))'),
+			comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage)'),
+			displayName: untyped __cpp__('u16ToString(f.screenName)'),
 			profile: {
 				region: untyped __cpp__('f.friendProfile.profile.region'),
 				country: untyped __cpp__('f.friendProfile.profile.country'),
@@ -400,8 +400,8 @@ class FRD {
 			untyped __cpp__('FriendInfo f = prof[{0}]', i);
 
 			out.push({
-				comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage, sizeof(f.friendProfile.personalMessage))'),
-				displayName: untyped __cpp__('u16ToString(f.screenName, sizeof(f.screenName))'),
+				comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage)'),
+				displayName: untyped __cpp__('u16ToString(f.screenName)'),
 				profile: {
 					region: untyped __cpp__('f.friendProfile.profile.region'),
 					country: untyped __cpp__('f.friendProfile.profile.country'),

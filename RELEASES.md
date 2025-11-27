@@ -8,6 +8,7 @@ CFGU          | Added typedef: `CFGUBacklightControl`, and function: `getBacklig
 FS            | Added `ctrRootPath`.
 HID           | Switch to using vars instead of functions for gyroscope, touch position, etc.
 MCU           | Renamed CLASS and added `temperature`.
+NEWS          | Added `browser` to `NEWSHeader`
 reflaxe.CPP   | Added support string for typedef.
 
 # 1.5.0

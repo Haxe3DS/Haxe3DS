@@ -48,7 +48,7 @@ class FS {
 
 			u16 root[256] = {0};
 			FSUSER_GetSdmcCtrRootPath((u8*)root, 512);
-			ctrRootPath = u16ToString(root, 256);
+			ctrRootPath = u16ToString(root);
 		');
 	}
 

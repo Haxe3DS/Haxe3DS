@@ -149,7 +149,7 @@ class ACT {
 				set->userAge	  = userAge;
 				set->receiveAds   = ads;
 				set->male		  = !info.mii.miiData.mii_details.sex;
-				set->miiName	  = u16ToString(info.screenName, 11);
+				set->miiName	  = u16ToString(info.screenName);
 				set->countryName  = reinterpret_cast<char*>(cn);
 				set->principalID  = info.principalId;
 				set->birthDate	  = str;

@@ -254,7 +254,7 @@ class CFGU {
 			};
 			Block usern;
 			CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, &usern);
-			username->name = u16ToString(usern.user, 10);
+			username->name = u16ToString(usern.user);
 			username->hasProfanity = (bool)usern.ngWord;
 			username->version = usern.ngWordv;
 

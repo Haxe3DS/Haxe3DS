@@ -4,6 +4,7 @@ import haxe3ds.Types.Result;
 
 /**
  * The flags that can be used to launch for System Settings.
+ * @see https://www.3dbrew.org/wiki/System_Settings#Launch_parameters
  * @since 1.6.0
  */
 enum abstract APTSystemSettingsFlag(UInt8) {
@@ -21,14 +22,9 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 	var SETUP;
 
 	/**
-	 * Shortcut to `Internet Settings` > `Connection Settings`, this is where the user can configure their internet settings.
-	 */
-	var INTERNET_SETTINGS_CONFIGURATION_PAGE = 0xF;
-
-	/**
 	 * Shortcut to `Internet Settings` > `Other Information`, stuff like `"User Agreement"` and `"Confirm MAC address"`.
 	 */
-	var INTERNET_SETTINGS_OTHER_SETTINGS;
+	var INTERNET_SETTINGS_OTHER_SETTINGS = 0x11;
 
 	/**
 	 * Shortcut to `Internet Settings`, this is where the user can configure their internet.
@@ -41,9 +37,14 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 	var PARENTAL_CONTROLS;
 
 	/**
+	 * Shortcut to `Parental Controls` but for the birthday entry.
+	 */
+	var PARENTAL_CONTROLS_BIRTHDAY_ENTRY;
+
+	/**
 	 * Shortcut to `Data Management`, to backup saves, delete softwares, and more.
 	 */
-	var DATA_MANAGEMENT = 113;
+	var DATA_MANAGEMENT;
 
 	/**
 	 * Shortcut to `Data Management` > `Nintendo 3DS` > `Softwares`, to delete software stuff.
@@ -68,9 +69,11 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 	/**
 	 * Shortcut to `Other Settings` > `Page 4`, Relates to updating the system?
 	 * 
-	 * Note: Softlocks on Hardware 3DS?
+	 * Notes:
+	 * - Softlocks on Hardware 3DS?
+	 * - System Settings will return to it's initial settings instead of the HOME Menu.
 	 */
-	var OTHER_SETTINGS_PAGE_4 = 119;
+	var OTHER_SETTINGS_PAGE_4 = 0x77;
 
 	/**
 	 * Shortcut to `Other Settings` > `Page 1` > `Touch Screen`, to calibrate your touches.
@@ -91,6 +94,8 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 	
 	/**
 	 * Shortcut to `Other Settings` > `Page 5` > `Format System Memory`, with something that's risky.
+	 * 
+	 * Note: System Settings will return to it's initial settings instead of the HOME Menu.
 	 */
 	var OTHER_SETTINGS_FORMAT_SYSTEM = 124;
 }
@@ -253,11 +258,8 @@ class APT {
 			u32 sceneParam = (u32)flag;
 			memcpy(paramBuffer, &sceneParam, 4U);
 
-			ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | lowTID, MEDIATYPE_NAND);
-			if (R_FAILED(ret)) goto fail;
-
-			ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer);
-			if (R_FAILED(ret)) goto fail;
+			if (R_FAILED(ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | lowTID, MEDIATYPE_NAND))) goto fail;
+			if (R_FAILED(ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer))) goto fail;
 
 			fail:
 		');

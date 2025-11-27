@@ -65,6 +65,12 @@ typedef NEWSHeader = {
 	var title:String;
 
 	/**
+	 * Whether or not this has browser included for this notification.
+	 * @since 1.6.0
+	 */
+	var browser:Bool;
+
+	/**
 	 * The result code called from `News.getHeader`.
 	 * 
 	 * This is not used anywhere.
@@ -75,7 +81,14 @@ typedef NEWSHeader = {
 /**
  * News (Notification Appleter) Service.
  * 
- * Currently a total train wreck caused by LibCTRU devs, so this is broken atm, unless you know how to fix this (which is just replacing `news:u` to `news:s`), this will never work.
+ * This requires [this libctru fork](https://github.com/Haxe3DS/libctru) to actually get most of it working, if you do not have the custom libctru library installed, expect compiler errors or linker errors!
+ * 
+ * Result Codes:
+ * - `0xC8804470` - News MPO image was not found and cannot be dumped.
+ * - `0xD8E007F7` - Invalid handle, it's either `News` or `FS` that was not initialized.
+ * - `0xD900182F` - Original libctru repo is a trainwreck that uses the wrong handle to get the value.
+ * 
+ * @see https://github.com/devkitPro/libctru/issues/587 `(0xD900182F)`
  */
 @:cppInclude("haxe3ds_Utils.h")
 class News {
@@ -114,7 +127,7 @@ class News {
 	public static function addNotification(title:String, message:String, imagePath:String = "null"):Result {
 		untyped __cpp__("
 			u16 OutTitle[0x40] = {0};
-			u16 OutMessage[0x1780] = {0}; // cause why not lool
+			u16 OutMessage[0x1780] = {0};
 
 			const char* t = title.c_str();
 			const char* m = message.c_str();
@@ -186,21 +199,22 @@ class News {
 
 		return {
 			dataSet:	untyped __cpp__('h.dataSet'),
-			unread:	 untyped __cpp__('h.unread'),
+			unread:	    untyped __cpp__('h.unread'),
 			enableJPEG: untyped __cpp__('h.enableJPEG'),
 			isSpotPass: untyped __cpp__('h.isSpotPass'),
 			isOptedOut: untyped __cpp__('h.isOptedOut'),
 			processID:  untyped __cpp__('h.processID'),
 			jumpParam:  untyped __cpp__('h.jumpParam'),
-			time:	   untyped __cpp__('h.time'),
-			title:	  untyped __cpp__('u16ToString(h.title, 64)'),
-			result:	 ret
+			time:	    untyped __cpp__('h.time'),
+			title:	    untyped __cpp__('u16ToString(h.title)'),
+			browser:    untyped __cpp__('h.hasURL'),
+			result:	    ret
 		}
 	}
 
 	/**
-	 * Sets a header from the specified news ID and output. Todo: fix returning false everytime
-	 * @param newsID Identification of the current news.
+	 * Sets a header from the specified news ID and output.
+	 * @param newsID ID of the current news.
 	 * @param out Header Type-Definition to use.
 	 * @return Result code to check if something went wrong.
 	 * @since 1.3.0
@@ -227,11 +241,7 @@ class News {
 	/**
 	 * Dumps the MPO image to `SDMC` from the specified news.
 	 * 
-	 * Possible Result Code(s):
-	 * - `0xC8804470` - News MPO image was not found and cannot be dumped.
-	 * - `0xD8E007F7` - Invalid handle, it's either `News` or `FS` that was not initialized.
-	 * 
-	 * @param newsID News Identification to Use.
+	 * @param newsID News ID to Use.
 	 * @param dumpDest Dump Path Destination to Use.
 	 * @return Result code to check if something went wrong.
 	 */
@@ -275,10 +285,6 @@ class News {
 
 	/**
 	 * Variable property that gets current total notifications number.
-	 * 
-	 * Error Codes:
-	 * - `0xD900182F (3640662063)` - Due to LibCTRU's amazing coding skills, they've used `news:u` instead of `news:s` and thus is the reason why it caused this amazing error.
-	 * 
 	 * @see https://github.com/devkitPro/libctru/issues/587 `(0xD900182F)`
 	 */
 	public static var totalNotifications(default, null):UInt32;

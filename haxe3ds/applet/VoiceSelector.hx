@@ -206,7 +206,7 @@ class VoiceSelector {
                 default: UNKNOWN;
             },
             codeInt: untyped __cpp__('param.returnCode'),
-            filePath: untyped __cpp__('u16ToString(param.filePath, sizeof(param.filePath))')
+            filePath: untyped __cpp__('u16ToString(param.filePath)')
         };
     }
 }

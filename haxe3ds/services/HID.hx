@@ -143,7 +143,7 @@ typedef TouchPosition = {
 
 typedef AccelVector = {
 	/**
-	 *  Accelerometer X
+	 * Accelerometer X
 	 */
 	var x:Int;
 
@@ -177,27 +177,11 @@ typedef AngularRate = {
 
 /**
  * HID and IRRST services.
- * @see http://3dbrew.org/wiki/HID_Services
- * @see http://3dbrew.org/wiki/HID_Shared_Memory
- * @see http://3dbrew.org/wiki/IR_Services
- * @see http://3dbrew.org/wiki/IRRST_Shared_Memory
  * 
- * @since 1.0.0 only for C-Stick Support
+ * This is for enabling inputs to read from the 3DS, this also handles Circle Pad, C Stick, Touch, and miscelaneous ones such as Accelerometer and Angular
  */
 @:cppInclude("haxe3ds_services_GFX.h")
 class HID {
-	/**
-	 * Initializes HID.
-	 */
-	@:native("hidInit")
-	public static function init() {};
-
-	/**
-	 * Exits HID.
-	 */
-	@:native("hidExit")
-	public static function exit() {};
-
 	/**
 	 * Scans HID for input data.
 	 * 
