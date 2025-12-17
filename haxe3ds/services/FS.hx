@@ -1,7 +1,30 @@
 package haxe3ds.services;
 
+import haxe3ds.services.CFGU.CFGUUsername;
 import cxx.VoidPtr;
 import haxe3ds.Types.Result;
+
+/**
+ * Media Type for File System.
+ * 
+ * @since 1.6.0
+ */
+enum abstract FSMediaType(Int) {
+	/**
+	 * NAND
+	 */
+	var NAND = 0;
+
+	/**
+	 * SD Card
+	 */
+	var SD = 1;
+
+	/**
+	 * Game Card (Although rarely used.)
+	 */
+	var CARD = 2;
+}
 
 /**
  * File System Service.
@@ -354,5 +377,301 @@ class FSFile {
 	 */
 	public function close() {
 		result = untyped __cpp__('FSFILE_Close(h)');
+	}
+}
+
+/**
+ * The Application Title Metadata.
+ * @since 1.6.0
+ */
+typedef FSSMDHAppTitle = {
+	/**
+	 * The short description (length = 0x40) for this title.
+	 */
+	var shortDescription:String;
+
+	/**
+	 * The long description (length = 0x80) for this title.
+	 */
+	var longDescription:String;
+
+	/**
+	 * The Publisher (length = 0x40) for this title.
+	 */
+	var publisher:String;
+}
+
+/**
+ * App Title's Game Rating Flag depending by region's bit.
+ * @since 1.6.0
+ */
+enum FSSMDHAppGameRatingsFlag {
+	/**
+	 * CERO (Japan)
+	 */
+	CERO;
+
+	/**
+	 * ESRB (USA)
+	 */
+	ESRB;
+
+	/**
+	 * USK (German)
+	 */
+	USK;
+
+	/**
+	 * PEGI GEN (Europe)
+	 */
+	PEGI_GEN;
+
+	/**
+	 * PEGI PRT (Portugal)
+	 */
+	PEGI_PRT;
+
+	/**
+	 * PEGI BBFC (England)
+	 */
+	PEGI_BBFC;
+
+	/**
+	 * COB (Australia)
+	 */
+	COB;
+
+	/**
+	 * GRB (South Korea)
+	 */
+	GRB;
+
+	/**
+	 * CGSRR (Taiwan)
+	 */
+	CGSRR;
+}
+
+/**
+ * App Title's Region Lockout Flag depending by bitmask value.
+ * @since 1.6.0
+ */
+enum FSSMDHAppRegionLockout {
+	/**
+	 * Japan
+	 * 
+	 * `BITMASK 0x01`
+	 */
+	JAPAN;
+
+	/**
+	 * North America
+	 * 
+	 * `BITMASK 0x02`
+	 */
+	NORTH_AMERICA;
+
+	/**
+	 * Europe
+	 * 
+	 * `BITMASK 0x04`
+	 */
+	EUROPE;
+
+	/**
+	 * Australia
+	 * 
+	 * `BITMASK 0x08`
+	 */
+	AUSTRALIA;
+
+	/**
+	 * China
+	 * 
+	 * `BITMASK 0x10`
+	 */
+	CHINA;
+
+	/**
+	 * Korea
+	 * 
+	 * `BITMASK 0x20`
+	 */
+	KOREA;
+
+	/**
+	 * Taiwan
+	 * 
+	 * `BITMASK 0x40`
+	 */
+	TAIWAN;
+}
+
+/**
+ * @since 1.6.0
+ * The Title's App Settings.
+ */
+typedef FSSMDHAppSettings = {
+	/**
+	 * Title's Game Ratings that can be used for Parental Controls.
+	 */
+	var gameRatings:Array<FSSMDHAppGameRatingsFlag>;
+
+	/**
+	 * Title's Region Lockout that's restricted by Region.
+	 */
+	var regionLock:Array<FSSMDHAppRegionLockout>;
+};
+
+/**
+ * SMDH Metadata for a specific title.
+ * 
+ * TODO: Finish these.
+ * @since 1.6.0
+ */
+@:cppFileCode('
+struct SMDH {
+    struct Header {
+        u32 magic;
+        u16 version;
+        u16 reserved;
+    };
+
+    struct ApplicationTitle {
+        u16 shortDescription[0x40];
+        u16 longDescription[0x80];
+        u16 publisher[0x40];
+    };
+
+    struct Settings {
+        u8 gameRatings[0x10];
+        u32 regionLock;
+        u32 matchmaker_id;
+        u64 matchmaker_id_bit;
+        u32 flags;
+        u16 eulaVersion;
+        u16 reserved;
+        u32 defaultFrame;
+        u32 cecId;
+    };
+
+    Header header;
+    ApplicationTitle applicationTitles[16];
+    Settings settings;
+    u64 reserved;
+    u8 smallIconData[0x480];
+    u16 bigIconData[0x900];
+};
+')
+class FSSMDH {
+	/**
+	 * Result by any of the File System API called.
+	 */
+	public var result(default, null):Result = 0;
+
+	/**
+	 * Whether or not this SMDH metadata is valid.
+	 */
+	public var valid(default, null):Bool = false;
+
+	/**
+	 * An array for application titles.
+	 *
+	 * ```
+	 * INDEX | Language
+	 * ----------------
+	 * 0     | Japanese
+	 * 1     | English
+	 * 2     | French
+	 * 3     | German
+	 * 4     | Italian
+	 * 5     | Spanish
+	 * 6     | Simplified Chinese
+	 * 7     | Korean
+	 * 8     | Dutch
+	 * 9     | Portuguese
+	 * 10    | Russian
+	 * 11    | Traditional Chinese
+	 * ```
+	 */
+	public var applicationTitles(default, null):Array<FSSMDHAppTitle> = [];
+
+	/**
+	 * App Settings that is only used by HOME Menu.
+	 */
+	public var appSettings(default, null):FSSMDHAppSettings = {
+		gameRatings: [],
+		regionLock: []
+	};
+
+	/**
+	 * Constructor for the SMDH Metadata.
+	 * @param highTID The HIGH Title ID to use.
+	 * @param lowTID The LOW Title ID to use.
+	 * @param media The mediatype for the title.
+	 */
+	public function new(highTID:Int, lowTID:Int, media:FSMediaType) {
+		var thing = FS.ctrRootPath;
+		untyped __cpp__('
+			UNUSED_VAR({0});
+
+			u32 archPath[] = {lowTID, highTID, (FS_MediaType)media, 0x0};
+			static const u32 filePath[] = {0x0, 0x0, 0x2, 0x6E6F6369, 0x0};
+
+			SMDH smdhData;
+			FS_Path binArchPath = {PATH_BINARY, 0x10, archPath};
+			FS_Path binFilePath = {PATH_BINARY, 0x14, filePath};
+			Handle file;
+			u32 read;
+
+			#define RETURN_IF_FAILED(x) {\\
+				Result y = x; \\
+				if (R_FAILED(y)) { \\
+					this->result = y; \\
+					if (file) FSUSER_CloseArchive(file); \\
+					return; \\
+				} \\
+			} \\
+
+			RETURN_IF_FAILED(FSUSER_OpenFileDirectly(&file, ARCHIVE_SAVEDATA_AND_CONTENT, binArchPath, binFilePath, FS_OPEN_READ, 0));
+			RETURN_IF_FAILED(FSFILE_Read(file, &read, 0, &smdhData, sizeof(SMDH)));
+			FSUSER_CloseArchive(file);
+
+			if (!(valid = (smdhData.header.magic == 0x48444D53))) {
+				return;
+			}
+
+			#undef RETURN_IF_FAILED
+		', thing);
+
+		var x:Int = 11;
+		x++;
+		for (i in 0...x) {
+			applicationTitles.push({
+				shortDescription: untyped __cpp__('u16ToString(smdhData.applicationTitles[{0}].shortDescription)', i),
+				longDescription: untyped __cpp__('u16ToString(smdhData.applicationTitles[{0}].longDescription)', i),
+				publisher: untyped __cpp__('u16ToString(smdhData.applicationTitles[{0}].publisher)', i)
+			});
+		}
+
+		final flags:Array<FSSMDHAppGameRatingsFlag> = [CERO, ESRB, USK, PEGI_GEN, PEGI_PRT, PEGI_BBFC, COB, GRB, CGSRR];
+		for (i in 0...x) {
+			if (i == 2 || i == 5) continue; // reserved flag
+
+			if (untyped __cpp__('smdhData.settings.gameRatings[{0}]', i)) {
+				var j:Int = i;
+				if (i > 1) j--;
+				if (i > 4) j--;
+				this.appSettings.gameRatings.push(flags[j]);
+			}
+		}
+
+		x = 7;
+		final Lflags:Array<FSSMDHAppRegionLockout> = [JAPAN, NORTH_AMERICA, EUROPE, AUSTRALIA, CHINA, KOREA, TAIWAN];
+		for (i in 0...x) {
+			if (untyped __cpp__('BIT({0}) & smdhData.settings.regionLock', i)) {
+				this.appSettings.regionLock.push(Lflags[i]);
+			}
+		}
 	}
 }

@@ -3,16 +3,16 @@ package haxe3ds;
 /**
  * Screen Graphical Enum
  */
-enum GFXScreen {
+enum abstract GFXScreen(Int) {
 	/**
 	 * The 3DS's top screen. Resolution at 400x240.
 	 */
-	@:native("GFX_TOP")	GFX_TOP;
+	var	TOP;
 
 	/**
 	 * The 3DS's bottom screen. Resolution at 320x240.
 	 */
-	@:native("GFX_BOTTOM") GFX_BOTTOM;
+	var BOTTOM;
 }
 
 /**
@@ -78,12 +78,13 @@ class ConsolePUA {
  * Provides STDIO integration for printing to the 3DS screen as well as debug print
  * functionality provided by STDERR.
  */
+@:cppInclude("haxe3ds_Utils.h")
 class Console {
 	/**
 	 * Initialise the console, enabling tracing or printing to the console.
 	 * @param screen The GFX Screen to use to initialize.
 	 */
-	public static function init(screen:GFXScreen) untyped __cpp__('consoleInit(screen, NULL)');
+	public static function init(screen:GFXScreen = TOP) untyped __cpp__('consoleInit((gfxScreen_t)screen, NULL)');
 
 	/**
 	 * Clears the screen by using iprintf("\x1b[2J");

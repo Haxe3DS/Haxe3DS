@@ -246,24 +246,22 @@ class CFGU {
 			CFGU_GetSystemModel(&r);
 			model = arr[r];
 
-			struct Block {
+			union {
 				u16 user[10];
 				u8 nullterm;
 				u16 ngWord;
 				u32 ngWordv;
-			};
-			Block usern;
-			CFGU_GetConfigInfoBlk2(sizeof(Block), 0x000A0000, &usern);
+			} usern;
+			CFGU_GetConfigInfoBlk2(28, 0x000A0000, &usern);
 			username->name = u16ToString(usern.user);
 			username->hasProfanity = (bool)usern.ngWord;
 			username->version = usern.ngWordv;
 
-			struct Birth {
+			union {
 				u8 month;
 				u8 day;
-			};
-			Birth birt;
-			CFGU_GetConfigInfoBlk2(sizeof(Birth), 0x000A0001, &birt);
+			} birt;
+			CFGU_GetConfigInfoBlk2(2, 0x000A0001, &birt);
 			arr = {"January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"};
 			char date[15];
 			std::snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
@@ -396,17 +394,17 @@ class CFGU {
 	public static function getParentalControlInfo():Null<CFGUParental> {
 		untyped __cpp__('
 			using namespace haxe3ds::services;
-			struct Parental {
+			union {
 				u32 restrictionBitmask;
 				u32 unknown0x4;
 				u8 ratingSystem;
 				u8 maxAllowedAge;
 				u8 secretQuestion;
 				u8 unknown0xB;
-				u16 pinCode[4];
+				u8 pinCode[4];
+				u8 pad[4];
 				u16 secretAnswer[34];
-			};
-			Parental out;
+			} out;
 
 			if (R_FAILED(CFG_GetConfigInfoBlk4(0xC0, 0x000C0000, &out))) {
 				return nullptr;
@@ -435,15 +433,8 @@ class CFGU {
 			}
 
 			char numConvert[5];
-			sprintf(numConvert, "%u%u%u%u", out.pinCode[0] & 0xF, (out.pinCode[0] >> 8) & 0xF, out.pinCode[1] & 0xF, (out.pinCode[1] >> 8) & 0xF);
+			sprintf(numConvert, "%u%u%u%u", out.pinCode[0] & 0xF, out.pinCode[1] & 0xF, out.pinCode[2] & 0xF, out.pinCode[3] & 0xF);
 			int pin = std::stoi(numConvert);
-
-			std::string strOut;
-			for (int i = 0; i < 34; i++) {
-				u16 digit = out.secretAnswer[i];
-				if (digit == 0) break;
-				strOut += digit;
-			}
 		');
 
 		return {
@@ -452,7 +443,7 @@ class CFGU {
 			maxAllowedAge: untyped __cpp__('out.maxAllowedAge'),
 			secretQuestion: untyped __cpp__('out.secretQuestion'),
 			pin: untyped __cpp__('pin'),
-			secretAnswer: untyped __cpp__('strOut'),
+			secretAnswer: untyped __cpp__('(char*)out.secretAnswer'),
 			enabled: untyped __cpp__('*(u64*)&out & 1')
 		};
 	}
@@ -464,7 +455,7 @@ class CFGU {
 	 * @since 1.5.0
 	 */
 	public static function checkPCPinCode(code:UInt16):Bool {
-		final pin:CFGUParental = getParentalControlInfo();
+		final pin:Null<CFGUParental> = getParentalControlInfo();
 		if (pin == null) return true;
 		return pin.pin == code;
 	}
@@ -476,13 +467,12 @@ class CFGU {
 	 */
 	public static function getBacklightControl():Null<CFGUBacklightControl> {
 		untyped __cpp__('
-			struct BCB {
+			union {
 				bool pse;
 				u8 bl;
-			};
-			BCB block;
+			} block;
 
-			if (R_FAILED(CFG_GetConfigInfoBlk8(sizeof(BCB), 0x00050001, &block)))
+			if (R_FAILED(CFG_GetConfigInfoBlk8(2, 0x00050001, &block)))
 				return nullptr;
 		');
 

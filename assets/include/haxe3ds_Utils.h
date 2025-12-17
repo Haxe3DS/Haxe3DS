@@ -4,15 +4,20 @@
 #include <string>
 
 #define UNUSED_VAR(var) ((void)&var);
-
+#define RETURN_NULL_IF_FAILED(x) if (R_FAILED(x)) return nullptr;
 #define u16ToString(input) \
-    ([input]{ \
+	([&]{ \
 		size_t iSize = sizeof(input); \
-        u8 _out[iSize + 1] = {0}; \
-        ssize_t size = utf16_to_utf8(_out, input, iSize); \
-        if (size < 0) _out[size] = '\0'; \
-        return std::string(reinterpret_cast<char*>(_out)); \
-    }());
+		u8 _out[iSize + 1] = {0}; \
+		ssize_t size = utf16_to_utf8(_out, input, iSize); \
+		if (size < 0) _out[size] = '\0'; \
+		return std::string(reinterpret_cast<char*>(_out)); \
+	}())
+#define VAR_SET_BY_RESULT(x, y) \
+	Result res = y; \
+	if (R_FAILED(x)) { \
+		x = res; \
+	} \
 	
 CFG_Language getFromCFGC(int e);
 Thread fastCreateThread(ThreadFunc function, void* arg);

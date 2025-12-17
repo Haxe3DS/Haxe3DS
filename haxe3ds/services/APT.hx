@@ -101,17 +101,71 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 }
 
 /**
+ * The hook type on how it happend by the system.
+ * @since 1.6.0
+ */
+enum abstract APTHookType(Int) {
+	/**
+	 * Suspend happens if user pressed the HOME Menu.
+	 * 
+	 * Value: `0`
+	 */
+	var SUSPEND;
+
+	/**
+	 * Resume happens while in the HOME Menu.
+	 * 
+	 * Value: `1`
+	 */
+	var RESUME;
+
+	/**
+	 * System is sleeping due to User's Request.
+	 * 
+	 * Value: `2`
+	 */
+	var SLEEP;
+
+	/**
+	 * System stops sleeping due to User's Request.
+	 * 
+	 * Value: `3`
+	 */
+	var WAKEUP;
+
+	/**
+	 * Exit happens if user exits this app, only works in CIA?
+	 * 
+	 * Value: `4`
+	 */
+	var EXIT;
+}
+
+/**
  * APT (Applet) service.
  * 
  * This is where the most popular functions (such as `mainLoop`) is located.
  */
-@:cppInclude("haxe3ds_services_GFX.h")
-@:cppInclude("string.h")
+@:cppFileCode('
+#include <string.h>
+#include "haxe3ds_services_GFX.h"
+
+aptHookCookie cookie;
+void hookTest(APT_HookType hook, void* param) {
+	UNUSED_VAR(param);
+	auto hooky = haxe3ds::services::APT::hookHandler;
+	if (hooky != nullptr) {
+		hooky(hook);
+	}
+}
+')
 class APT {
 	/**
 	 * Variable if the 3DS model is the NEW 3DS instead of OLD 3DS.
 	 * 
 	 * Automatically gets set when APT is initialized, so use that first.
+	 * 
+	 * *This variable is ***REQUIRED*** to Initialize APT*
 	 */
 	public static var isNew3DS(default, null):Bool = false;
 
@@ -120,9 +174,20 @@ class APT {
 	 * 
 	 * Homebrew Launcher's TID: `0x000400000D921E00 (1125900134522368)` (This is always different if using a CIA with a custom TID)
 	 * 
+	 * *This variable is ***REQUIRED*** to Initialize APT*
+	 * 
 	 * @since 1.4.0
 	 */
 	public static var programID(default, null):UInt64 = 0;
+
+	/**
+	 * Hook Handler Function for any System Events, can be if the system is sleeping, or just pure silly things.
+	 * 
+	 * *This variable is ***REQUIRED*** to Initialize APT*
+	 * 
+	 * @since 1.6.0
+	 */
+	public static var hookHandler:(APTHookType)->Void;
 
 	/**
 	 * This gets/sets the amount of syscore CPU time available to the running application. It can range from 5% to 89%. Maximum value depends on the ExHeader. Setting a value higher than 30% does not seem to improve performance on Old 3DS, however it definitely does on New 3DS. 
@@ -147,7 +212,8 @@ class APT {
 	public static function init() {
 		untyped __cpp__('
 			APT_CheckNew3DS(&isNew3DS);
-			APT_GetProgramID(&programID)
+			APT_GetProgramID(&programID);
+			aptHook(&cookie, hookTest, nullptr)
 		');
 	}
 

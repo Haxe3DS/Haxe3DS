@@ -1,11 +1,14 @@
 # 1.6.0
 
+Note: 1.7.0 will migrate to using HXCPP instead of reflaxe.CPP.
+
 MODULE        | CHANGES
 --------------|---------
-APT           | Added enum: `APTSystemSettingsFlag`, and function: `jumpToSystemSettingsWithFlag(APTSystemSettingsFlag)`
+AM            | Added class.
+APT           | Added enum: `APTSystemSettingsFlag`, `APTHookType`, variable: `hookHandler`, and function: `jumpToSystemSettingsWithFlag(APTSystemSettingsFlag)`
 Builder       | Fixed a bug that i didn't notice???
-CFGU          | Added typedef: `CFGUBacklightControl`, and function: `getBacklightControl()`.
-FS            | Added `ctrRootPath`.
+CFGU          | Added typedef: `CFGUBacklightControl`, function: `getBacklightControl()`, and general fixes.
+FS            | Added `ctrRootPath`, and enum: `FSMediaType`, and an almost complete list of SMDH.
 HID           | Switch to using vars instead of functions for gyroscope, touch position, etc.
 MCU           | Renamed CLASS and added `temperature`.
 NEWS          | Added `browser` to `NEWSHeader`
