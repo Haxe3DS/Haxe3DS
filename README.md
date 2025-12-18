@@ -4,8 +4,6 @@
   </a>
 </p>
 
-<small>Logo by *[avie](https://github.com/h3ath3rr)*</small>
-
 Transpile and then Compile Haxe Code to 3DS Applications (3DSX or CIA) with easy documentation and some nifty useful tools (and too many services).
 
 The goal is to implement every single libctru functions to here and make as fewer functions and as more documentive to make homebrew applications easier, some will be in separate functions, because libctru are just pure lazy slog 🐌
@@ -28,7 +26,6 @@ Note: This is **ONLY** tested on 4.3.2 and you can try testing if it works on 5.
 
 # Credits:
 
-- [avie](https://github.com/h3ath3rr) for the logo, thank you! <3 <3
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.
 - [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
