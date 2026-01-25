@@ -1,7 +1,10 @@
 package haxe3ds.services;
 
+import cpp.UInt64;
+import cpp.UInt32;
+import sys.FileSystem;
+import sys.io.File;
 import haxe3ds.Types.Result;
-import haxe3ds.stdutil.FSUtil;
 
 using StringTools;
 
@@ -12,33 +15,33 @@ using StringTools;
  */
 typedef NEWSHeader = {
 	/**
-	 * Whetever or not the data's fully set or not.
+	 * Whether or not the data's fully set or not.
 	 * 
 	 * Useless?
 	 */
 	var dataSet:Bool;
 
 	/**
-	 * Whetever or not the notification is unread by the News Applet.
+	 * Whether or not the notification is unread by the News Applet.
 	 * 
 	 * If it's still unread, it would show a `blue` or `green` circle light.
 	 */
 	var unread:Bool;
 
 	/**
-	 * Whetever or not the image is a JPEG or not.
+	 * Whether or not the image is a JPEG or not.
 	 */
 	var enableJPEG:Bool;
 
 	/**
-	 * Whetever or not the notification is a SpotPass or a StreetPass using CECD.
+	 * Whether or not the notification is a SpotPass or a StreetPass using CECD.
 	 * 
 	 * Note: If set to `true`, shows a "Opt out of notifications for this software" in the Notification Applet.
 	 */
 	var isSpotPass:Bool;
 
 	/**
-	 * Whetever or not this notification was opted out.
+	 * Whether or not this notification was opted out.
 	 * 
 	 * This could only be found if notification has `isSpotPass` to `true` or the app has it available.
 	 */
@@ -75,7 +78,7 @@ typedef NEWSHeader = {
 	 * 
 	 * This is not used anywhere.
 	 */
-	var result:Result;
+	var ?result:Result;
 }
 
 /**
@@ -96,18 +99,7 @@ class News {
 	 * Initializes NEWS.
 	 */
 	public static function init():Result {
-		var ret:Result = 0;
-
-		untyped __cpp__('
-			ret = newsInit();
-
-			Result r = 0;
-			if (R_FAILED(r = NEWS_GetTotalNotifications(&totalNotifications))) {
-				totalNotifications = r;
-			}
-		');
-
-		return ret;
+		return untyped __cpp__('newsInit()');
 	};
 
 	/**
@@ -124,24 +116,21 @@ class News {
 	 * @return true if success, false if failed.
 	 * @since 1.3.0
 	 */
-	public static function addNotification(title:String, message:String, imagePath:String = "null"):Result {
+	public static function addNotification(title:String, message:String, imagePath:Null<String> = null):Result {
 		untyped __cpp__("
-			u16 OutTitle[0x40] = {0};
-			u16 OutMessage[0x1780] = {0};
+			u16 OutTitle[0x40] = { 0};
+			u16 OutMessage[0x1780] = { 0};
 
-			const char* t = title.c_str();
-			const char* m = message.c_str();
-
-			for (size_t i = 0; i < title.size(); i++) OutTitle[i] = t[i];
-			for (size_t i = 0; i < message.size(); i++) OutMessage[i] = m[i];
+			u32 tsize = (u32)TRANSFER(title.c_str(), OutTitle);
+			u32 msize = (u32)TRANSFER(message.c_str(), OutMessage);
 
 			u64 size = 0;
 			u8* image = NULL;
 		");
 
-		if (imagePath != "null" && FSUtil.exists(imagePath) && imagePath.endsWith("mpo")) {
+		if (imagePath != null && FileSystem.exists(imagePath) && imagePath.endsWith("mpo")) {
 			if (imagePath.startsWith("romfs")) {
-				FSUtil.saveFile("sdmc:/_news.mpo", FSUtil.readFile(imagePath));
+				File.saveBytes("sdmc:/_news.mpo", File.getBytes(imagePath));
 				imagePath = "/_news.mpo";
 			} else if (!imagePath.startsWith("/")) {
 				imagePath = '/$imagePath';
@@ -158,14 +147,14 @@ class News {
 				if (R_FAILED(FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, imagePath.c_str()), FS_OPEN_READ, FS_ATTRIBUTE_READ_ONLY))) {
 					goto fail2;
 				}
-					
-				image = (u8*)malloc(0xC800);
+
 				FSFILE_GetSize(h, &size);
 				if (size < 0xC800) {
 					u32 u;
+					image = (u8*)malloc(0xC800);
 					FSFILE_Read(h, &u, 0, &image, size);
 				}
-					
+
 				FSFILE_Close(h);
 				fail2:
 				FSUSER_CloseArchive(arch);
@@ -173,13 +162,12 @@ class News {
 			');
 
 			if (imagePath == "/_news.mpo") {
-				FS.deleteFile("/_news.mpo");
+				FileSystem.deleteFile("sdmc:/_news.mpo");
 			}
 		}
 
-		final success:Result = untyped __cpp__('NEWS_AddNotification(OutTitle, title.size(), OutMessage, message.size(), image, size, false)');
+		final success:Result = untyped __cpp__('NEWS_AddNotification(OutTitle, tsize, OutMessage, msize, image, size, false)');
 		untyped __cpp__('if (image != NULL) free(image)');
-
 		return success;
 	}
 
@@ -207,7 +195,7 @@ class News {
 			jumpParam:  untyped __cpp__('h.jumpParam'),
 			time:	    untyped __cpp__('h.time'),
 			title:	    untyped __cpp__('u16ToString(h.title)'),
-			browser:    untyped __cpp__('h.hasURL'),
+			browser:    untyped __cpp__('h.hasBrowserLink'),
 			result:	    ret
 		}
 	}
@@ -224,15 +212,18 @@ class News {
 			NotificationHeader h;
 			NEWS_GetNotificationHeader(newsID, &h);
 
-			h.dataSet = out->dataSet;
-			h.unread = out->unread;
-			h.enableJPEG = out->enableJPEG;
-			h.isSpotPass = out->isSpotPass;
-			h.isOptedOut = out->isOptedOut;
-			h.processID = out->processID;
-			h.jumpParam = out->jumpParam;
-			h.time = out->time;
-			utf8_to_utf16(h.title, (const u8*)out->title.c_str(), out->title.size());
+			h.dataSet = out->__Field(String("dataSet"),hx::paccDynamic);
+			h.unread = out->__Field(String("unread"),hx::paccDynamic);
+			h.enableJPEG = out->__Field(String("enableJPEG"),hx::paccDynamic);
+			h.isSpotPass = out->__Field(String("isSpotPass"),hx::paccDynamic);
+			h.isOptedOut = out->__Field(String("isOptedOut"),hx::paccDynamic);
+			h.processID = out->__Field(String("processID"),hx::paccDynamic);
+			h.jumpParam = out->__Field(String("jumpParam"),hx::paccDynamic);
+			h.hasBrowserLink = out->__Field(String("browser"),hx::paccDynamic);
+			h.time = out->__Field(String("time"),hx::paccDynamic);
+
+			String title = (String)(out->__Field(String("title"),hx::paccDynamic));
+			TRANSFER(title.c_str(), h.title);
 		');
 
 		return untyped __cpp__('NEWS_SetNotificationHeader(newsID, &h)');
@@ -285,7 +276,9 @@ class News {
 
 	/**
 	 * Variable property that gets current total notifications number.
-	 * @see https://github.com/devkitPro/libctru/issues/587 `(0xD900182F)`
 	 */
-	public static var totalNotifications(default, null):UInt32;
+	public static var totalNotifications(get, null):UInt32;
+	static function get_totalNotifications():UInt32 {
+		return untyped __cpp__('API_GETTER(u32, NEWS_GetTotalNotifications, 0)');
+	}
 }

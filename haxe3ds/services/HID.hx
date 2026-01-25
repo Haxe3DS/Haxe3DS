@@ -1,6 +1,8 @@
 package haxe3ds.services;
 
-@:dontGenerateDynamic
+import cpp.UInt8;
+import cpp.UInt32;
+
 class Key {
 	@:native("KEY_START")
 	public static var START:UInt32;
@@ -51,7 +53,7 @@ class Key {
 	public static var ZR:UInt32;
 	
 	/**
-	 * Not actually provided by HID
+	 * Not actually provided by HID, still functional.
 	 */
 	@:native("KEY_TOUCH")
 	public static var TOUCH:UInt32;
@@ -180,7 +182,7 @@ typedef AngularRate = {
  * 
  * This is for enabling inputs to read from the 3DS, this also handles Circle Pad, C Stick, Touch, and miscelaneous ones such as Accelerometer and Angular
  */
-@:cppInclude("haxe3ds_services_GFX.h")
+@:headerInclude("3ds.h")
 class HID {
 	/**
 	 * Scans HID for input data.
@@ -190,43 +192,25 @@ class HID {
 	public static function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
 
 	/**
-	 * Checks whetever a key is pressed or not.
-	 * @param key The key from extern Button to check whetever it's pressed.
+	 * Checks Whether a key is pressed or not.
+	 * @param key The key from extern Button to check Whether it's pressed.
 	 * @return true if pressed, false if not.
 	 */
-	public static function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & key");
+	public static inline function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & key");
 
 	/**
-	 * Checks whetever a key is held or not.
-	 * @param key The key from extern Button to check whetever it's held.
+	 * Checks Whether a key is held or not.
+	 * @param key The key from extern Button to check Whether it's held.
 	 * @return true if held, false if not.
 	 */
-	public static function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & key");
+	public static inline function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & key");
 
 	/**
-	 * Checks whetever a key is up or not.
-	 * @param key The key from extern Button to check whetever it's up.
+	 * Checks Whether a key is up or not.
+	 * @param key The key from extern Button to check Whether it's up.
 	 * @return true if up, false if not.
 	 */
-	public static function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & key");
-
-	/**
-	 * Returns a large variety of key pressed/held/up.
-	 * 
-	 * @param typeof Integer typeof, 1 = held, 2 = up, other = pressed.
-	 * @return Lists of UInt32 keys pressed.
-	 */
-	public static function keyArray(typeof:Int = 0):Array<UInt32> {
-		var ret:Array<UInt32> = [];
-		final f:UInt32->Bool = typeof == 1 ? keyHeld : typeof == 2 ? keyUp : keyPressed;
-
-		final arr:Array<UInt32> = [Key.A, Key.B, Key.CPAD_DOWN, Key.CPAD_LEFT, Key.CPAD_RIGHT, Key.CPAD_UP, Key.CSTICK_DOWN, Key.CSTICK_LEFT, Key.CSTICK_RIGHT, Key.ZR,Key.CSTICK_UP, Key.DDOWN, Key.DLEFT, Key.DRIGHT, Key.DUP, Key.L, Key.R, Key.SELECT, Key.START, Key.TOUCH, Key.X, Key.Y, Key.ZL];
-		for (key in arr)
-			if (f(key))
-				ret.push(key);
-
-		return ret;
-	}
+	public static inline function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & key");
 
 	/**
 	 * Variable for the Circle Pad Data.

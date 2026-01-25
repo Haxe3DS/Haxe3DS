@@ -1,24 +1,24 @@
 package haxe3ds.services;
 
 import haxe3ds.Types.Result;
-import cxx.num.UInt8;
-import cxx.num.UInt32;
+import cpp.UInt8;
+import cpp.UInt32;
 
-enum GSPLCDScreen {
+enum abstract GSPLCDScreen(Int) {
 	/**
 	 * Top screen.
 	 */
-	TOP;
+	var TOP = 1;
 
 	/**
 	 * Bottom screen.
 	 */
-	BOTTOM;
+	var BOTTOM;
 
 	/**
 	 * Both screens.
 	 */
-	BOTH;
+	var BOTH;
 }
 
 /**
@@ -26,16 +26,7 @@ enum GSPLCDScreen {
  * 
  * @since 1.2.0
  */
-@:cppFileCode('
-#include "haxe3ds_services_GFX.h"
-
-u32 screenToU32(std::shared_ptr<haxe3ds::services::GSPLCDScreen> i) {
-	switch(i->index) {
-		case 0: return GSPLCD_SCREEN_TOP;
-		case 1: return GSPLCD_SCREEN_BOTTOM;
-		case 2: return GSPLCD_SCREEN_BOTH;
-	}
-}')
+@:cppInclude("3ds.h")
 class GSPLCD {
 	/**
 	 * Variable Property that forcefully sets the LED, and won't forcefully get the property.
@@ -66,17 +57,10 @@ class GSPLCD {
 	/**
 	 * Sets the backlight from the 3DS
 	 * @param screen Screen to use.
-	 * @param enable Whetever or not you want to enable it.
+	 * @param enable Whether or not you want to enable it.
 	 */
 	public static function setBacklight(screen:GSPLCDScreen, enable:Bool):Result {
-		var res:Result = 0;
-		
-		untyped __cpp__('
-			u32 s = screenToU32(screen);
-			res = (enable ? GSPLCD_PowerOnBacklight(s) : GSPLCD_PowerOffBacklight(s))
-		');
-
-		return res;
+		return untyped __cpp__('enable ? GSPLCD_PowerOnBacklight(screen) : GSPLCD_PowerOffBacklight(screen)');
 	}
 
 	/**
@@ -86,7 +70,7 @@ class GSPLCD {
 	 */
 	public static function getScreenBrightness(screen:GSPLCDScreen):UInt8 {
 		var r:UInt32 = 0;
-		untyped __cpp__('GSPLCD_GetBrightness(screenToU32(screen), &r)');
+		untyped __cpp__('GSPLCD_GetBrightness(screen, &r)');
 		return r;
 	}
 
@@ -97,7 +81,7 @@ class GSPLCD {
 	 */
 	public static function setScreenBrightness(screen:GSPLCDScreen, brightness:UInt8):Result {
 		var res:Result = 0;
-		untyped __cpp__('res = GSPLCD_SetBrightnessRaw(screenToU32(screen), (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))');
+		untyped __cpp__('res = GSPLCD_SetBrightnessRaw(screen, (u32)(brightness < 16 ? 16 : brightness > 172 ? 172 : brightness))');
 		return res;
 	}
 

@@ -1,80 +1,81 @@
 package haxe3ds.applet;
 
-import cxx.num.UInt16;
+import cpp.UInt16;
+import cpp.UInt32;
 
 /**
  * The types that you can use for your Software Keyboard, they do stuff differently.
  */
-enum SWKBDType {
+enum abstract SWKBDType(Int) {
 	/**
 	 * Normal keyboard with several pages (QWERTY/accents/symbol/mobile)
 	 */
-	NORMAL;
+	var NORMAL;
 
 	/**
 	 * QWERTY keyboard only.
 	 */
-	QWERTY;
+	var QWERTY;
 
 	/**
 	 * Number pad.
 	 */
-	NUMPAD;
+	var NUMPAD;
 
 	/**
 	 * On JPN systems, a text keyboard without Japanese input capabilities, otherwise same as `NORMAL`.
 	 */
-	WESTERN;
+	var WESTERN;
 }
 
 /**
  * A password like mode for delay hiding, or just hiding instantly.
  */
-enum SWKBDPasswordMode {
+enum abstract SWKBDPasswordMode(Int) {
 	/**
 	 * Characters are not concealed/masked.
 	 */
-	NONE;
+	var NONE;
 
 	/**
 	 * Characters are concealed/masked immediately.
 	 */
-	HIDE;
+	var HIDE;
 
 	/**
 	 * Characters are concealed/masked a second after they've been typed.
 	 */
-	HIDE_DELAY;
+	var HIDE_DELAY;
 }
 
 /**
  * Valid input handler.
  */
-enum SWKBDValidInputHandler {
+enum abstract SWKBDValidInputHandler(Int) {
 	/**
 	 * All inputs are accepted.
 	 */
-	ANYTHING;
+	var ANYTHING;
 
 	/**
 	 * Empty inputs are not accepted.
 	 */
-	NOT_EMPTY;
+	var NOT_EMPTY;
 
 	/**
 	 * Empty or blank inputs (consisting solely of whitespace) are not accepted.
 	 */
-	NOT_EMPTY_OR_BLANK;
+	var NOT_EMPTY_OR_BLANK;
 
 	/**
 	 * Blank inputs (consisting solely of whitespace) are not accepted, but empty inputs are.
 	 */
-	NOT_BLANK;
+	var NOT_BLANK;
 
 	/**
 	 * The input must have a fixed length (specified by maxTextLength in `maxTextLen`).
 	 */
-	FIXED_LEN;
+	var FIXED_LEN;
 }
 
 /**
@@ -93,38 +94,23 @@ typedef SWKBDButtonData = {
 }
 
 /**
- * Dictionary Input/Output
- */
-typedef SWKBDDict = {
-	/**
-	 * Example would be if you use "lenny" as in.
-	 */
-	var input:String;
-
-	/**
-	 * And if you set the output to ( ͡° ͜ʖ ͡°), it will be this.
-	 */
-	var output:String;
-}
-
-/**
  * The Callback Types that's only used for the `callbackFN` function.
  */
-enum SWKBDCallbackTypes {
+enum abstract SWKBDCallbackTypes(Int) {
 	/**
 	 * Specifies that the input is valid.
 	 */
-	OK;
+	var OK;
 
 	/**
 	 * Displays an error message, then closes the keyboard.
 	 */
-	CLOSE;
+	var CLOSE;
 
 	/**
 	 * Displays an error message and continues displaying the keyboard.
 	 */
-	CONTINUE;
+	var CONTINUE;
 }
 
 /**
@@ -145,36 +131,36 @@ typedef SWKBDCallbackReturn = {
 /**
  * Filters to use in the SWKBD.
  */
-enum SWKBDFilter {
+enum abstract SWKBDFilter(UInt32) {
 	/**
 	 * The number of numbers that can be input is restricted.
 	 */
-	DIGITS;
+	var DIGITS = 1;
 
 	/**
 	 * Input of the at sign (@) is prohibited.
 	 */
-	AT;
+	var AT;
 
 	/**
 	 * Input of the percent symbol (%) is prohibited.
 	 */
-	PERCENT;
+	var PERCENT = 4;
 
 	/**
 	 * Input of the backslash (\\) is prohibited.
 	 */
-	BACKSLASH;
+	var BACKSLASH = 8;
 
 	/**
 	 * Input of profanity in strings that are displayed on the screen is prohibited.
 	 */
-	PROFANITY;
+	var PROFANITY = 16;
 
 	/**
 	 * Text checking is performed by the application.
 	 */
-	CALLBACK;
+	var CALLBACK = 32;
 }
 
 /**
@@ -185,41 +171,26 @@ enum SWKBDFilter {
  * @since 1.1.0
  */
 @:cppFileCode('
-SwkbdType toSwkbdType(int index) {
-	switch(index) {
-		case 0: default: return SWKBD_TYPE_NORMAL;
-		case 1: return SWKBD_TYPE_QWERTY;
-		case 2: return SWKBD_TYPE_NUMPAD;
-		case 3: return SWKBD_TYPE_WESTERN;
-	}
-}
-	
-SwkbdValidInput toSwkbdValidInput(int index) {
-	switch(index) {
-		case 0: default: return SWKBD_ANYTHING;
-		case 1: return SWKBD_NOTEMPTY;
-		case 2: return SWKBD_NOTEMPTY_NOTBLANK;
-		case 3: return SWKBD_NOTBLANK;
-		case 4: return SWKBD_FIXEDLEN;
-	}
-}
+SwkbdCallbackResult haxe3ds::applet::SWKBDHandler_obj::callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen) {
+	haxe3ds::applet::SWKBDHandler_obj* handler = reinterpret_cast<haxe3ds::applet::SWKBDHandler_obj*>(user);
+	if (handler->callbackFN != null()) {
+		Dynamic out = handler->callbackFN(String::create(text, textlen));
 
-SwkbdCallbackResult haxe3ds::applet::SWKBDHandler::callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen) {
-	haxe3ds::applet::SWKBDHandler* handler = static_cast<haxe3ds::applet::SWKBDHandler*>(user);
-	if (handler->callbackFN != nullptr) {
-		std::shared_ptr<haxe3ds::applet::SWKBDCallbackReturn> out = handler->callbackFN(std::string(text));
-		*ppMessage = out->outMessage.c_str();
-
-		switch(out->resultCallback->index) {
+		*ppMessage = ((String)(out->__Field(String("outMessage"),hx::paccDynamic))).c_str();
+		switch((int)out->__Field(String("resultCallback"),hx::paccDynamic)) {
 			case 0: return SWKBD_CALLBACK_OK;
 			case 1: return SWKBD_CALLBACK_CLOSE;
 			case 2: return SWKBD_CALLBACK_CONTINUE;
+			default: return SWKBD_CALLBACK_CLOSE;
 		}
 	}
 
-	return SWKBD_CALLBACK_OK;
-}')
-@:headerInclude("haxe3ds_Utils.h")
+	return SWKBD_CALLBACK_CLOSE;
+}
+
+static SwkbdStatusData swkbdStatus;
+static SwkbdLearningData swkbdLearning;')
+@:headerInclude("3ds.h")
 @:headerClassCode("static SwkbdCallbackResult callbackOut(void* user, const char** ppMessage, const char* text, size_t textlen);")
 class SWKBDHandler {
 	/**
@@ -339,7 +310,7 @@ class SWKBDHandler {
 	 * Note:
 	 * Seems to be useless at the moment.
 	 */
-	public var dict:Array<SWKBDDict> = [];
+	public var dict:Map<String, String> = [];
 
 	/**
 	 * Current validation for inputs.
@@ -395,49 +366,39 @@ class SWKBDHandler {
 	 * @param maxTextLength Maximum number of UTF-16 code units that input text can have (or -1 to let Haxe3DS use a big default).
 	 */
 	public function new(type:SWKBDType = NORMAL, numButtons:Int = 1, maxTextLength:Int = -1) {
-		var callback:SWKBDCallbackReturn = {
-			outMessage: "",
-			resultCallback: OK
-		};
-
 		untyped __cpp__('
 			SwkbdState out;
-			swkbdInit(&out, toSwkbdType(type2->index), numButtons, maxTextLength);
+			swkbdInit(&out, (SwkbdType)type, numButtons, maxTextLength);
 			this->type = out.type;
 			this->numButtonsM1 = out.num_buttons_m1;
-			this->maxTextLen = out.max_text_len;
-
-			UNUSED_VAR({0})
-		', callback);
+			this->maxTextLen = out.max_text_len
+		');
 	}
 
 	/**
 	 * Launches SWKBD with the current params that you've set!
+	 * 
+	 * Note:
+	 * - Will not return a value if there's a callback function.
+	 * 
 	 * @return Current text inputted, maximum 1700 characters.
 	 */
-	public function launch():String {
-		untyped __cpp__('
-			u32 filter = 0;
-			for (auto &&e : *this->filterFlags) {
-				switch(e->index) {
-					case 0: default: filter += SWKBD_FILTER_DIGITS; break;
-					case 1: filter += SWKBD_FILTER_AT; break;
-					case 2: filter += SWKBD_FILTER_PERCENT; break;
-					case 3: filter += SWKBD_FILTER_BACKSLASH; break;
-					case 4: filter += SWKBD_FILTER_PROFANITY; break;
-					case 5: filter += SWKBD_FILTER_CALLBACK; break;
-				}
+	public function display():String {
+		var filter:UInt32 = 0;
+		for (flags in filterFlags) {
+			final f32:UInt32 = cast(flags, UInt32);
+			if ((filter & f32) == 0) {
+				filter += f32;
 			}
+		}
 
+		untyped __cpp__('
 			SwkbdState out;
-			static SwkbdStatusData swkbdStatus;
-			static SwkbdLearningData swkbdLearning;
-			swkbdInit(&out, toSwkbdType(this->type), this->numButtonsM1 + 1, this->maxTextLen);
+			swkbdInit(&out, (SwkbdType)this->type, this->numButtonsM1 + 1, this->maxTextLen);
 
 			out.type = this->type;
 			out.num_buttons_m1 = this->numButtonsM1;
-			out.password_mode = this->passwordMode->index;
-			for (int i = 0; i < 2; i++) out.numpad_keys[i] = (*this->numpadKeys)[i];
+			out.password_mode = this->passwordMode;
 			out.multiline = this->multiline;
 			out.fixed_width = this->fixedWidth;
 			out.allow_home = this->homeMenu;
@@ -448,24 +409,43 @@ class SWKBDHandler {
 			out.predictive_input = this->predictiveInput;
 			swkbdSetHintText(&out, this->hintText.c_str());
 			swkbdSetInitialText(&out, this->initialText.c_str());
-			swkbdSetValidation(&out, toSwkbdValidInput(this->validInput->index), filter, this->maxDigits);
-			for (int i = 0; i < 3; i++) swkbdSetButton(&out, i == 0 ? SWKBD_BUTTON_LEFT : i == 1 ? SWKBD_BUTTON_MIDDLE : SWKBD_BUTTON_RIGHT, (*this->buttonData)[i]->input.c_str(), (*this->buttonData)[i]->buttonWillSubmit);
+			swkbdSetValidation(&out, (SwkbdValidInput)this->validInput, {0}, this->maxDigits);
+			for (int i = 0; i < 2; i++) out.numpad_keys[i] = this->numpadKeys->__get(i);
+			if (this->callbackFN != null()) swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler_obj::callbackOut, this);
+		', filter);
 
-			int len = (int)((*this->dict).size());
-			if (len != 0 && this->predictiveInput) {
-				SwkbdDictWord words[len];
-				for (int i = 0; i < len; i++) swkbdSetDictWord(&words[i], (*this->dict)[i]->input.c_str(), (*this->dict)[i]->output.c_str());
-				swkbdSetDictionary(&out, words, len);
-				swkbdSetStatusData(&out, &swkbdStatus, true, true);
-				swkbdSetLearningData(&out, &swkbdLearning, true, true);
+		for (i in 0...3) {
+			untyped __cpp__('swkbdSetButton(&out, (SwkbdButton){0}, ((String)({1})).c_str(), {2})', i, this.buttonData[i].input, this.buttonData[i].buttonWillSubmit);
+		}
+
+		final len:Int = {
+			var count:Int = 0;
+			for (_ in this.dict.keys()) count++;
+			count;
+		};
+
+		if (len != 0 && this.predictiveInput) {
+			untyped __cpp__('SwkbdDictWord words[len]');
+
+			var iter:Int = 0;
+			for (key => value in this.dict.keyValueIterator()) {
+				untyped __cpp__('swkbdSetDictWord(&words[{2}], {0}.c_str(), {1}.c_str())', key, value, iter);
+				iter++;
 			}
 
-			if (this->callbackFN != nullptr) swkbdSetFilterCallback(&out, &haxe3ds::applet::SWKBDHandler::callbackOut, this);
+			untyped __cpp__('
+				swkbdSetDictionary(&out, words, len);
+				static const bool reload = false;
+				swkbdSetStatusData(&out, &swkbdStatus, reload, true);
+				swkbdSetLearningData(&out, &swkbdLearning, reload, true)
+			');
+		}
 
+		untyped __cpp__('
 			char output[1700];
 			swkbdInputText(&out, output, 1700)
 		');
 
-		return untyped __cpp__('output');
+		return untyped __cpp__('String(output)');
 	}
 }

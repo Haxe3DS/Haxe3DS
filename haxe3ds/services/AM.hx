@@ -1,9 +1,11 @@
 package haxe3ds.services;
 
+import cpp.UInt16;
 import haxe3ds.services.FS.FSSMDH;
 import haxe3ds.services.FS.FSMediaType;
 import haxe3ds.Types.Result;
-import cxx.num.UInt64;
+import cpp.UInt32;
+import cpp.UInt64;
 
 /**
  * Special Content Types from this Application.
@@ -75,10 +77,14 @@ typedef AMTitleInfo = {
 
 	/**
 	 * The Applicaition's Version for this title, Format: `%d.%d.%d`
-	 * 
-	 * TODO: Fill data with actual versions.
 	 */
 	var version:String;
+
+	/**
+	 * The Application's Raw Version (As in u16 version).
+	 * @since 1.7.0
+	 */
+	var rawVersion:UInt16;
 
 	/**
 	 * An array of The Application's Content Types for this title.
@@ -110,9 +116,7 @@ typedef AMTitleInfo = {
  * Application Manager Service, allowing to do some settings with the titles.
  * @since 1.6.0
  */
-@:cppFileCode('
-#include "haxe3ds_Utils.h"
-')
+@:cppInclude("haxe3ds_Utils.h")
 class AM {
 	/**
 	 * Initializes AM, allowing to do some Application Management stuff.
@@ -143,8 +147,8 @@ class AM {
 		var titleLen:UInt32 = 0;
 
 		untyped __cpp__('
-			u64 tids[300] = {0};
-			AM_TitleInfo infos[300] = {0};
+			u64 tids[300] = { 0};
+			AM_TitleInfo infos[300] = { 0};
 			FS_MediaType t = (FS_MediaType)media;
 			RETURN_NULL_IF_FAILED(AM_GetTitleList(&titleLen, t, 300, tids));
 			RETURN_NULL_IF_FAILED(AM_GetTitleInfo(t, titleLen, tids, infos))
@@ -153,20 +157,27 @@ class AM {
 		final contents:Map<UInt32, AMContentType> = [1 => ENCRYPTED, 2 => DISC, 4 => HASHED, 8 => CFM, 8192 => SHA1_HASH, 16384 => OPTIONAL, 32768 => SHARED];
 		for (i in 0...titleLen) {
 			untyped __cpp__('
-				char product[16] = {0};
-				AM_GetTitleProductCode(t, tids[i], product)
-			');
+				char product[16] = { 0};
+				AM_TitleInfo inf = infos[{0}];
+				AM_GetTitleProductCode(t, tids[{0}], product)
+			', i);
+
+			final raw:UInt16 = untyped __cpp__('inf.version');
+			untyped __cpp__('
+				char ver[10];
+				sprintf(ver, "%d.%d.%d", (inf.version >> 10) & 0x3F, (inf.version >> 4) & 0x3F, inf.version & 0xF)
+			'); // thx fbi
 
 			final filtered:Array<AMContentType> = [];
-			for (num in contents.keys()) {
-				if ((num & untyped __cpp__('infos[i].titleType')) != 0) {
-					filtered.push(contents[num]);
+			for (num => key in contents.keyValueIterator()) {
+				if ((num & untyped __cpp__('inf.titleType')) != 0) {
+					filtered.push(key);
 				}
 			}
 
 			final titleID:UInt64 = untyped __cpp__('tids[i]');
-			final smdh:FSSMDH = new FSSMDH(titleID >> 32, titleID & 0xFFFFFFFF, media);
-			function get(data:Void->String):String {
+			final smdh:FSSMDH = new FSSMDH(untyped __cpp__('titleID >> 32'), untyped __cpp__('titleID & 0xFFFFFFFF'), media);
+			inline function get(data:Void->String):String {
 				return smdh.valid ? data() : "???";
 			}
 
@@ -174,14 +185,26 @@ class AM {
 				titleID: titleID,
 				productCode: untyped __cpp__('product'),
 				contentType: filtered,
-				version: "", // fill those data later
-				size: untyped __cpp__('infos[i].size'),
+				version: untyped __cpp__("ver"),
+				rawVersion: raw,
+				size: untyped __cpp__('inf.size'),
 				title: get(() -> smdh.applicationTitles[1].shortDescription),
 				description: get(() -> smdh.applicationTitles[1].longDescription),
 				publisher: get(() -> smdh.applicationTitles[1].publisher)
 			});
 		}
 
+		return out;
+	}
+
+	/**
+	 * Retrieves the current Device ID, this is used for SOAP requests since SOAP DeviceID is in u64, lower is the Pevice ID, upper is the Platform ID
+	 * @since 1.7.0
+	 */
+	public static var deviceID(get, null):UInt32;
+	static function get_deviceID():UInt32 {
+		var out:UInt32 = 0;
+		untyped __cpp__('AM_GetDeviceId(0, &out)');
 		return out;
 	}
 
@@ -194,7 +217,7 @@ class AM {
 	 * @param size Size in Int you want to input.
 	 * @return Output Blocks.
 	 */
-	public static function toBlocks(size:Int):Int {
+	public static inline function toBlocks(size:Int):Int {
 		return Std.int(size / 131072);
 	}
 }

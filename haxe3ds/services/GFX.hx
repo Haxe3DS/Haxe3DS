@@ -1,5 +1,7 @@
 package haxe3ds.services;
 
+import haxe.Log;
+
 /**
  * Simple framebuffer API
  *
@@ -11,16 +13,22 @@ package haxe3ds.services;
  * Width/height refer to the physical dimensions of the screen; that is, the top screen
  * is 240 pixels wide and 400 pixels tall; while the bottom screen is 240x320.
  */
-@:headerCode('
-#include <3ds.h>
-#include "haxe3ds_Utils.h"
-')
+@:headerInclude("3ds.h")
 class GFX {
 	/**
-	 * Initializes the LCD framebuffers with default parameters
+	 * Initializes the LCD framebuffers with default parameters.
+	 * 
+	 * This also replaces `haxe.Log.trace` to enable printing on SVC strings.
 	 */
-	@:native("gfxInitDefault")
-	public static function initDefault() {};
+	public static function initDefault() {
+		untyped __cpp__('gfxInitDefault()');
+
+		Log.trace = (v, ?infos) -> {
+			final str = Log.formatOutput(v, infos);
+			Sys.println(str);
+			SVC.debugString(str);
+		};
+	}
 
 	/**
 	 * Variable property for the GFX's 3D stereoscopic effect.
@@ -38,7 +46,7 @@ class GFX {
 		return untyped __cpp__('gfxIs3D()');
 	}
 	function set_current3D(current3D:Bool):Bool {
-		untyped __cpp__('gfxSet3D(current3D2)');
+		untyped __cpp__('gfxSet3D(current3D)');
 		return current3D;
 	}
 
@@ -60,7 +68,7 @@ class GFX {
 	public var isWide(get, set):Bool;
 	function get_isWide():Bool return untyped __cpp__('gfxIsWide()');
 	function set_isWide(isWide:Bool):Bool {
-		untyped __cpp__('gfxSetWide(isWide2)');
+		untyped __cpp__('gfxSetWide(isWide)');
 		return isWide;
 	}
 

@@ -1,12 +1,12 @@
 package haxe3ds.services;
 
 import haxe3ds.Types.Result;
-import cxx.num.UInt16;
-import cxx.num.UInt32;
+import cpp.UInt16;
+import cpp.UInt32;
 
 typedef ACProxy = {
 	/**
-	 * Whetever or not the proxy is enabled or not.
+	 * Whether or not the proxy is enabled or not.
 	 */
 	var enable:Bool;
 
@@ -37,7 +37,7 @@ typedef ACProxy = {
  * Lists of error codes:
  * - `0xE0A09D2E (3768622382)`: Happens if the hardware wifi switch is set to off or when the system is connecting to the Internet, happens on variable `wifiStatus`.
  */
-@:cppInclude("haxe3ds_services_GFX.h")
+@:cppInclude("haxe3ds_Utils.h")
 class AC {
 	/**
 	 * `(AC:U)` Current Wifi Status.
@@ -58,16 +58,22 @@ class AC {
 	 * 
 	 * @see https://www.3dbrew.org/wiki/ACU:GetWifiStatus
 	 */
-	public static var wifiStatus(default, null):UInt32 = 0;
+	public static var wifiStatus(get, null):UInt32 = 0;
+	static function get_wifiStatus():UInt32 {
+		return untyped __cpp__('API_GETTER(u32, ACU_GetWifiStatus, 0)');
+	}
 
 	/**
-	 * `(AC:U)` Whetever or not the 3DS is connected to the Internet.
+	 * `(AC:U)` Whether or not the 3DS is connected to the Internet.
 	 * 
 	 * This is automatically be set when `AC.init` is called,
 	 * Then it also calls `ACU_GetStatus` and checks if output is `3` (which typically means "connected"),
-	 * if it's not connected then it will return `1`
+	 * If it's not connected then it will return `1`
 	 */
-	public static var connected(default, null):Bool = false;
+	public static var connected(get, null):Bool = false;
+	static function get_connected():Bool {
+		return untyped __cpp__('API_GETTER(u32, ACU_GetStatus, 1) == 3');
+	}
 
 	/**
 	 * `(AC:U)` The SSID as a string called from `ACU_GetSSID`.
@@ -81,13 +87,7 @@ class AC {
 	/**
 	 * `(AC:U)` The proxy settings set from `AC.init`
 	 */
-	public static var proxy(default, null):ACProxy = {
-		enable: false,
-		host: "",
-		port: 0,
-		username: "",
-		password: ""
-	};
+	public static var proxy(default, null):ACProxy;
 
 	/**
 	 * Initializes AC and sets up everything.
@@ -95,47 +95,32 @@ class AC {
 	public static function init() {
 		untyped __cpp__('
 			acInit();
-			
-			Result r = 0;
-			if (R_FAILED(r = ACU_GetWifiStatus(&wifiStatus))) {
-				wifiStatus = r;
-			}
 
-			u16 f = 0;
-			u32 e = 0;
-			char s;
-			bool b = false;
+			char s[32] = { 0};
+			ACI_GetNetworkWirelessEssidSecuritySsid(s);
+			ssid = String(s);
 
-			ACU_GetStatus(&e);
-			connected = e == 3;
-
-			ACI_GetNetworkWirelessEssidSecuritySsid(&s);
-			ssid = std::to_string(s);
-
-			ACU_GetProxyEnable(&b);
-			proxy->enable = b;
-
-			ACU_GetProxyHost(&s);
-			proxy->host = std::to_string(s);
-
-			ACU_GetProxyPort(&f);
-			proxy->port = f;
-
-			ACU_GetProxyUserName(&s);
-			proxy->username = s;
-
-			ACU_GetProxyPassword(&s);
-			proxy->password = s;
+			char host[0x100], user[0x100], pass[0x100];
+			ACU_GetProxyHost(host);
+			ACU_GetProxyUserName(user);
+			ACU_GetProxyPassword(pass);
 		');
+
+		proxy = {
+			enable: untyped __cpp__('API_GETTER(bool, ACU_GetProxyEnable, false)'),
+			host: untyped __cpp__('String(host)'),
+			port: untyped __cpp__('API_GETTER(bool, ACU_GetProxyPort, 0)'),
+			username: untyped __cpp__('String(user)'),
+			password: untyped __cpp__('String(pass)'),
+		}
 	}
 
 	/**
 	 * `(AC:I)` Selects the WiFi configuration slot for further AC:I operations.
 	 * @param slot WiFi slot (0, 1 or 2).
 	 */
-	@:native("ACI_LoadNetworkSetting")
 	public static function loadNetworkSetting(slot:UInt32):Result {
-		return 0;
+		return untyped __cpp__('ACI_LoadNetworkSetting(slot)');
 	}
 
 	/**

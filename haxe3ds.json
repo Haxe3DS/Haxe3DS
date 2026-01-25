@@ -1,0 +1,6 @@
+{
+    "[HAXE3DS_FLAGS]": [
+        "-lctru",
+        "-lm"
+    ]
+}

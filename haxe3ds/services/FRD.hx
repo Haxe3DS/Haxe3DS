@@ -1,9 +1,11 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Event;
+import haxe3ds.Types.NanoTime;
 import haxe3ds.Types.Result;
-import cxx.num.UInt8;
-import cxx.num.UInt32;
-import cxx.num.UInt64;
+import cpp.UInt8;
+import cpp.UInt32;
+import cpp.UInt64;
 
 /**
  * Documentation on the relationship that has happend.
@@ -113,7 +115,7 @@ typedef FRDFriendDetail = {
 	/**
 	 * Current Added Timestamp from your friend's profile.
 	 */
-	var addedTimestamp:UInt64;
+	var addedTimestamp:NanoTime;
 
 	/**
 	 * The Principal ID Tied to their friend's account.
@@ -152,44 +154,44 @@ enum abstract FRDNotifTypes(Int) {
 	/**
 	 * The console went offline.
 	 */
-	var SELF_OFFLINE = 2;
+	var SELF_OFFLINE;
 
 	/**
 	 * A friend is now present (went online). 
 	 */
-	var FRIEND_ONLINE = 3;
+	var FRIEND_ONLINE;
 
 	/**
 	 * A friend changed their presence, and the current system's JoinGameID is the same as their new or old JoinGameID.
 	 */
-	var FRIEND_PRESENCE_CHANGED = 4;
+	var FRIEND_PRESENCE_CHANGED;
 
 	/**
 	 * A friend changed their Mii.
 	 */
-	var FRIEND_MII_CHANGED = 5;
+	var FRIEND_MII_CHANGED;
 
 	/**
 	 * A friend changed their Profile.
 	 * 
 	 * @see FRDProfile Struct.
 	 */
-	var FRIEND_PROFILE_CHANGED = 6;
+	var FRIEND_PROFILE_CHANGED;
 
 	/**
 	 * A friend is no longer present (went offline).
 	 */
-	var FRIEND_OFFLINE = 7;
+	var FRIEND_OFFLINE;
 
 	/**
 	 * A friend has added you back as a friend (if you had added them before as a "provisionally registered" friend).
 	 */
-	var FRIEND_REGISTERED = 8;
+	var FRIEND_REGISTERED;
 
 	/**
 	 * A friend sent you an invitation, and the current system's JoinGameID matches that of the friend.
 	 */
-	var FRIEND_GOT_INVITED = 9;
+	var FRIEND_GOT_INVITED;
 }
 
 /**
@@ -205,10 +207,14 @@ Handle frd_Handle;
 Thread frd_Thread;
 
 void threadStart(void* _) {
-	UNUSED_VAR(_);
-
+	using f = haxe3ds::services::FRDRelationship_obj;
 	while (true) {
-		if (svcWaitSynchronization(frd_Handle, U64_MAX) == 0) {
+		if (svcWaitSynchronization(frd_Handle, 500000000) == 0) {
+			auto caller = haxe3ds::services::FRD_obj::notifCallback;
+			if (caller == null()) {
+				continue;
+			}
+
 			NotificationEvent event;
 			FriendInfo f;
 			u32 totalNotifs;
@@ -216,17 +222,35 @@ void threadStart(void* _) {
 			if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) continue;
 			if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) continue;
 
-			std::shared_ptr<haxe3ds::services::FRDRelationship> relation = haxe3ds::services::FRDRelationship::UNKNOWN();
+			haxe3ds::services::FRDRelationship relation = null();
 			switch(f.relationship) {
-				case 0: {relation = haxe3ds::services::FRDRelationship::NOT_REGISTERED();break;}
-				case 1: {relation = haxe3ds::services::FRDRelationship::REGISTERED();break;}
-				case 2: {relation = haxe3ds::services::FRDRelationship::NOT_FOUND();break;}
-				case 3: {relation = haxe3ds::services::FRDRelationship::DELETED();break;}
-				case 4: {relation = haxe3ds::services::FRDRelationship::LOCAL_ADDED();break;}
+				case 0: {relation = f::NOT_REGISTERED_dyn(); break;}
+				case 1: {relation = f::REGISTERED_dyn(); break;}
+				case 2: {relation = f::NOT_FOUND_dyn(); break;}
+				case 3: {relation = f::DELETED_dyn(); break;}
+				case 4: {relation = f::LOCAL_ADDED_dyn(); break;}
+				default:{relation = f::UNKNOWN_dyn(); break;}
 			};
 
-			std::shared_ptr<haxe3ds::services::FRDFriendDetail> x = haxe::shared_anon<haxe3ds::services::FRDFriendDetail>(f.addedTimestamp, u16ToString(f.friendProfile.personalMessage), u16ToString(f.screenName), f.friendProfile.favoriteGame.titleId, !f.mii.miiData.mii_details.sex, f.friendKey.principalId, haxe::shared_anon<haxe3ds::services::FRDProfile>(f.friendProfile.profile.area, f.friendProfile.profile.country, f.friendProfile.profile.language, f.friendProfile.profile.region), relation);
-			if (haxe3ds::services::FRD::notifCallback != nullptr) haxe3ds::services::FRD::notifCallback(x, event.type);
+			Dynamic temp = Dynamic(hx::Anon_obj::Create(4)
+				->setFixed(0,String("region"),f.friendProfile.profile.region)
+				->setFixed(1,String("country"),f.friendProfile.profile.country)
+				->setFixed(2,String("area"),f.friendProfile.profile.area)
+				->setFixed(3,String("language"),f.friendProfile.profile.language));
+			
+			Dynamic out = Dynamic(hx::Anon_obj::Create(8)
+				->setFixed(0,String("comment"),u16ToString(f.friendProfile.personalMessage))
+				->setFixed(1,String("favoriteGameTID"),f.friendProfile.favoriteGame.titleId)
+				->setFixed(2,String("principalID"),(int)f.friendKey.principalId)
+				->setFixed(3,String("addedTimestamp"),f.addedTimestamp)
+				->setFixed(4,String("profile"),temp)
+				->setFixed(5,String("relationship"),relation)
+				->setFixed(6,String("displayName"),u16ToString(f.screenName))
+				->setFixed(7,String("male"),!f.mii.miiData.mii_details.sex));
+
+			caller->callEvents(cpp::VirtualArray_obj::__new(2)->init(0,out)->init(1,event.type));
+			temp = nullptr;
+			out = nullptr;
 		}
 	}
 	
@@ -238,9 +262,7 @@ class FRD {
 	 */
 	public static var loggedIn(get, null):Bool;
 	static function get_loggedIn():Bool {
-		var out:Bool = false;
-		untyped __cpp__('FRD_HasLoggedIn(&out)');
-		return out;
+		return untyped __cpp__('API_GETTER(bool, FRD_HasLoggedIn, 0)');
 	}
 
 	/**
@@ -248,20 +270,24 @@ class FRD {
 	 */
 	public static var isOnline(get, null):Bool;
 	static function get_isOnline():Bool {
-		var out:Bool = false;
-		untyped __cpp__('FRD_IsOnline(&out)');
-		return out;
+		return untyped __cpp__('API_GETTER(bool, FRD_IsOnline, 0)');
+	}
+
+	/**
+	 * The difference between the Server Time and the System Time in Nanoseconds. This calculates everytime the System logs in to the server.
+	 */
+	public static var serverTime(get, null):NanoTime;
+	static function get_serverTime():NanoTime {
+		return untyped __cpp__('API_GETTER(u64, FRD_GetServerTimeDifference, 0)');
 	}
 
 	/**
 	 * Variable for this ID of the user's current local account.
 	 */
-	public static var localAccountId(default, null):UInt8 = 0;
+	public static var localAccountId(default, null):UInt8;
 
 	/**
 	 * Variable for this user's profile.
-	 * 
-	 * Can only be usable *if* FRD is initialized, if not initialized yet used anyway: CRASH!
 	 * 
 	 * Note that it is not going to be updated everytime.
 	 */
@@ -276,7 +302,7 @@ class FRD {
 	 * 
 	 * @since 1.5.0
 	 */
-	public static var notifCallback:(FRDFriendDetail, FRDNotifTypes)->Void;
+	public static var notifCallback = new Event<(FRDFriendDetail, FRDNotifTypes)->Void>();
 
 	/**
 	 * Initializes friend services.
@@ -284,31 +310,17 @@ class FRD {
 	public static function init() {
 		untyped __cpp__('
 			frdInit(false);
-			
+
 			svcCreateEvent(&frd_Handle, RESET_ONESHOT);
 			FRD_AttachToEventNotification(frd_Handle);
 			fastCreateThread(threadStart, NULL);
 			
-			FriendKey key;
+			localAccountId = API_GETTER(u8, FRD_GetMyLocalAccountId, 0);
+			FriendKey key = API_GETTER(FriendKey, FRD_GetMyFriendKey, 0);
 			FriendInfo f;
 
-			FRD_GetMyFriendKey(&key);
 			FRD_GetFriendInfo(&f, &key, 1, false, false);
-			FRD_GetMyLocalAccountId(&localAccountId);
 		');
-
-		// reflaxe.cpp is dumb so i gotta do this to fix compiler error yaywoo
-		final _:FRDProfile = null;
-		untyped __cpp__('UNUSED_VAR({0})', _);
-
-		final relation:FRDRelationship = switch(untyped __cpp__('f.relationship')) {
-			case 0: NOT_REGISTERED;
-			case 1: REGISTERED;
-			case 2: NOT_FOUND;
-			case 3: DELETED;
-			case 4: LOCAL_ADDED;
-			default: UNKNOWN;
-		};
 
 		myProfile = {
 			comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage)'),
@@ -322,7 +334,14 @@ class FRD {
 			addedTimestamp: untyped __cpp__('f.addedTimestamp'),
 			principalID: untyped __cpp__('f.friendKey.principalId'),
 			male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
-			relationship: relation,
+			relationship: switch(untyped __cpp__('f.relationship')) {
+				case 0: NOT_REGISTERED;
+				case 1: REGISTERED;
+				case 2: NOT_FOUND;
+				case 3: DELETED;
+				case 4: LOCAL_ADDED;
+				default: UNKNOWN;
+			},
 			favoriteGameTID: untyped __cpp__('f.friendProfile.favoriteGame.titleId')
 		};
 	}
@@ -330,43 +349,27 @@ class FRD {
 	/**
 	 * Changes the Friend List's presence that is present in the Friend List.
 	 * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateMyPresence`).
-	 * @return Result code of whetever something from the services went wrong.
+	 * @return Result code of Whether something from the services went wrong.
 	 */
 	public static function updatePresence(textToUse:String):Result {
 		untyped __cpp__('
-			FriendGameModeDescription desc;
-			memset(desc, 0, sizeof(desc));
-			utf8_to_utf16(desc, (const u8*)textToUse.c_str(), FRIEND_GAME_MODE_DESCRIPTION_LEN);
-			
-			Presence frdPres;
-			memset(&frdPres, 0, sizeof(frdPres));
-
-			u64 tid;
-			APT_GetProgramID(&tid);
-			
-			frdPres.joinAvailabilityFlag = 1;
-			frdPres.matchmakeSystemType  = 0;
-			frdPres.joinGameId		   = tid;
-			frdPres.joinGameMode		 = 0;
-			frdPres.ownerPrincipalId	 = 0;
+			FriendGameModeDescription desc = { 0};
+			TRANSFER(textToUse.c_str(), desc);
 		');
-
-		return untyped __cpp__('FRD_UpdateMyPresence(&frdPres, &desc)');
+		return untyped __cpp__('FRD_UpdateGameModeDescription(&desc)');
 	}
 
 	/**
 	 * Updates your own friend comment with the string specified. (Just to know please don't try to bypass profanity, maybe you'll get banned!)
 	 * @param textToUse Text to use, Maximum 16 characters.
-	 * @return Result code of whetever something went wrong.
+	 * @return Result code of Whether something went wrong.
 	 * @since 1.4.0
 	 */
 	public static function updateComment(textToUse:String):Result {
 		untyped __cpp__('
-			FriendComment desc;
-			memset(desc, 0, sizeof(desc));
-			utf8_to_utf16(desc, (const u8*)textToUse.c_str(), FRIEND_COMMENT_LEN)
+			FriendComment desc = { 0};
+			TRANSFER(textToUse.c_str(), desc)
 		');
-
 		return untyped __cpp__('FRDA_UpdateComment(&desc)');
 	}
 
@@ -384,16 +387,16 @@ class FRD {
 	 * @return Array of typedef `FRDFriendDetail`, will return 0 if one of the FRD functions failed, or has 0 friends total.
 	 * @since 1.4.0
 	 */
-	public static function getFriendsProfile():Array<FRDFriendDetail> {
+	public static function getFriendsProfile():Null<Array<FRDFriendDetail>> {
 		var out:Array<FRDFriendDetail> = [];
 
 		untyped __cpp__('
-			FriendKey list[FRIEND_LIST_SIZE] = {};
+			FriendKey list[100] = {};
 			FriendInfo prof[100] = {};
 			u32 l = 0;
 
-			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, FRIEND_LIST_SIZE))) return {};
-			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) return {};
+			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, 100))) return null();
+			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) return null();
 		');
 
 		for (i in 0...untyped __cpp__('l')) {
@@ -411,7 +414,7 @@ class FRD {
 				addedTimestamp: untyped __cpp__('f.addedTimestamp'),
 				principalID: untyped __cpp__('f.friendKey.principalId'),
 				male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
-				relationship:  switch(untyped __cpp__('f.relationship')) {
+				relationship: switch(untyped __cpp__('f.relationship')) {
 					case 0: NOT_REGISTERED;
 					case 1: REGISTERED;
 					case 2: NOT_FOUND;
@@ -431,6 +434,7 @@ class FRD {
 	 */
 	public static function exit() {
 		untyped __cpp__('
+			threadJoin(frd_Thread);
 			threadFree(frd_Thread);
 			svcCloseHandle(frd_Handle);
 			frdExit()

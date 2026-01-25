@@ -1,6 +1,11 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Event;
 import haxe3ds.Types.Result;
+
+import cpp.UInt8;
+import cpp.UInt32;
+import cpp.UInt64;
 
 /**
  * The flags that can be used to launch for System Settings.
@@ -148,46 +153,43 @@ enum abstract APTHookType(Int) {
  */
 @:cppFileCode('
 #include <string.h>
-#include "haxe3ds_services_GFX.h"
+#include "haxe3ds_Utils.h"
 
 aptHookCookie cookie;
-void hookTest(APT_HookType hook, void* param) {
-	UNUSED_VAR(param);
-	auto hooky = haxe3ds::services::APT::hookHandler;
-	if (hooky != nullptr) {
-		hooky(hook);
+void aptHookFunction(APT_HookType _hook, void* param) {
+	auto hook = haxe3ds::services::APT_obj::hookHandler;
+	if (hook != null()) {
+		const int arr[1] = {_hook};
+		hook->callEvents(Array_obj<int>::fromData(arr, 1));
 	}
-}
-')
+}')
 class APT {
 	/**
 	 * Variable if the 3DS model is the NEW 3DS instead of OLD 3DS.
-	 * 
-	 * Automatically gets set when APT is initialized, so use that first.
-	 * 
-	 * *This variable is ***REQUIRED*** to Initialize APT*
 	 */
-	public static var isNew3DS(default, null):Bool = false;
+	public static var isNew3DS(get, null):Bool = false;
+	static function get_isNew3DS():Bool {
+		return untyped __cpp__('API_GETTER(bool, APT_CheckNew3DS, false)');
+	}
 
 	/**
 	 * The current Program/Title ID running.
 	 * 
 	 * Homebrew Launcher's TID: `0x000400000D921E00 (1125900134522368)` (This is always different if using a CIA with a custom TID)
 	 * 
-	 * *This variable is ***REQUIRED*** to Initialize APT*
-	 * 
 	 * @since 1.4.0
 	 */
-	public static var programID(default, null):UInt64 = 0;
+	public static var programID(get, null):UInt64 = 0;
+	static function get_programID():UInt64 {
+		return untyped __cpp__('API_GETTER(u64, APT_GetProgramID, 0)');
+	}
 
 	/**
 	 * Hook Handler Function for any System Events, can be if the system is sleeping, or just pure silly things.
 	 * 
-	 * *This variable is ***REQUIRED*** to Initialize APT*
-	 * 
 	 * @since 1.6.0
 	 */
-	public static var hookHandler:(APTHookType)->Void;
+	public static var hookHandler = new Event<APTHookType->Void>(() -> untyped __cpp__('aptHook(&cookie, aptHookFunction, nullptr)'));
 
 	/**
 	 * This gets/sets the amount of syscore CPU time available to the running application. It can range from 5% to 89%. Maximum value depends on the ExHeader. Setting a value higher than 30% does not seem to improve performance on Old 3DS, however it definitely does on New 3DS. 
@@ -203,25 +205,6 @@ class APT {
 	static function set_cpuTimeLimit(cpuTimeLimit:UInt32):UInt32 {
 		return untyped __cpp__('APT_SetAppCpuTimeLimit(cpuTimeLimit)');
 	}
-
-	/**
-	 * Initializes APT, well not really just sets up the other variables.
-	 * 
-	 * Which would be `isNew3DS` and `programID`
-	 */
-	public static function init() {
-		untyped __cpp__('
-			APT_CheckNew3DS(&isNew3DS);
-			APT_GetProgramID(&programID);
-			aptHook(&cookie, hookTest, nullptr)
-		');
-	}
-
-	/**
-	 * Exits APT.
-	 */
-	@:native("aptExit")
-	public static function exit() {};
 
 	/**
 	 * Variable property for locking/unlocking HOME Menu.
@@ -252,7 +235,7 @@ class APT {
 	public static function isHomePressed():Bool return false;
 
 	/**
-	 * Main function which handles sleep mode and HOME/power buttons - call this at the beginning of every frame.
+	 * Main function which handles sleep mode and HOME/power buttons.
 	 * 
 	 * This internally calls `HID.scanInput()`, `gspWaitForVBlank()` and `gfxSwapBuffers()`.
 	 * 
@@ -260,7 +243,13 @@ class APT {
 	 */
 	public static function mainLoop():Bool {
 		HID.scanInput();
-		return untyped __cpp__('(gspWaitForVBlank(), gfxSwapBuffers(), aptMainLoop())');
+
+		return 
+		#if CITROENGINE // this fixes the flickering.
+		untyped __cpp__("aptMainLoop()");
+		#else
+		untyped __cpp__("gspWaitForVBlank(), gfxSwapBuffers(), aptMainLoop()");
+		#end
 	}
 
 	/**
@@ -307,7 +296,7 @@ class APT {
 	 * @since 1.6.0
 	 */
 	public static function jumpToSystemSettingsWithFlag(flag:APTSystemSettingsFlag = NORMAL):Result {
-		final lowTID:UInt32 = switch (CFGU.region) {
+		final lowTID:UInt32 = switch (CFG.region) {
 			case "JPN": 0x00020000;
 			case "USA" | "AUS": 0x00021000;
 			case "EUR": 0x00022000;
@@ -319,16 +308,17 @@ class APT {
 
 		var ret:Result = 0;
 		untyped __cpp__('
-			u8 paramBuffer[0x300] = {0};
-			u8 workBuffer[0x20] = {0};
+			u8 paramBuffer[0x300] = { 0};
+			u8 workBuffer[0x20] = { 0};
+
 			u32 sceneParam = (u32)flag;
 			memcpy(paramBuffer, &sceneParam, 4U);
 
-			if (R_FAILED(ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | lowTID, MEDIATYPE_NAND))) goto fail;
+			if (R_FAILED(ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | {0}, MEDIATYPE_NAND))) goto fail;
 			if (R_FAILED(ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer))) goto fail;
 
 			fail:
-		');
+		', lowTID);
 		return ret;
 	}
 }

@@ -1,5 +1,7 @@
 package haxe3ds;
 
+import cpp.UInt64;
+import cpp.UInt8;
 using StringTools;
 
 /**
@@ -134,7 +136,7 @@ typedef OSConfig = {
 /**
  * OS related stuff.
  */
-@:cppInclude("haxe3ds_services_GFX.h")
+@:cppInclude("3ds.h")
 class OS {
 	/**
 	 * Variable property that returns the number of milliseconds since 1st Jan 1900 00:00.
@@ -224,16 +226,16 @@ class OS {
 	 * @since 1.4.0
 	 */
 	public static function versionToInt(version:String):Int {
-		function replWholeLetters(str:String, from:String, to:String):String {
+		inline function replWholeLetters(str:String, from:String, to:String):String {
 			for (lol in from.split("")) str = str.replace(lol, to);
 			return str;
 		}
 
-		function isNumber(i:String):Bool {
+		inline function isNumber(i:String):Bool {
 			return Std.parseInt(i) != null;
 		}
 
-		var l:Int = version.length;
+		final l:Int = version.length;
 		if (7 < l && l < 12) {
 			for (k => i in version.split("")) {
 				if (!(isNumber(i) || i == "." || i == "-") != (k+1 == l && !isNumber(i))) {
@@ -243,15 +245,16 @@ class OS {
 
 			return Std.parseInt(replWholeLetters(version.substr(0, version.length-1), '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', ""));
 		}
+
 		return -1;
 	}
 
 	/**
-	 * Gets some of the kernel configs stored in the 3DS Systems.
-	 * @return The Struct for OSConfig.
+	 * The Kernel Config for the 3DS.
 	 * @since 1.5.0
 	 */
-	public static function getKernelConfig():OSConfig {
+	public static var kernelConfig(get, null):OSConfig;
+	static function get_kernelConfig() {
 		return {
 			bootEnvironment: switch (untyped __cpp__('OS_KernelConfig->env_info')) {
 				case 0: PRODUCTION;
@@ -275,7 +278,7 @@ class OS {
 				default: INVALID;
 			},
 
-			networkState: switch(untyped __cpp__('OS_SharedConfig->running_hw')) {
+			networkState: switch(untyped __cpp__('OS_SharedConfig->network_state')) {
 				case 2: INTERNET;
 				case 3 | 4 | 6: LOCAL;
 				case 7: DISABLED;

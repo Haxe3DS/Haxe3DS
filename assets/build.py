@@ -1,21 +1,22 @@
-import json
-import sys
-import os
-import shutil
-import glob
-import time
-import subprocess
-from concurrent.futures import ThreadPoolExecutor
+# there's a lot of type hints, i just like them
 
-jsonStruct = {
+import os
+import sys
+import json
+import shutil
+import warnings
+from typing import Any
+
+jsonStruct:dict[str, dict[str, Any]] = {
 	"settings": {
 		"deleteTempFiles": True,
-		"makeAs": "3dsx",
+		"compileAsCIA": False,
+		"debugMode": False,
 		"libraries": ["haxe3ds"],
 		"3dslink": {
-			"ip": "0.0.0.0",
-			"debugMode": False,
-			"openEmuIfTransferFailed": False
+			"ip": "",
+			"link3dsToConsole": False,
+			"openEmuIfTransferFailed": True
 		}
 	},
 	"metadata": {
@@ -25,282 +26,244 @@ jsonStruct = {
 	}
 }
 
+HXML_TEMP:str = """-cp source
+-main Main
+
+-lib hxcpp
+{}
+
+-D nx
+-D HAXE3DS
+-D HAXE_OUTPUT_PART=HAXE3DS
+-D HXCPP_SINGLE_THREADED_APP
+-D HXCPP_STACK_TRACE
+-D HXCPP_STACK_LINE
+-D HXCPP_GC_GENERATIONAL
+-D HXCPP_CPP17
+-D static_link
+-cpp export"""
+
+class HaxeLibraryMissing(Warning):
+	pass
+
+class ProjectJSONMissing(Warning):
+	pass
+
+def execute(shell:str) -> int:
+	print(f'$ {shell}')
+	return os.system(shell)
+
+def read(file:str) -> str:
+	if not os.path.exists(file):
+		return ""
+
+	with open(file, "r", encoding="utf-8") as f:
+		return f.read()
+
+def write(file:str, c:Any):
+	with open(file, "w", encoding="utf-8") as f:
+		f.write('\n'.join(c) if isinstance(c, list) else str(c))
+
+LPJCalled:bool = False
+def loadProjectJSON() -> dict[str, dict[str, Any]]:
+	global LPJCalled
+	if LPJCalled:
+		return jsonStruct
+
+	LPJCalled = True
+	if not os.path.exists("3dsSettings.json"):
+		warnings.warn("3dsSettings.json not found in project! Using default settings.", ProjectJSONMissing)
+	else:
+		return json.loads(read("3dsSettings.json"))
+
+	return jsonStruct
+
+# 3dslink only supports ipv4 (xxx.xxx.xxx.xxx) so i tried doing this what jankiness calls it, this function
+# yeah there's ipaddress but i have no idea if it has better support but whatever.
+def isIPValid(string:str) -> bool:
+	dots:list[str] = string.split(".")
+	if len(dots) != 4: # x.x.x.x is valid, x.x.x. is also valid x.x.x isn't
+		return False
+
+	for numbers in dots:
+		try:
+			number:int = int(numbers)
+			if not (-1 < number < 256): # x.x.x.x is valid, x.x.x. and x.x.x is not valid
+				raise IndexError
+		except (ValueError, IndexError):
+			return False
+
+	return "-" not in string
+
+def executableFileHandler(make:str):
+	if not os.getcwd().replace("\\", "/").endswith("buildFiles"):
+		if not os.path.exists(f"buildFiles/output.{CACiaAsStr()}"):
+			print("Exiting... Application needs to be built first!")
+			exit(1)
+		os.chdir("buildFiles")
+
+	ip:str = jsonStruct["settings"]["3dslink"]["ip"].strip()
+	ipValid:bool = isIPValid(ip)
+
+	cmdToRun:str = f'{"" if sys.platform.startswith("win") else f"flatpak run org.azahar_emu.Azahar ./"}output.{make}'
+	if ipValid:
+		if make == "3dsx":
+			if execute(f'{dkpPathReplace("[DKP_PATH]/tools/bin/3dslink")} -a {ip} {"-s" if jsonStruct["settings"]["3dslink"]["link3dsToConsole"] else ""} output.3dsx') != 0 and jsonStruct["settings"]["3dslink"]["openEmuIfTransferFailed"]:
+				execute(cmdToRun)
+		else:
+			execute(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
+	else:
+		execute(cmdToRun)
+
+def dkpPathReplace(x:str) -> str:
+	return x.replace("[DKP_PATH]", f"C:/devkitpro" if sys.platform.startswith("win") else "/opt/devkitpro")
+
+def CACiaAsStr() -> str:
+	return "cia" if jsonStruct["settings"]["compileAsCIA"] else "3dsx"
+
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
-		print("""usage: Hx3DSCompiler [-g] [-c] [-e]
+		print(f"""usage: python {sys.argv[0]} [arg]
 
-options:
-  -g	  Generates a Struct JSON and saves it to the current CWD.
-  -c	  Compiles to 3DS with 3dsSettings.json provided
-  -e	  Helper function to search exceptions""")
-		sys.exit(0)
+Arguments:
+\t[-g]: Generates a Haxe3DS Project JSON and makes a new haxelib repo for Haxe Libraries.
+\t[-c]: Starts compiling to a working 3DS Application.
+\t[-e]: Helper argument to search exceptions
+\t[-s]: Helper argument to handle compiled .cia/.3dsx file.""")
+		exit(0)
 
-	arg = sys.argv[1]
-	if "-g" in arg:
-		print("DOING: Generating JSON")
-		with open("3dsSettings.json", "w") as f:
-			f.write(json.dumps(jsonStruct, indent=4))
-		print("Done!")
+	match sys.argv[1]:
+		case "-g":
+			if os.path.exists("3dsSettings.json"):
+				if input("3dsSettings.json exists in the project, Are you sure to overwrite it? [y/n]: ").lower() != "y":
+					exit(0)
 
-	elif "-c" in arg:
-		oldTime = time.time()
-		
-		if not os.path.exists("3dsSettings.json"):
-			print("3dsSettings.json doesn't exist!! Consider generating the Json!")
-			sys.exit(1)
+			print("Generating 3dsSettings.json...")
+			write("3dsSettings.json", json.dumps(jsonStruct, indent=4))
 
-		def read(file:str) -> str:
-			c = ""
-			with open(file, "r", encoding="utf-8") as f:
-				c = f.read()
-				f.close()
-			return c
-		
-		def write(file, c):
-			with open(file, "w", encoding="utf-8") as f:
-				f.write('\n'.join(c) if type(c) == list else c)
-				f.close()
+			if not os.path.exists(".haxelib"):
+				execute("haxelib newrepo")
 
-		jsonStruct = json.loads(read("3dsSettings.json"))
-		c = """-cp source
-		-main Main
-		-lib reflaxe.cpp
-		"""
-		for libs in jsonStruct["settings"]["libraries"]:
-			c += f"-lib {libs}\n"
+			print("Done!")
 
-		c += """
--D cpp-output=output
--D mainClass=Main
--D cxx-no-null-warnings
--D keep-unused-locals
--D keep-useless-exprs
--D cxx_callstack
--D cxx_inline_trace_disabled"""
-		write("build.hxml", c)
-				
-		if jsonStruct["settings"]["deleteTempFiles"] == True and os.path.exists("output"):
-			shutil.rmtree("output")
-
-		if os.system("haxe build.hxml") != 0:
-			print("Error! Stopping...")
-			sys.exit(1)
-
-		blockedStuff = [
-			"throw haxe::Exception",
-			"haxe::Log::trace"
-		]
-
-		replacers = [
-			["* _gthis", "deleteline"], # Known to throw Exceptions
-			["_gthis",   "this"]		# Known to throw Exceptions
-		]
-
-		print("Revamping files to make it compatible with C++...")
-		shutil.copytree("assets/", "output/", dirs_exist_ok=True)
-		for files in glob.glob("output/src/**"):
-			c = read(files).splitlines()
-			c[0] = "// Generated using reflaxe, reflaxe.CPP and Haxe3DS Compiler\n" + c[0]
-
-			ln = 0
-			for _ in range(len(c)):
-				shouldSkip = False
-				for bl in blockedStuff:
-					if bl in c[ln]:
-						shouldSkip = True
-						break
-				if not shouldSkip:
-					for repl in replacers:
-						if repl[0] in c[ln]:
-							if repl[1].startswith("deleteline"):
-								c[ln] = ""
-							elif repl[1].startswith("deletechar"):
-								c[ln] = c[ln].replace(repl[0], "")
-							c[ln] = c[ln].replace(repl[0], repl[1])
-							continue
-				ln += 1
-
-			write(files, c)
-
-		serverMode = "-s" if jsonStruct["settings"]["3dslink"]["debugMode"] else ""
-		if serverMode == "-s":
-			lol:str = read('output/src/_main_.cpp')
-			l = lol.index("_Main::Main_Fields_::main();")-1
-			dictation = list(lol)
-			dictation[0] = "#include <3ds.h>\n#include <malloc.h> /"
-			dictation[l] = 'u8* buf = (u8 *)memalign(0x20000, 0x1000);\nif (R_FAILED(socInit((u32 *)buf, 0x20000))) svcBreak(USERBREAK_PANIC);\nlink3dsStdio();'
-			dictation[l+28] = ';socExit();\nfree(buf);'
-			write("output/src/_main_.cpp", ''.join(dictation))
-			print("d")
-
-		extraArgs = ""
-		for lib in jsonStruct["settings"]["libraries"]:
-			path = f".haxelib/{lib}/{read(f".haxelib/{lib}/.current")}"
-			if os.path.exists(f"{path}/assets"):
-				shutil.copytree(f"{path}/assets", "output", dirs_exist_ok=True)
-
-			if os.path.exists(f"{path}/haxe3ds.json"):
-				jsonLoader = json.loads(read(f"{path}/haxe3ds.json"))
-				extraArgs += jsonLoader["extraArgsForCompiler"]
-
-		for file in ["Makefile", "resources/AppInfo"]:
-			c = read(f"output/{file}")
-			c = c.replace("[TITLE_JSON]",	   jsonStruct["metadata"]["title"])
-			c = c.replace("[DESCRIPTION_JSON]", jsonStruct["metadata"]["description"])
-			c = c.replace("[AUTHOR_JSON]",	  jsonStruct["metadata"]["author"])
-			write(f"output/{file}", c)
-
-		print("\nDone! Compiling...")
-		make = jsonStruct["settings"]["makeAs"]
-		os.chdir("output")
-
-		arm = os.getenv("DEVKITARM")
-		if "win" in sys.platform:
-			arm = arm.replace("/opt/", "C:/")
-
-		cmd = "{1}/arm-none-eabi-g++ -MMD -MP -MF build/{0}.d -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -Iinclude -IC:/devkitpro/portlibs/3ds/include -IC:/devkitpro/libctru/include -D__3DS__ -std=c++23 -Wno-unused-variable -g -w {2} -c src/{0}.cpp -o build/{0}.o"
-		def compileCPPFile(file:str) -> int:
-			process = subprocess.Popen(cmd.format(file, f"{arm}/bin", extraArgs), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-			_, stderr = process.communicate()
-
-			if process.returncode == 0:
-				return 0
-
-			fc:dict = {}
-			def create(ln:str) -> tuple:
-				lc = 0
-				l = []
-				try:
-					l = ln.split(":")
-					lc = int(l[1])-1
-					if l[0] not in fc:
-						v = read(l[0]).splitlines()
-						fc[l[0]] = [v, v.copy()]
-				except ValueError:
-					return None, None
-				
-				return lc, l
-				
-			try:
-				arr = stderr.splitlines()
-				for indi, ln in enumerate(arr):
-					if any(x in ln for x in ["/devkitPro/libctru/", "/arm-none-eabi/include/"]): # dangerous, so i added a check
-						continue
-
-					if ": error: " in ln:
-						lc, l = create(ln)
-						exp = "expected ';' before" in ln
-						lnk = fc[l[0]][0]
-
-						if "cannot convert 'const std::nullopt_t' to " in ln:
-							lnk[lc] = lnk[lc].replace("std::nullopt", "NULL")
-						elif "expected ',' or ';' before" in ln or exp:
-							if not exp: lc -= 1
-							lnk[lc] += ";"
-						elif "no matching function for call to" in ln:
-							if "haxe::Dynamic" in ln:
-								if "haxe::Dynamic" in arr[indi+1]:
-									lnk[lc] = lnk[lc].replace(";", "(nullptr);")
-								else:
-									while lc > 1 and "static Dynamic" not in lnk[lc]:
-										lc -= 1
-									lc -= 1
-									lnk[lc] += f'template<{", ".join([f"typename Dyn{x+1}" for x in range(2)])}>'
-							else:
-								lnk[lc] = lnk[lc].replace(";", "(nullptr);")
-						elif "conversion from '" in ln:
-							lol = lnk[lc]
-							name = lol[lol.rfind(" ")+1:lol.find(";")]
-							lnk[lc] = lnk[lc].replace(name, f'std::dynamic_pointer_cast{lol[lol.find("<"):lol.rfind(">")+1]}({name})')
-						elif "' is not a member of '" in ln:
-							nameof = ln[ln.find("r: '")+4:ln.rfind("' is")]
-							count = len(lnk)
-							num = lc
-							while lc < count:
-								if f" {nameof} {{" in lnk[lc]:
-									stack = []
-									def app():
-										stack.append(lnk[lc])
-										del lnk[lc]
-
-									while lnk[lc] != "};": #class end
-										app()
-									app()
-
-									lc = num
-									while not lnk[lc].startswith("namespace"):
-										lc -= 1
-
-									lnk[lc] += f'\n{"\n".join(stack)}'
-									break
-								
-								lc += 1
-
-					elif ": note: " in ln:
-						lc, l = create(ln)
-						hFile = l[0].replace(".cpp", ".h").replace("src", "include")
-						lnk = fc[l[0]][0]
-
-						if "note: candidate 1: 'template<class Dyn1, class Dyn2>" in ln:
-							bartSimpson = read(hFile)
-							for i in [f"Dyn{x}" for x in range(10)]:
-								bartSimpson = bartSimpson.replace(i, "haxe::Dynamic")
-							fc[l[0]][0] = bartSimpson.split("\n")
-							del fc[l[0]][0][lc-1]
-			except Exception: # Linker Error
-				pass
-
-			redo = False
-			for i in fc.keys():
-				if fc[i][0] != fc[i][1]:
-					write(i, fc[i][0])
-					redo = True
+		case "-c":
+			print("Preparing things, stay tight!")
+			if not os.path.exists(".haxelib/hxcpp"):
+				raise FileNotFoundError("Could not find fork of HXCPP! Please install it in https://github.com/Haxe3DS/hxcpp")
 			
-			if not redo:
-				print(f"Compile Failure: STDERR:\n{stderr}")
-				return 2
+			jsonStruct = loadProjectJSON()
+			for dirs in ["export", "assets/romfs/.haxe3ds", "buildFiles"]:
+				os.makedirs(dirs, exist_ok=True)
+			shutil.copytree("assets", "export", dirs_exist_ok=True)
 
-			return 1
-		
-		def cmp(cppfiles:str):
-			tries = 0
-			cppfiles = cppfiles[4:-4]
-			while True:
-				result = compileCPPFile(cppfiles)
-				if result == 0:
-					print(f"- src/{cppfiles.replace("_", "/")}.cpp")
-					break
-				elif result == 1 and tries != 2:
-					tries += 1
-					continue
-				else:
-					print(f"Fail: {cppfiles}.cpp")
-					sys.exit(1)
-		
-		os.makedirs("build/", exist_ok=True)
-		with ThreadPoolExecutor() as worker:
-			for cppfiles in glob.glob("src/**.cpp"):
-				worker.submit(cmp, cppfiles)
-
-		if os.system(f"make {make}") != 0:
-			print("Massive Fail! Exiting...")
-			sys.exit(1)
-
-		os.chdir("output")
-		print(f"Successfully Compiled in {round(time.time() - oldTime, 5)} seconds!!")
-		ip:str = jsonStruct["settings"]["3dslink"]["ip"]
-		if len(ip) > 7 and len(ip.split(".")) == 4:
-			if make == "3dsx":
-				if os.system(f"3dslink -a {ip} {serverMode} output.3dsx") != 0 and jsonStruct["settings"]["3dslink"]["openEmuIfTransferFailed"]:
-					os.system("output.3dsx")
+			infoDir:str = "assets/romfs/.haxe3ds"
+			if not os.path.exists(f"{infoDir}/.build"):
+				write(f"{infoDir}/.build", 1)
 			else:
-				os.system(f"curl --upload-file output.{make} \"ftp://{ip}:5000/cia/\"")
-		else:
-			os.system("output.3dsx")
+				try:
+					write(f"{infoDir}/.build", int(read(f"{infoDir}/.build")) + 1)
+				except ValueError:
+					write(f"{infoDir}/.build", 1)
 
-	elif "-e" in arg:
-		a = ""
-		for x in sys.argv:
-			if x.startswith("0x"):
-				a += f"{x} "
-		sys.exit(os.system(f"arm-none-eabi-addr2line -i -p -s -f -C -r -e output/output/output.elf -a {a}"))
+			goodHaxeLibs:list[str] = []
+			attributes:dict[str, list[str]] = {
+				"[HAXE3DS_FLAGS]": [
+					f'-I"{os.getcwd().replace("\\", "/")}/export/include"',
+					'-L[DKP_PATH]/portlibs/3ds/lib',
+					'-I[DKP_PATH]/portlibs/3ds/include',
+					'-lHAXE3DS',
+					'-lmbedtls',
+					'-lmbedx509',
+					'-lmbedcrypto',
+					'-lz'
+				]
+			}
+
+			for libs in jsonStruct["settings"]["libraries"]:
+				libs:str = libs.lower()
+
+				path:str = f".haxelib/{libs}"
+				if not os.path.exists(path):
+					warnings.warn(f'Skipping library "{libs}" because it hasn\'t been installed.', HaxeLibraryMissing)
+					continue
+
+				path += f'/{read(f"{path}/.current")}'
+				if os.path.exists(f"{path}/haxe3ds.json"):
+					hx3dsLib:dict = json.loads(read(f"{path}/haxe3ds.json"))
+					for key in attributes.keys():
+						if key in hx3dsLib:
+							attributes[key] += hx3dsLib[key]
+
+				if libs == "haxe3ds":
+					try:
+						write(f"{infoDir}/.version", json.loads(read(f"{path}/haxelib.json"))["version"])
+					except:
+						write(f"{infoDir}/.version", "?")
+
+				if os.path.exists(f"{path}/assets"):
+					shutil.copytree(f"{path}/assets", "export", dirs_exist_ok=True)
+
+				goodHaxeLibs.append(libs)
+			
+			HXML_TEMP = HXML_TEMP.format("\n".join([f"-lib {LIB}\n-D {LIB.upper()}" for LIB in goodHaxeLibs]))
+			if jsonStruct["settings"]["debugMode"]:
+				HXML_TEMP += "\n-D HXCPP_DEBUGGER"
+			write("build.hxml", HXML_TEMP)
+
+			toolchainPath:str = f'.haxelib/hxcpp/{read(".haxelib/hxcpp/.current")}/toolchain'
+			xmlFile:str = read(f'{toolchainPath}/haxe3ds-setup.xml')
+			if len(xmlFile) == 0:
+				raise FileNotFoundError(f"XML Missing, How did you even delete it?\n\tPath read from: {toolchainPath}/haxe3ds-setup.xml")
+
+			for key, flags in attributes.items():
+				xmlFile = xmlFile.replace(key, "\n".join([f"<flag value='{flag.strip().replace("\\", "/")}'/>" for flag in flags]))
+			xmlFile = dkpPathReplace(xmlFile)
+
+			if xmlFile != read(f'{toolchainPath}/linux-toolchain.xml'):
+				write(f"{toolchainPath}/linux-toolchain.xml", xmlFile)
+
+			for appInfo in ["export/resources/AppInfo", "export/Makefile"]:
+				if os.path.exists(appInfo):
+					savedData:str = read(appInfo)
+					for key, data in jsonStruct["metadata"].items():
+						savedData = savedData.replace(f"[{str(key).upper()}_JSON]", data)
+
+					if appInfo == "export/Makefile":
+						for key, flags in attributes.items():
+							savedData = savedData.replace(key, " ".join(flags))
+						savedData = savedData.replace("[HAXE3DS_3DSLINK]", "-DHAXE3DS_LINKTO3DS" if jsonStruct["settings"]["3dslink"]["link3dsToConsole"] else "")
+					write(appInfo, dkpPathReplace(savedData))
+				elif appInfo == "export/Makefile":
+					raise FileNotFoundError("Makefile not found! Exiting.")
+
+			print("Initial Setup Complete! Compiling Library...")
+			if execute("haxe build.hxml") != 0:
+				print("Failed to compile!")
+				exit(1)
+
+			print("Compiling to working application...")
+			os.chdir("export")
+
+			make:str = CACiaAsStr()
+			if execute(f"make clean && make {"" if make == "3dsx" else make}") != 0:
+				print("Failed to Compile!")
+				exit(1)
+
+			shutil.copytree("output", "../buildFiles", dirs_exist_ok=True)
+			os.chdir("..")
+
+			if jsonStruct["settings"]["deleteTempFiles"]:
+				shutil.rmtree("export")
+			else:
+				shutil.rmtree("export/output")
+
+			print("Successfully Compiled!")
+			executableFileHandler(make)
+
+		case "-e":
+			# some people don't have that set to path, oh well.
+			exit(execute(dkpPathReplace(f'[DKP_PATH]/devkitARM/bin/arm-none-eabi-addr2line -i -p -s -f -C -r -e buildFiles/output.elf -a {" ".join(sys.argv[2:])}')))
+
+		case "-s":
+			jsonStruct = loadProjectJSON()
+			executableFileHandler(CACiaAsStr())

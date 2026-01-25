@@ -10,11 +10,11 @@ The goal is to implement every single libctru functions to here and make as fewe
 
 # How does it work?
 
-This makes use of [reflaxe](https://github.com/SomeRanDev/reflaxe) && [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) which can *Read* and *Transpile* Haxe Code to C++ Code so that the G++ Compiler can Understand and Compile to 3DSX or CIA! This was done with lots of love (and rage) to make this library so I hope I can get some support.
+This makes use of ~~[reflaxe](https://github.com/SomeRanDev/reflaxe) && [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP)~~ [HXCPP](https://github.com/Haxe3DS/hxcpp) which can *Read* and *Transpile* Haxe Code to C++ Code so that the G++ Compiler can Understand and Compile to 3DSX or CIA! This was done with lots of love (and rage) to make this library so I hope I can get some support.
 
 By the way, It's supposed to *make* Homebrew Applications Easier, i'm not implementing all of them in the header file and just call it a day.
 
-Note: This is **ONLY** tested on 4.3.2 and you can try testing if it works on 5.0.0 but it's solely absent for now.
+Note: 5.0.0 tested, This fails to compile because of marshal, Recommended Version: 4.3.7.
 
 # INSTALLATION:
 
@@ -27,7 +27,7 @@ Note: This is **ONLY** tested on 4.3.2 and you can try testing if it works on 5.
 # Credits:
 
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.
-- [reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.
+- ~~[reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.~~ [hxcpp_nx](https://github.com/Slushi-Github/hxcpp-nx) for its support, Had to modify a bunch of
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
 - [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) for a really great wii u compiler that i got interested for it.
 - [3DBrew](https://www.3dbrew.org/) for the amount of documentation done to this system!

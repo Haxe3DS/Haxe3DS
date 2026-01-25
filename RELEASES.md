@@ -1,3 +1,20 @@
+# 1.7.0
+
+MODULE     | CHANGES
+-----------|---------
+!          | Migrated from reflaxe.CPP to HXCPP, this support even more libraries but beware of memory leaks, This also increases the size of the Output by a lot!
+BuildInfo  | Added Class, for Build Information.
+CFG        | Renamed `CFGU` to `CFG`, 
+Everything | Fixed a bunch of Errors from that Migration, and Replace a bunch of enum to enum abstract.
+GFX        | Replaced `haxe.Log.trace` with custom one (This also prints using SVC.debugString)
+PTM        | Renamed PTMU/PTMSYSM to PTM.
+RomFS      | Changed Documentation.
+SVC        | Added Class.
+Types      | Added 2 types: `NanoTime` and `Event<Args>`
+Utils      | Added .h file to handle a bunch of things.
+
+There is so many that i don't even know if I missed one or not.
+
 # 1.6.0
 
 Note: 1.7.0 will migrate to using HXCPP instead of reflaxe.CPP.

@@ -1,11 +1,13 @@
 package haxe3ds.services;
 
+import cpp.UInt8;
+
 /**
  * MCU service.
  * 
  * @since 1.4.0
  */
-@:cppInclude("haxe3ds_services_GFX.h")
+@:cppInclude("haxe3ds_Utils.h")
 class MCUWUC {
 	/**
 	 * Initializes MCUHWC for other variables to work.
@@ -35,9 +37,7 @@ class MCUWUC {
 	 */
 	public static var batteryVoltage(get, null):UInt8 = 0;
 	static function get_batteryVoltage():UInt8 {
-		var out:UInt8 = 0;
-		untyped __cpp__('MCUHWC_GetBatteryVoltage(&out)');
-		return out;
+		return untyped __cpp__('API_GETTER(u8, MCUHWC_GetBatteryVoltage, 0)');
 	}
 
 	/**
@@ -45,9 +45,7 @@ class MCUWUC {
 	 */
 	public static var batteryPercentage(get, null):UInt8;
 	static function get_batteryPercentage():UInt8 {
-		var out:UInt8 = 0;
-		untyped __cpp__('MCUHWC_GetBatteryLevel(&out)');
-		return out;
+		return untyped __cpp__('API_GETTER(u8, MCUHWC_GetBatteryLevel, 0)');
 	}
 
 	/**
@@ -73,8 +71,6 @@ class MCUWUC {
 	 */
 	public static var temperature(get, null):UInt8;
 	static function get_temperature():UInt8 {
-		var temp:UInt8 = 0;
-
 		untyped __cpp__('
 			Result ret = 0;
 			u32 *cmdbuf = getThreadCommandBuffer();
@@ -82,10 +78,8 @@ class MCUWUC {
 			cmdbuf[0] = IPC_MakeHeader(0xE,2,0);
 			if (R_FAILED(ret = svcSendSyncRequest(*mcuHwcGetSessionHandle())))
 				return ret;
-		
-			temp = cmdbuf[2];
 		');
 
-		return temp;
+		return untyped __cpp__('cmdbuf[2]');
 	}
 }

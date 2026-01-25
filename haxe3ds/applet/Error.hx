@@ -1,52 +1,54 @@
 package haxe3ds.applet;
 
-import haxe3ds.services.CFGU.CFG_Language;
+import cpp.UInt32;
+import cpp.UInt16;
+import haxe3ds.services.CFG.CFGLanguage;
 
 /**
  * The type of applet to call.
  */
-enum ErrorType {
+enum abstract ErrorType(Int) {
 	/**
 	 * Displays the infrastructure communications-related error message corresponding to the error code.
 	 * 
 	 * Also known as `Network Error`.
 	 */
-	CODE;
+	var CODE;
 
 	/**
 	 * Displays text passed to this applet.
 	 */
-	TEXT;
+	var TEXT;
 
 	/**
 	 * Displays the EULA.
 	 */
-	EULA;
-	
+	var EULA;
+
 	/**
 	 * Displays a network error message in a specified language.
 	 */
-	CODE_LANGUAGE;
+	var CODE_LANGUAGE = 256;
 
 	/**
 	 * Displays text passed to this applet in a specified language.
 	 */
-	TEXT_LANGUAGE;
+	var TEXT_LANGUAGE;
 
 	/**
 	 * Displays EULA in a specified language.
 	 */
-	EULA_LANGUAGE;
+	var EULA_LANGUAGE;
 
 	/**
 	 * Displays the custom error message passed to this applet with automatic line wrapping.
 	 */
-	TEXT_WORD_WRAP;
+	var TEXT_WORD_WRAP = 513;
 
 	/**
 	 * Displays the custom error message with automatic line wrapping and in the specified language.
 	 */
-	TEXT_LANGUAGE_WORD_WRAP;
+	var TEXT_LANGUAGE_WORD_WRAP = 769;
 }
 
 /**
@@ -119,38 +121,27 @@ typedef ErrorResult = {
  * @since 1.5.0
  */
 @:cppFileCode('
+#include <3ds.h>
 #include "haxe3ds_Utils.h"
 
-errorType getFromET(int e) {
-	switch(e) {
-		case 0: default: return ERROR_CODE;
-		case 1: return ERROR_TEXT;
-		case 2: return ERROR_EULA;
-		case 3: return ERROR_CODE_LANGUAGE;
-		case 4: return ERROR_TEXT_LANGUAGE;
-		case 5: return ERROR_EULA_LANGUAGE;
-		case 6: return ERROR_TEXT_WORD_WRAP;
-		case 7: return ERROR_TEXT_LANGUAGE_WORD_WRAP;
-	}
-}
-
-std::shared_ptr<haxe3ds::applet::ErrorReturnCode> rcToHX(errorReturnCode c) {
-	using namespace haxe3ds::applet;
+haxe3ds::applet::ErrorReturnCode rcToHX(errorReturnCode c) {
+	using ec = haxe3ds::applet::ErrorReturnCode_obj;
 	switch(c) {
-		case ERROR_UNKNOWN: default: return ErrorReturnCode::UNKNOWN();
-		case ERROR_NONE: return ErrorReturnCode::NONE();
-		case ERROR_SUCCESS: return ErrorReturnCode::SUCCESS();
-		case ERROR_NOT_SUPPORTED: return ErrorReturnCode::NOT_SUPPORTED();
-		case ERROR_HOME_BUTTON: return ErrorReturnCode::HOME_BUTTON();
-		case ERROR_SOFTWARE_RESET: return ErrorReturnCode::SOFTWARE_RESET();
-		case ERROR_POWER_BUTTON: return ErrorReturnCode::POWER_BUTTON();
+		case ERROR_UNKNOWN: ec::UNKNOWN_dyn();
+		case ERROR_NONE: ec::NONE_dyn();
+		case ERROR_SUCCESS: ec::SUCCESS_dyn();
+		case ERROR_NOT_SUPPORTED: ec::NOT_SUPPORTED_dyn();
+		case ERROR_HOME_BUTTON: ec::HOME_BUTTON_dyn();
+		case ERROR_SOFTWARE_RESET: ec::SOFTWARE_RESET_dyn();
+		case ERROR_POWER_BUTTON: ec::POWER_BUTTON_dyn();
+		default: ec::UNKNOWN_dyn(); // ????
 	}
 }')
 class Error {
 	/**
 	 * The maximum number of characters in free text to display for the error.
 	 */
-	public static var MAX_TEXT_LENGTH(default, null):UInt16 = 2048;
+	public static inline final MAX_TEXT_LENGTH:Int = 2048;
 
 	/**
 	 * The current type of the error that will be displayed, this value cannot be modified except when creating in a constructor.
@@ -167,12 +158,12 @@ class Error {
 	public var errorCode:UInt32 = 0;
 
 	/**
-	 * Language specified by `CFG_Language` + 1, do not touch this as it can display in a foreign language.
+	 * Language specified by `CFGLanguage` + 1, do not touch this as it can display in a foreign language.
 	 */
 	public var useLanguage:UInt16;
 
 	/**
-	 * Whetever or not you want to lock the user to access home menu while applet is still active, false if you wanna lock it, true if you keep it unlocked.
+	 * Whether or not you want to lock the user to access home menu while applet is still active, false if you wanna lock it, true if you keep it unlocked.
 	 */
 	public var homeButton:Bool;
 
@@ -197,17 +188,17 @@ class Error {
 	 * 
 	 * Will not show custom text if `type`'s enum doesn't contain TEXT
 	 */
-	public var text:String;
+	public var text:String = "An error has occurred.";
 
 	/**
 	 * Setups an error configuration so that the applet can understand it and displays it for you.
 	 * @param errType The Error Type enum to use.
 	 * @param language On which language do you want it say on.
 	 */
-	public function new(errType:ErrorType = TEXT, language:CFG_Language = English) {
+	public function new(errType:ErrorType = TEXT, language:CFGLanguage = English) {
 		untyped __cpp__('
 			errorConf conf;
-			errorInit(&conf, getFromET(errType->index), getFromCFGC(language->index))
+			errorInit(&conf, (errorType)errType, (CFG_Language)language)
 		');
 
 		this.type = errType;
@@ -215,18 +206,18 @@ class Error {
 		this.softwareReset = untyped __cpp__('conf.softwareReset');
 		this.homeButton = untyped __cpp__('conf.homeButton');
 		this.useLanguage = untyped __cpp__('conf.useLanguage');
-		this.text = "An error has occurred.";
 	}
 
 	/**
 	 * Begins displaying the error applet configuration.
+	 * @return Result of the error, `returnCode` is null.
 	 */
 	public function display():ErrorResult {
 		this.text = this.text.substr(0, MAX_TEXT_LENGTH);
 
 		untyped __cpp__('
 			errorConf conf;
-			conf.type = getFromET(this->type->index);
+			conf.type = this->type;
 			conf.errorCode = this->errorCode;
 			conf.useLanguage = this->useLanguage;
 			conf.homeButton = this->homeButton;

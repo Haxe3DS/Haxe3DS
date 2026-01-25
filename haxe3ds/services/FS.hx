@@ -1,7 +1,8 @@
 package haxe3ds.services;
 
-import haxe3ds.services.CFGU.CFGUUsername;
-import cxx.VoidPtr;
+import cpp.UInt64;
+import cpp.UInt16;
+import cpp.UInt32;
 import haxe3ds.Types.Result;
 
 /**
@@ -53,41 +54,40 @@ int getHashTableLength(int numEntries) {
 		}
 	}
 	return count;
-}
-	
-static FS_Archive sdmcRoot;')
-@:headerInclude("haxe3ds_services_GFX.h")
-class FS {
-	/**
-	 * Initializes FS.
-	 */
-	public static function init() {
-		untyped __cpp__('
-			fsInit();
-			FSUSER_IsSdmcDetected(&isSDMCDetected);
-			FSUSER_IsSdmcWritable(&isSDMCWritable);
+}')
+@:headerCode('
+#include "haxe3ds_Utils.h"
 
-			FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-
-			u16 root[256] = {0};
-			FSUSER_GetSdmcCtrRootPath((u8*)root, 512);
-			ctrRootPath = u16ToString(root);
-		');
+namespace FSD {
+static FS_Archive sdmcRoot;
+static FS_Archive get_sdmcRoot() {
+	if (sdmcRoot == 0) {
+		FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 	}
-
+	return sdmcRoot;
+}
+}
+')
+class FS {
 	/**
 	 * Variable property that gets whether an SD card is detected.
 	 * 
 	 * If the SDMC is found and detected, it returns `true`, else `false`.
 	 */
-	public static var isSDMCDetected(default, null):Bool = false;
+	public static var isSDMCDetected(get, null):Bool;
+	static function get_isSDMCDetected():Bool {
+		return untyped __cpp__('API_GETTER(bool, FSUSER_IsSdmcDetected, 0)');
+	}
 
 	/**
 	 * Gets whether the SD card is writable.
 	 * 
 	 * If the SDMC can be written, it returns `true`, else `false`
 	 */
-	public static var isSDMCWritable(default, null):Bool = false;
+	public static var isSDMCWritable(get, null):Bool;
+	static function get_isSDMCWritable():Bool {
+		return untyped __cpp__('API_GETTER(bool, FSUSER_IsSdmcWritable, 0)');
+	}
 
 	/**
 	 * Mounts a save data from the console, will format the whole save data in this app if something has gone wrong!
@@ -99,7 +99,7 @@ class FS {
 	 * @param partition Partition of the save data to use, Leave default for `ext`
 	 * @param files Files to actually store in the save data (will be calculated by `getHashTableLength`).
 	 * @param dirs Same as `files`.
-	 * @return Result code of whetever something from the services went wrong.
+	 * @return Result code of Whether something from the services went wrong.
 	 * @since 1.3.0
 	 */
 	public static function mountSaveData(partition:String = "ext", files:Int = 1, dirs:Int = 1):Result {
@@ -108,12 +108,11 @@ class FS {
 		untyped __cpp__('
 			bool retry = false;
 			const char* p = partition.c_str();
-			int i = getHashTableLength(dirs), j = getHashTableLength(files);
 
 			FS_Path path = fsMakePath(PATH_EMPTY, "");
 			res = archiveMount(ARCHIVE_SAVEDATA, path, p);
 			if (res == 0xC8A04554) { // save format error
-				res = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, i, j, false);
+				res = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, getHashTableLength(dirs), getHashTableLength(files), false);
 				if (R_FAILED(res)) {
 					return res;
 				}
@@ -131,7 +130,7 @@ class FS {
 	 * *Note*: Doesn't seem to be flushed in 3DS but can in AZAHAR?
 	 * 
 	 * @param partition Partition of the save data to use, Leave default for `ext`
-	 * @return Result code of whetever something from the services went wrong.
+	 * @return Result code of Whether something from the services went wrong.
 	 * @since 1.3.0
 	 */
 	public static function flushAndCommit(partition:String = "ext"):Result {
@@ -210,11 +209,11 @@ class FS {
 	/**
 	 * Deletes a file located in SDMC
 	 * @param path Path to delete.
-	 * @return Result of whetever the function succeded or not.
+	 * @return Result of Whether the function succeded or not.
 	 * @since 1.4.0
 	 */
 	public static function deleteFile(path:String):Result {
-		return untyped __cpp__('FSUSER_DeleteFile(sdmcRoot, fsMakePath(PATH_ASCII, path.c_str()))');
+		return untyped __cpp__('FSUSER_DeleteFile(FSD::get_sdmcRoot(), fsMakePath(PATH_ASCII, path.c_str()))');
 	}
 
 	/**
@@ -225,22 +224,22 @@ class FS {
 	 * 
 	 * @param source The source file to find and rename.
 	 * @param destination The new file name to use.
-	 * @return Result of whetever the function succeded or not.
+	 * @return Result of Whether the function succeded or not.
 	 */
 	public static function renameFile(source:String, destination:String):Result {
-		return untyped __cpp__('FSUSER_RenameFile(sdmcRoot, fsMakePath(PATH_ASCII, source.c_str()), sdmcRoot, fsMakePath(PATH_ASCII, destination.c_str()))');
+		return untyped __cpp__('FSUSER_RenameFile(FSD::get_sdmcRoot(), fsMakePath(PATH_ASCII, source.c_str()), FSD::get_sdmcRoot(), fsMakePath(PATH_ASCII, destination.c_str()))');
 	}
 
 	/**
 	 * Deletes a directory or even recursively deletes a directory!
 	 * @param source Source Directory to Use.
-	 * @param recursive Whetever or not should recursively delete the directory.
-	 * @return Result of whetever the function succeded or not.
+	 * @param recursive Whether or not should recursively delete the directory.
+	 * @return Result of Whether the function succeded or not.
 	 * @since 1.5.0
 	 */
 	public static function deleteDir(source:String, recursive:Bool = false):Result {
 		untyped __cpp__('FS_Path p = fsMakePath(PATH_ASCII, source.c_str())');
-		return untyped __cpp__('recursive ? FSUSER_DeleteDirectoryRecursively(sdmcRoot, p) : FSUSER_DeleteDirectory(sdmcRoot, p)');
+		return untyped __cpp__('recursive ? FSUSER_DeleteDirectoryRecursively(FSD::get_sdmcRoot(), p) : FSUSER_DeleteDirectory(FSD::get_sdmcRoot(), p)');
 	}
 
 	/**
@@ -251,13 +250,20 @@ class FS {
 	 * @since 1.6.0
 	 */
 	public static var ctrRootPath(default, null):String = "";
+	static function get_ctrRootPath():String {
+		untyped __cpp__('
+			u16 root[256] = { 0};
+			FSUSER_GetSdmcCtrRootPath((u8*)root, 512)
+		');
+		return untyped __cpp__('u16ToString(root)');
+	}
 
 	/**
 	 * Closes SDMC Archive and Exits FS.
 	 */
 	public static function exit() {
 		untyped __cpp__('
-			FSUSER_CloseArchive(sdmcRoot);
+			FSUSER_CloseArchive(FSD::get_sdmcRoot());
 			fsExit()
 		');
 	}
@@ -266,14 +272,18 @@ class FS {
 /**
  * File Handler for reading/writing file.
  * 
+ * ## Warning:
+ * - Not working at the moment, use `sys.io.File` at the moment.
+ * 
  * @since 1.3.0
  */
+@:headerInclude("haxe3ds/services/FS.h")
 @:headerClassCode('Handle h = 0;')
 class FSFile {
 	var path:String;
 
 	/**
-	 * The error for whetever something went wrong for this service.
+	 * The error for Whether something went wrong for this service.
 	 * 
 	 * @since 1.4.0
 	 */
@@ -294,7 +304,7 @@ class FSFile {
 		this.path = path;
 
 		untyped __cpp__('
-			this->result = FSUSER_OpenFile(&h, sdmcRoot, fsMakePath(PATH_ASCII, path.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
+			this->result = FSUSER_OpenFile(&h, FSD::get_sdmcRoot(), fsMakePath(PATH_ASCII, path.utf8_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
 			if (R_SUCCEEDED(this->result)) {
 				u64 by = 0;
 				FSFILE_GetSize(h, &by);
@@ -308,32 +318,14 @@ class FSFile {
 	 * @param str String to write.
 	 * @param offset Offset of the string to use, if a number is negative then uses `this.byteSize`.
 	 */
-	public function writeString(str:String, offset:UInt32 = -1) {
+	public function write(str:String, offset:UInt32 = -1) {
 		if (offset < 0) {
 			offset = byteSize;
 		}
 
 		untyped __cpp__('
 			u32 bw = 0;
-			result = FSFILE_Write(h, &bw, offset, str.c_str(), str.size(), FS_WRITE_FLUSH);
-			byteSize += bw
-		');
-	}
-
-	/**
-	 * Writes the current file handle running by using a void pointer variable, this will overwrite the result code from this class.
-	 * @param str Void Pointer to write.
-	 * @param size Size of the Void Pointer.
-	 * @param offset Offset of the string to use, if a number is negative then uses `this.byteSize`.
-	 */
-	public function writeVoid(str:VoidPtr, size:Int, offset:UInt32 = -1) {
-		if (offset < 0) {
-			offset = byteSize;
-		}
-
-		untyped __cpp__('
-			u32 bw = 0;
-			result = FSFILE_Write(h, &bw, offset, str, size, FS_WRITE_FLUSH);
+			result = FSFILE_Write(h, &bw, offset, str.c_str(), str.length, FS_WRITE_FLUSH);
 			byteSize += bw
 		');
 	}
@@ -355,7 +347,7 @@ class FSFile {
 			u32 r = 0;
 			const char* shit = "";
 			result = FSFILE_Read(h, &r, offset, (char*)(shit), len);
-			out = std::string((char*)(shit))
+			out = String((char*)shit)
 		');
 		return out;
 	}
@@ -366,7 +358,7 @@ class FSFile {
 	 * @since 1.4.0
 	 */
 	public function resize(amount:UInt64) {
-		byteSize = amount;
+		byteSize = amount.toInt();
 		result = untyped __cpp__('FSFILE_SetSize(h, amount)');
 	}
 
@@ -530,37 +522,39 @@ typedef FSSMDHAppSettings = {
  * @since 1.6.0
  */
 @:cppFileCode('
+#include "haxe3ds_Utils.h"
+
 struct SMDH {
-    struct Header {
-        u32 magic;
-        u16 version;
-        u16 reserved;
-    };
+	struct Header {
+		u32 magic;
+		u16 version;
+		u16 reserved;
+	};
 
-    struct ApplicationTitle {
-        u16 shortDescription[0x40];
-        u16 longDescription[0x80];
-        u16 publisher[0x40];
-    };
+	struct ApplicationTitle {
+		u16 shortDescription[0x40];
+		u16 longDescription[0x80];
+		u16 publisher[0x40];
+	};
 
-    struct Settings {
-        u8 gameRatings[0x10];
-        u32 regionLock;
-        u32 matchmaker_id;
-        u64 matchmaker_id_bit;
-        u32 flags;
-        u16 eulaVersion;
-        u16 reserved;
-        u32 defaultFrame;
-        u32 cecId;
-    };
+	struct Settings {
+		u8 gameRatings[0x10];
+		u32 regionLock;
+		u32 matchmaker_id;
+		u64 matchmaker_id_bit;
+		u32 flags;
+		u16 eulaVersion;
+		u16 reserved;
+		u32 defaultFrame;
+		u32 cecId;
+	};
 
-    Header header;
-    ApplicationTitle applicationTitles[16];
-    Settings settings;
-    u64 reserved;
-    u8 smallIconData[0x480];
-    u16 bigIconData[0x900];
+	Header header;
+	ApplicationTitle applicationTitles[16];
+	Settings settings;
+	u64 reserved;
+	u8 smallIconData[0x480];
+	u16 bigIconData[0x900];
 };
 ')
 class FSSMDH {
@@ -580,18 +574,18 @@ class FSSMDH {
 	 * ```
 	 * INDEX | Language
 	 * ----------------
-	 * 0     | Japanese
-	 * 1     | English
-	 * 2     | French
-	 * 3     | German
-	 * 4     | Italian
-	 * 5     | Spanish
-	 * 6     | Simplified Chinese
-	 * 7     | Korean
-	 * 8     | Dutch
-	 * 9     | Portuguese
-	 * 10    | Russian
-	 * 11    | Traditional Chinese
+	 * 0	 | Japanese
+	 * 1	 | English
+	 * 2	 | French
+	 * 3	 | German
+	 * 4	 | Italian
+	 * 5	 | Spanish
+	 * 6	 | Simplified Chinese
+	 * 7	 | Korean
+	 * 8	 | Dutch
+	 * 9	 | Portuguese
+	 * 10	| Russian
+	 * 11	| Traditional Chinese
 	 * ```
 	 */
 	public var applicationTitles(default, null):Array<FSSMDHAppTitle> = [];
@@ -611,10 +605,7 @@ class FSSMDH {
 	 * @param media The mediatype for the title.
 	 */
 	public function new(highTID:Int, lowTID:Int, media:FSMediaType) {
-		var thing = FS.ctrRootPath;
 		untyped __cpp__('
-			UNUSED_VAR({0});
-
 			u32 archPath[] = {lowTID, highTID, (FS_MediaType)media, 0x0};
 			static const u32 filePath[] = {0x0, 0x0, 0x2, 0x6E6F6369, 0x0};
 
@@ -642,7 +633,7 @@ class FSSMDH {
 			}
 
 			#undef RETURN_IF_FAILED
-		', thing);
+		');
 
 		var x:Int = 11;
 		x++;

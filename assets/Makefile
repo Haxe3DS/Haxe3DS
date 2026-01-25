@@ -39,9 +39,9 @@ APP_TITLE       := [TITLE_JSON]
 APP_DESCRIPTION := [DESCRIPTION_JSON]
 APP_AUTHOR      := [AUTHOR_JSON]
 
-TARGET      := $(notdir $(CURDIR))
+TARGET      := output
 BUILD       := build
-SOURCES     := src
+SOURCES     := wrapper
 DATA        := data
 INCLUDES    := include
 GRAPHICS    := gfx
@@ -60,9 +60,12 @@ RSF             := $(TOPDIR)/$(RESOURCES)/template.rsf
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
+HXCPP_PATH := $(shell haxelib path hxcpp | head -n 1)
+HXCPP_LIB_PATH := $(TOPDIR)
+
 ARCH        := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 COMMON      := -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections $(ARCH) $(INCLUDE) -D__3DS__
-CFLAGS      := $(COMMON) -std=c++26 -Wno-unused-variable -g
+CFLAGS      := $(COMMON) -I"$(HXCPP_PATH)/include/" -std=c++26 -Wno-unused-variable -g -fexceptions -fpermissive -fvisibility=hidden -static [HAXE3DS_3DSLINK]
 CXXFLAGS    := $(CFLAGS) -w
 ASFLAGS     := $(ARCH)
 LDFLAGS     = -specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -70,13 +73,13 @@ LDFLAGS     = -specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
 #---------------------------------------------------------------------------------
 # Libraries needed to link into the executable.
 #---------------------------------------------------------------------------------
-LIBS := -lctru -lm
+LIBS := [HAXE3DS_FLAGS]
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS) $(CTRULIB)
+LIBDIRS	:= $(PORTLIBS) $(CTRULIB) $(HXCPP_LIB_PATH)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -117,7 +120,7 @@ export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 export OFILES_BIN     := $(addsuffix .o,$(BINFILES)) \
                          $(PICAFILES:.v.pica=.shbin.o) $(SHLISTFILES:.shlist=.shbin.o) \
                          $(if $(filter $(BUILD),$(GFXBUILD)),$(addsuffix .o,$(T3XFILES)))
-export OFILES         := $(OFILES_BIN) $(OFILES_SOURCES)
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES) libHAXE3DS.a
 export HFILES         := $(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
                          $(addsuffix .h,$(subst .,_,$(BINFILES))) \
                          $(GFXFILES:.t3s=.h)
@@ -125,7 +128,9 @@ export INCLUDE        := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
                          $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
                          -I$(CURDIR)/$(BUILD)
 
-export LIBPATHS       := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+                   -L$(TOPDIR) \
+                   -L$(TOPDIR)/build
 
 export _3DSXDEPS      := $(if $(NO_SMDH),,$(OUTPUT_FILE).smdh)
 
@@ -163,7 +168,7 @@ all : bootstrap
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 3dsx : bootstrap
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIDR)/Makefile $@
 
 cia : bootstrap
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
