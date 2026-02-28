@@ -3,7 +3,7 @@ package haxe3ds.services;
 import cpp.UInt8;
 import cpp.UInt32;
 
-class Key {
+class HIDKey {
 	@:native("KEY_START")
 	public static var START:UInt32;
 	
@@ -12,16 +12,16 @@ class Key {
 
 	@:native("KEY_B")
 	public static var B:UInt32;
-	
+
 	@:native("KEY_Y")
 	public static var Y:UInt32;
-	
+
 	@:native("KEY_X")
 	public static var X:UInt32;
-	
+
 	@:native("KEY_SELECT")
 	public static var SELECT:UInt32;
-	
+
 	@:native("KEY_DLEFT")
 	public static var DLEFT:UInt32;		
 
@@ -45,52 +45,52 @@ class Key {
 	 */
 	@:native("KEY_ZL")
 	public static var ZL:UInt32;
-	
+
 	/**
 	 * New 3DS only
 	 */
 	@:native("KEY_ZR")
 	public static var ZR:UInt32;
-	
+
 	/**
 	 * Not actually provided by HID, still functional.
 	 */
 	@:native("KEY_TOUCH")
 	public static var TOUCH:UInt32;
-	
+
 	/**
 	 * New 3DS only
 	 */
 	@:native("KEY_CSTICK_RIGHT")
 	public static var CSTICK_RIGHT:UInt32;
-	
+
 	/**
 	 * New 3DS only
 	 */
 	@:native("KEY_CSTICK_LEFT")
 	public static var CSTICK_LEFT:UInt32;
-	
+
 	/**
 	 * New 3DS only
 	 */
 	@:native("KEY_CSTICK_UP")
 	public static var CSTICK_UP:UInt32;
-	
+
 	/**
 	 * New 3DS only
 	 */
 	@:native("KEY_CSTICK_DOWN")
 	public static var CSTICK_DOWN:UInt32;
-	
+
 	@:native("KEY_CPAD_RIGHT")
 	public static var CPAD_RIGHT:UInt32;
-	
+
 	@:native("KEY_CPAD_LEFT")
 	public static var CPAD_LEFT:UInt32;
 
 	@:native("KEY_CPAD_UP")
 	public static var CPAD_UP:UInt32;
-	
+
 	@:native("KEY_CPAD_DOWN")
 	public static var CPAD_DOWN:UInt32;
 
@@ -189,28 +189,46 @@ class HID {
 	 * 
 	 * Automatically called from `APT.mainLoop()`
 	 */
-	public static function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
+	public static inline function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
 
 	/**
 	 * Checks Whether a key is pressed or not.
 	 * @param key The key from extern Button to check Whether it's pressed.
 	 * @return true if pressed, false if not.
 	 */
-	public static inline function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & key");
+	public static inline function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & ({0})", key);
 
 	/**
 	 * Checks Whether a key is held or not.
 	 * @param key The key from extern Button to check Whether it's held.
 	 * @return true if held, false if not.
 	 */
-	public static inline function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & key");
+	public static inline function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & ({0})", key);
 
 	/**
 	 * Checks Whether a key is up or not.
 	 * @param key The key from extern Button to check Whether it's up.
 	 * @return true if up, false if not.
 	 */
-	public static inline function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & key");
+	public static inline function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & ({0})", key);
+
+	/**
+	 * Function that waits for a key press to continue again.
+	 * 
+	 * ***Please*** do not use a Custom key without the provided `HIDKey` variables, Using 2 keys `(HIDKey.A | HIDKey.B)` is OK.
+	 * 
+	 * @param key Key Variable in class `HIDKey` to use.
+	 * @param up Whether or not it should wait until key is up, else waits until key is down
+	 * @since 1.8.0
+	 */
+	public static function waitForKeyPress(key:UInt32, up:Bool = false) {
+		var handler = up ? HID.keyUp : HID.keyPressed;
+		while (APT.mainLoop()) {
+			if (handler(key)) {
+				break;
+			}
+		}
+	}
 
 	/**
 	 * Variable for the Circle Pad Data.
@@ -299,7 +317,7 @@ class HID {
 	 * 
 	 * `Set` will call either `HIDUSER_EnableAccelerometer` if true, or `HIDUSER_DisableAccelerometer` if false.
 	 */
-	@:isVar public static var accelerometer(null, set):Bool;
+	public static var accelerometer(null, set):Bool;
 	static function set_accelerometer(accelerometer:Bool):Bool {
 		untyped __cpp__('accelerometer ? HIDUSER_EnableAccelerometer() : HIDUSER_DisableAccelerometer()');
 		return accelerometer;
@@ -310,14 +328,14 @@ class HID {
 	 * 
 	 * `Set` will call either `HIDUSER_EnableGyroscope` if true, or `HIDUSER_DisableGyroscope` if false.
 	 */
-	@:isVar public static var gyroscope(null, set):Bool;
+	public static var gyroscope(null, set):Bool;
 	static function set_gyroscope(gyroscope:Bool):Bool {
 		untyped __cpp__('gyroscope ? HIDUSER_EnableGyroscope() : HIDUSER_DisableGyroscope()');
 		return gyroscope;
 	}
 
 	/**
-	 * Variable property that gets the current volume slider value. (0-63).
+	 * Variable property that gets the current volume slider value. `0 (0x00) - 63 (0x3F)`.
 	 * 
 	 * `Get` will call `HIDUSER_GetSoundVolume` and returns the variable.
 	 */

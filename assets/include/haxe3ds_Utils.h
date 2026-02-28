@@ -1,20 +1,28 @@
 #pragma once
 
 #include <3ds.h>
+#include <stdio.h>
 
-// more of a check if result failed
-#define RETURN_NULL_IF_FAILED(x) if R_FAILED(x) return null();
 #define CLAMP(var, x, y) var < x ? x : var > y ? y : var
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
+#define RETURN_NULL_IF_FAILED(x) \
+	{ \
+		Result code = x; \
+		if R_FAILED(code) { \
+			printf(#x " FAILED! Error Code: 0x%lX  L:%d M:%d S:%d D:%d", code, R_LEVEL(code), R_MODULE(code), R_SUMMARY(code), R_DESCRIPTION(code)); \
+			return null(); \
+		} \
+	}
+
 #define TRANSFER(input, output) \
 	([&]{ \
-		size_t size = MIN(sizeof(input), sizeof(output)); \
-		for (size_t i = 0; i < size; i++) { \
+		size_t i = 0; \
+		for (; i < sizeof(output); i++) { \
 			if (input[i] == 0) break; \
 			output[i] = input[i]; \
 		} \
-		return size; \
+		return i; \
 	}())
 
 #define u16ToString(input) \
@@ -32,10 +40,3 @@
 		func(&a); \
 		return a; \
 	}())
-
-inline Thread fastCreateThread(ThreadFunc function, void* arg) {
-	s32 priority;
-	svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
-	priority -= 1;
-	return threadCreate(function, arg, 32768, CLAMP(priority, 0x18, 0x3F), -1, true);
-}

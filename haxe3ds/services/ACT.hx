@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
 import haxe3ds.Types.NanoTime;
 import cpp.UInt32;
 import cpp.UInt16;
@@ -68,84 +69,96 @@ typedef ACTAccountInfo = {
  */
 @:cppInclude('haxe3ds_Utils.h')
 class ACT {
+	static function getInfo(i:Int):ACTAccountInfo {
+		untyped __cpp__('
+			u16 userAge;
+			bool ads;
+			char cn[3];
+			AccountInfo info;
+			char url[257];
+
+			#define actInfo(var, type) ACT_GetAccountInfo(&var, sizeof(var), {0}, type)
+			actInfo(userAge, INFO_TYPE_AGE);
+			actInfo(ads, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
+			actInfo(cn, INFO_TYPE_COUNTRY_NAME);
+			actInfo(info, INFO_TYPE_ACCOUNT_INFO);
+			actInfo(url, INFO_TYPE_MII_IMAGE_URL);
+			#undef actInfo
+
+			char str[11];
+			snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
+		', i);
+
+		return {
+			username: untyped __cpp__('info.accountId'),
+			userAge: untyped __cpp__('userAge'),
+			receiveAds: untyped __cpp__('ads'),
+			male: untyped __cpp__('!info.mii.miiData.mii_details.sex'),
+			miiName: untyped __cpp__('u16ToString(info.screenName)'),
+			countryName: untyped __cpp__('String(reinterpret_cast<char*>(cn))'),
+			principalID: untyped __cpp__('info.principalId'),
+			birthDate: untyped __cpp__('String(reinterpret_cast<char*>(str))'),
+			miiImageURL: untyped __cpp__('String(url)'),
+		};
+	}
+
 	/**
 	 * The total count of accounts the console has.
 	 */
-	public static var numAccount(default, null):UInt8;
+	public static var numAccount(get, null):UInt8;
+	static function get_numAccount():UInt8 {
+		untyped __cpp__('
+			u8 res;
+			ACT_GetCommonInfo(&res, 1, INFO_TYPE_COMMON_NUM_ACCOUNTS);
+		');
+		return untyped __cpp__('res');
+	}
 
 	/**
 	 * The current account slot the console is using.
 	 */
-	public static var currentAccountSlot(default, null):UInt8;
+	public static var currentAccountSlot(get, null):UInt8;
+	static function get_currentAccountSlot():UInt8 {
+		untyped __cpp__('
+			u8 res;
+			ACT_GetCommonInfo(&res, 1, INFO_TYPE_COMMON_CURRENT_ACCOUNT_SLOT);
+		');
+		return untyped __cpp__('res');
+	}
 
 	/**
 	 * NetworkTimeDifference: Difference between server time and UTC device time (in nanoseconds) 
 	 */
-	public static var networkTimeDiff(default, null):NanoTime;
+	public static var networkTimeDiff(get, null):NanoTime;
+	static function get_networkTimeDiff():NanoTime {
+		untyped __cpp__('
+			u64 res;
+			ACT_GetCommonInfo(&res,	8, INFO_TYPE_COMMON_NETWORK_TIME_DIFF);
+		');
+		return untyped __cpp__('res');
+	}
 
 	/**
 	 * Nintendo Network ID User Account's Info.
 	 */
-	public static var nnid(default, null):ACTAccountInfo;
+	public static var nnid(get, null):ACTAccountInfo;
+	static function get_nnid():ACTAccountInfo {
+		return getInfo(1); // 1 indicates account is using nnid
+	}
 
 	/**
 	 * Pretendo Network ID User Account's Info.
 	 */
-	public static var pnid(default, null):ACTAccountInfo;
+	public static var pnid(get, null):ACTAccountInfo;
+	static function get_pnid():ACTAccountInfo {
+		return getInfo(3); // 3 indicates account is using pnid
+	}
 
 	/**
 	 * Initializes ACT services and sets up other variables.
 	 */
-	public static function init() {
-		untyped __cpp__('
-			actInit(false);
-
-			ACT_GetCommonInfo(&numAccount, 1, INFO_TYPE_COMMON_NUM_ACCOUNTS);
-			ACT_GetCommonInfo(&currentAccountSlot, 1, INFO_TYPE_COMMON_CURRENT_ACCOUNT_SLOT);
-			ACT_GetCommonInfo(&networkTimeDiff,	8, INFO_TYPE_COMMON_NETWORK_TIME_DIFF);
-		');
-
-		final arr:Array<Int> = [1, 3];
-		for (i in arr) {
-			function getInfo():ACTAccountInfo {
-				untyped __cpp__('
-					u16 userAge;
-					bool ads;
-					char cn[3];
-					AccountInfo info;
-					char url[257];
-
-					#define actInfo(var, type) ACT_GetAccountInfo(&var, sizeof(var), {0}, type)
-					actInfo(userAge, INFO_TYPE_AGE);
-					actInfo(ads, INFO_TYPE_IS_ENABLED_RECEIVE_ADS);
-					actInfo(cn, INFO_TYPE_COUNTRY_NAME);
-					actInfo(info, INFO_TYPE_ACCOUNT_INFO);
-					actInfo(url, INFO_TYPE_MII_IMAGE_URL);
-					#undef actInfo
-
-					char str[11];
-					snprintf(str, 11, "%u/%u/%u", info.birthDate.day, info.birthDate.month, info.birthDate.year);
-				', i);
-
-				return {
-					username: untyped __cpp__('info.accountId'),
-					userAge: untyped __cpp__('userAge'),
-					receiveAds: untyped __cpp__('ads'),
-					male: untyped __cpp__('!info.mii.miiData.mii_details.sex'),
-					miiName: untyped __cpp__('u16ToString(info.screenName)'),
-					countryName: untyped __cpp__('String(reinterpret_cast<char*>(cn))'),
-					principalID: untyped __cpp__('info.principalId'),
-					birthDate: untyped __cpp__('String(reinterpret_cast<char*>(str))'),
-					miiImageURL: untyped __cpp__('String(url)'),
-				};
-			}
-
-			if (i == 1) {
-				nnid = getInfo();
-			} else {
-				pnid = getInfo();
-			}
-		}
+	public static function init():Result {
+		return untyped __cpp__('actInit(false)');
 	}
 
 	/**

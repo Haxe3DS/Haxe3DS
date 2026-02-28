@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
 import cpp.UInt16;
 import cpp.UInt8;
 import cpp.UInt32;
@@ -237,52 +238,8 @@ class CFG {
 	/**
 	 * Initializes CFG and sets up other variables for it to register.
 	 */
-	public static function init() {
-		untyped __cpp__('
-			cfguInit();
-
-			u8 r;
-			std::deque<String> arr = {"Japanese","English","French","German","Italian","Spanish","Simplified Chinese","Korean","Dutch","Portuguese","Russian","Traditional Chinese"};
-			CFGU_GetSystemLanguage(&r);
-			language = arr[r];
-
-			arr = {"JPN","USA","EUR","AUS","CHN","KOR","TWN"};
-			CFGU_SecureInfoGetRegion(&r);
-			region = arr[r];
-
-			isCanadaUSA = API_GETTER(u8, CFGU_GetRegionCanadaUSA, 0) == 1;
-			supportsNFC = API_GETTER(bool, CFGU_IsNFCSupported, false);
-
-			arr = {"CTR","SPR","KTR","FTR","RED","JAN"};
-			CFGU_GetSystemModel(&r);
-			model = arr[r];
-
-			union {
-				u16 user[10];
-				u16 ngWord;
-				u32 ngWordv;
-			} usern;
-			CFG_GetConfigInfoBlk8(28, 0x000A0000, &usern);
-
-			union {
-				u8 month;
-				u8 day;
-			} birt;
-			CFG_GetConfigInfoBlk8(2, 0x000A0001, &birt);
-			arr = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-			char date[15] = { 0 };
-			std::snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
-
-			CFG_GetConfigInfoBlk8(1, 0x00070001, &soundOutput);
-		');
-
-		birthday = untyped __cpp__('String(date)');
-
-		username = {
-			name: untyped __cpp__('u16ToString(usern.user)'),
-			hasProfanity: untyped __cpp__('(bool)usern.ngWord'),
-			version: untyped __cpp__('(int)usern.ngWordv'),
-		}
+	public static function init():Result {
+		return untyped __cpp__('cfguInit()');
 	};
 	
 	/**
@@ -296,7 +253,26 @@ class CFG {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var username:CFGUsername;
+	public static var username(get, null):Null<CFGUsername>;
+	static function get_username():Null<CFGUsername> {
+		untyped __cpp__('
+			union {
+				u16 user[10];
+				u16 ngWord;
+				u32 ngWordv;
+			} usern;
+
+			if R_FAILED(CFG_GetConfigInfoBlk8(28, 0x000A0000, &usern)) {
+				return null();
+			}
+		');
+
+		return {
+			name: untyped __cpp__('u16ToString(usern.user)'),
+			hasProfanity: untyped __cpp__('(bool)usern.ngWord'),
+			version: untyped __cpp__('(int)usern.ngWordv'),
+		}
+	}
 
 	/**
 	 * Variable that gets the System's Current Birthday set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
@@ -310,7 +286,25 @@ class CFG {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var birthday(default, null):String;
+	public static var birthday(get, null):Null<String>;
+	static function get_birthday():Null<String> {
+		untyped __cpp__('
+			union {
+				u8 month;
+				u8 day;
+			} birt;
+
+			if R_FAILED(CFG_GetConfigInfoBlk8(2, 0x000A0001, &birt)) {
+				return null();
+			}
+
+			std::deque<String> arr = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+			char date[15] = { 0 };
+			snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
+		');
+
+		return untyped __cpp__('String(date)');
+	}
 
 	/**
 	 * Variable string for the current model.
@@ -327,7 +321,16 @@ class CFG {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var model(default, null):String;
+	public static var model(get, null):Null<String>;
+	static function get_model():Null<String> {
+		untyped __cpp__('
+			u8 r;
+			if R_FAILED(CFGU_GetSystemModel(&r)) return null();
+			std::deque<String> arr = {"CTR","SPR","KTR","FTR","RED","JAN"};
+		');
+
+		return untyped __cpp__('arr[r]');
+	}
 
 	/**
 	 * Variable string for the current region of this system.
@@ -345,7 +348,16 @@ class CFG {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var region(default, null):String;
+	public static var region(get, null):Null<String>;
+	static function get_region():Null<String> {
+		untyped __cpp__('
+			u8 r;
+			if R_FAILED(CFGU_SecureInfoGetRegion(&r)) return null();
+			std::deque<String> arr = {"JPN","USA","EUR","AUS","CHN","KOR","TWN"};
+		');
+
+		return untyped __cpp__('arr[r]');
+	}
 
 	/**
 	 * Variable for the current system language used.
@@ -370,14 +382,24 @@ class CFG {
 	 * 
 	 * @since 1.3.0
 	 */
-	public static var language(default, null):String;
+	public static var language(default, null):Null<String>;
+	static function get_language():Null<String> {
+		untyped __cpp__('
+			u8 r;
+			if R_FAILED(CFGU_GetSystemLanguage(&r)) return null();
+			std::deque<String> arr = {"Japanese","English","French","German","Italian","Spanish","Simplified Chinese","Korean","Dutch","Portuguese","Russian","Traditional Chinese"};
+		');
+
+		return untyped __cpp__('arr[r]');
+	}
 
 	/**
 	 * Whether or not the system is in canada or USA. This is also known as `CFG:IsCoppacsSupported`
-	 * 
-	 * Will automatically be set when `CFG.init` is called.
 	 */
-	public static var isCanadaUSA(default, null):Bool;
+	public static var isCanadaUSA(get, null):Bool;
+	static function get_isCanadaUSA():Bool {
+		return untyped __cpp__('API_GETTER(u8, CFGU_GetRegionCanadaUSA, 0) == 1');
+	}
 
 	/**
 	 * Variable property that checks if NFC (code name: fangate) is supported.
@@ -387,6 +409,9 @@ class CFG {
 	 * @since 1.2.0
 	 */
 	public static var supportsNFC(default, null):Bool;
+	static function get_supportsNFC():Bool {
+		return untyped __cpp__('API_GETTER(bool, CFGU_IsNFCSupported, false)');
+	}
 
 	/**
 	 * The current sound output mode that's set by the user from `System Settings` > `Other Settings` > `Page 2`.
@@ -395,10 +420,19 @@ class CFG {
 	 * - `0` - Mono.
 	 * - `1` - Stereo.
 	 * - `2` - 3D Surround Sound.
+	 * - `-1` - API Error.
 	 * 
 	 * @since 1.5.0
 	 */
 	public static var soundOutput(default, null):UInt8;
+	static function get_soundOutput():UInt8 {
+		untyped __cpp__('
+			u8 r;
+			if R_FAILED(CFG_GetConfigInfoBlk8(1, 0x00070001, &r)) return -1;
+		');
+
+		return untyped __cpp__('r');
+	}
 
 	/**
 	 * A getter variable returning the Parental Controls Info, Such as restrictions, pin, and more. Config Block stored in 0x000C0000.
@@ -484,8 +518,9 @@ class CFG {
 	static function get_backlightControl():Null<CFGBacklightControl> {
 		untyped __cpp__('
 			CFGBC block;
-			if (R_FAILED(CFG_GetConfigInfoBlk8(2, 0x00050001, &block)))
+			if R_FAILED(CFG_GetConfigInfoBlk8(2, 0x00050001, &block)) {
 				return null();
+			}
 		');
 
 		return {

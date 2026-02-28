@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import sys.thread.Thread;
 import haxe3ds.Types.Event;
 import haxe3ds.Types.NanoTime;
 import haxe3ds.Types.Result;
@@ -200,16 +201,45 @@ enum abstract FRDNotifTypes(Int) {
  * @since 1.2.0
  */
 @:cppFileCode('
-#include <cstring>
 #include "haxe3ds_Utils.h"
 
 Handle frd_Handle;
-Thread frd_Thread;
+bool   frd_ShouldExit = false;
 
-void threadStart(void* _) {
+Dynamic fiToFD(FriendInfo f) {
+	using r = haxe3ds::services::FRDRelationship_obj;
+	haxe3ds::services::FRDRelationship relation = null();
+
+	switch(f.relationship) {
+		case 0: {relation = r::NOT_REGISTERED_dyn(); break;}
+		case 1: {relation = r::REGISTERED_dyn(); break;}
+		case 2: {relation = r::NOT_FOUND_dyn(); break;}
+		case 3: {relation = r::DELETED_dyn(); break;}
+		case 4: {relation = r::LOCAL_ADDED_dyn(); break;}
+		default:{relation = r::UNKNOWN_dyn(); break;}
+	};
+
+	Dynamic temp = Dynamic(hx::Anon_obj::Create(4)
+		->setFixed(0,String("region"),f.friendProfile.profile.region)
+		->setFixed(1,String("country"),f.friendProfile.profile.country)
+		->setFixed(2,String("area"),f.friendProfile.profile.area)
+		->setFixed(3,String("language"),f.friendProfile.profile.language));
+
+	return Dynamic(hx::Anon_obj::Create(8)
+		->setFixed(0,String("comment"),u16ToString(f.friendProfile.personalMessage))
+		->setFixed(1,String("favoriteGameTID"),f.friendProfile.favoriteGame.titleId)
+		->setFixed(2,String("principalID"),(int)f.friendKey.principalId)
+		->setFixed(3,String("addedTimestamp"),f.addedTimestamp)
+		->setFixed(4,String("profile"),temp)
+		->setFixed(5,String("relationship"),relation)
+		->setFixed(6,String("displayName"),u16ToString(f.screenName))
+		->setFixed(7,String("male"),!f.mii.miiData.mii_details.sex));
+}
+
+void NotificationThread() {
 	using f = haxe3ds::services::FRDRelationship_obj;
-	while (true) {
-		if (svcWaitSynchronization(frd_Handle, 500000000) == 0) {
+	while (!frd_ShouldExit) {
+		if (svcWaitSynchronization(frd_Handle, 100000000) == 0) {
 			auto caller = haxe3ds::services::FRD_obj::notifCallback;
 			if (caller == null()) {
 				continue;
@@ -222,39 +252,9 @@ void threadStart(void* _) {
 			if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) continue;
 			if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) continue;
 
-			haxe3ds::services::FRDRelationship relation = null();
-			switch(f.relationship) {
-				case 0: {relation = f::NOT_REGISTERED_dyn(); break;}
-				case 1: {relation = f::REGISTERED_dyn(); break;}
-				case 2: {relation = f::NOT_FOUND_dyn(); break;}
-				case 3: {relation = f::DELETED_dyn(); break;}
-				case 4: {relation = f::LOCAL_ADDED_dyn(); break;}
-				default:{relation = f::UNKNOWN_dyn(); break;}
-			};
-
-			Dynamic temp = Dynamic(hx::Anon_obj::Create(4)
-				->setFixed(0,String("region"),f.friendProfile.profile.region)
-				->setFixed(1,String("country"),f.friendProfile.profile.country)
-				->setFixed(2,String("area"),f.friendProfile.profile.area)
-				->setFixed(3,String("language"),f.friendProfile.profile.language));
-			
-			Dynamic out = Dynamic(hx::Anon_obj::Create(8)
-				->setFixed(0,String("comment"),u16ToString(f.friendProfile.personalMessage))
-				->setFixed(1,String("favoriteGameTID"),f.friendProfile.favoriteGame.titleId)
-				->setFixed(2,String("principalID"),(int)f.friendKey.principalId)
-				->setFixed(3,String("addedTimestamp"),f.addedTimestamp)
-				->setFixed(4,String("profile"),temp)
-				->setFixed(5,String("relationship"),relation)
-				->setFixed(6,String("displayName"),u16ToString(f.screenName))
-				->setFixed(7,String("male"),!f.mii.miiData.mii_details.sex));
-
-			caller->callEvents(cpp::VirtualArray_obj::__new(2)->init(0,out)->init(1,event.type));
-			temp = nullptr;
-			out = nullptr;
+			caller->callEvents(Dynamic(::hx::Anon_obj::Create(2)->setFixed(0,String("types"),event.type)->setFixed(1,String("detail"),fiToFD(f))));
 		}
 	}
-	
-	threadExit(0);
 }')
 class FRD {
 	/**
@@ -284,14 +284,24 @@ class FRD {
 	/**
 	 * Variable for this ID of the user's current local account.
 	 */
-	public static var localAccountId(default, null):UInt8;
+	public static var localAccountId(get, null):UInt8;
+	static function get_localAccountId():UInt8 {
+		return untyped __cpp__('API_GETTER(u8, FRD_GetMyLocalAccountId, 0)');
+	}
 
 	/**
 	 * Variable for this user's profile.
-	 * 
-	 * Note that it is not going to be updated everytime.
 	 */
-	public static var myProfile(default, null):FRDFriendDetail;
+	public static var myProfile(get, null):Null<FRDFriendDetail>;
+	static function get_myProfile():Null<FRDFriendDetail> {
+		untyped __cpp__('
+			FriendKey key = API_GETTER(FriendKey, FRD_GetMyFriendKey, 0);
+			FriendInfo f;
+			if (R_FAILED(FRD_GetFriendInfo(&f, &key, 1, false, false))) return null();
+		');
+
+		return untyped __cpp__('fiToFD(f)');
+	}
 
 	/**
 	 * Callback handler for notifications called from friends.
@@ -302,53 +312,29 @@ class FRD {
 	 * 
 	 * @since 1.5.0
 	 */
-	public static var notifCallback = new Event<(FRDFriendDetail, FRDNotifTypes)->Void>();
+	public static var notifCallback = new Event<{detail:FRDFriendDetail, types:FRDNotifTypes}>();
 
 	/**
 	 * Initializes friend services.
+	 * @param enableNotifications Whether or not you want to enable for `notifCallback`
 	 */
-	public static function init() {
+	public static function init(enableNotifications:Bool = true):Result {
 		untyped __cpp__('
-			frdInit(false);
+			Result res = frdInit(false);
 
-			svcCreateEvent(&frd_Handle, RESET_ONESHOT);
-			FRD_AttachToEventNotification(frd_Handle);
-			fastCreateThread(threadStart, NULL);
-			
-			localAccountId = API_GETTER(u8, FRD_GetMyLocalAccountId, 0);
-			FriendKey key = API_GETTER(FriendKey, FRD_GetMyFriendKey, 0);
-			FriendInfo f;
+			if (R_SUCCEEDED(res) && enableNotifications) {
+				if R_FAILED(res = svcCreateEvent(&frd_Handle, RESET_ONESHOT)) return res;
+				if R_FAILED(res = FRD_AttachToEventNotification(frd_Handle)) return res;
+				{0};
+			}
+		', Thread.create(() -> untyped __cpp__('NotificationThread()')));
 
-			FRD_GetFriendInfo(&f, &key, 1, false, false);
-		');
-
-		myProfile = {
-			comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage)'),
-			displayName: untyped __cpp__('u16ToString(f.screenName)'),
-			profile: {
-				region: untyped __cpp__('f.friendProfile.profile.region'),
-				country: untyped __cpp__('f.friendProfile.profile.country'),
-				area: untyped __cpp__('f.friendProfile.profile.area'),
-				language: untyped __cpp__('f.friendProfile.profile.language')
-			},
-			addedTimestamp: untyped __cpp__('f.addedTimestamp'),
-			principalID: untyped __cpp__('f.friendKey.principalId'),
-			male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
-			relationship: switch(untyped __cpp__('f.relationship')) {
-				case 0: NOT_REGISTERED;
-				case 1: REGISTERED;
-				case 2: NOT_FOUND;
-				case 3: DELETED;
-				case 4: LOCAL_ADDED;
-				default: UNKNOWN;
-			},
-			favoriteGameTID: untyped __cpp__('f.friendProfile.favoriteGame.titleId')
-		};
+		return untyped __cpp__('res');
 	}
 
 	/**
 	 * Changes the Friend List's presence that is present in the Friend List.
-	 * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateMyPresence`).
+	 * @param textToUse Text to set as, maximum 127 characters and 1 new line (multiple will be cut by `FRD_UpdateGameModeDescription`).
 	 * @return Result code of Whether something from the services went wrong.
 	 */
 	public static function updatePresence(textToUse:String):Result {
@@ -393,8 +379,8 @@ class FRD {
 		untyped __cpp__('
 			FriendKey list[100] = {};
 			FriendInfo prof[100] = {};
-			u32 l = 0;
 
+			u32 l = 0;
 			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, 100))) return null();
 			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) return null();
 		');
@@ -430,12 +416,12 @@ class FRD {
 	}
 
 	/**
-	 * Frees Thread, Closes handle and Exits friend services.
+	 * Closes handle and Exits friend services.
 	 */
 	public static function exit() {
+		notifCallback.clear();
 		untyped __cpp__('
-			threadJoin(frd_Thread);
-			threadFree(frd_Thread);
+			frd_ShouldExit = true;
 			svcCloseHandle(frd_Handle);
 			frdExit()
 		');

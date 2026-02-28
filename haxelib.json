@@ -3,9 +3,10 @@
     "url" :         "https://github.com/Haxe3DS/Haxe3DS",
     "license":      "Public",
     "tags":         ["3ds", "devkitpro", "homebrew", "libctru", "cpp", "hxcpp"],
-    "description":  "Transpile then Compile Haxe Code to 3DS Applications in vastly amount of options easily!",
-    "version":      "1.7.0",
+    "description":  "Compile Haxe Code to 3DS Applications Easily!",
+    "version":      "1.8.0",
     "releasenote":  "See https://github.com/Haxe3DS/Haxe3DS/blob/main/RELEASES.md#170 for release notes.",
     "contributors": ["NAEL2XD"],
-    "dependencies": {}
+    "dependencies": {},
+    "main":         "Haxe3DS_Tool"
 }

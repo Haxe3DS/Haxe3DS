@@ -19,7 +19,7 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 	var NORMAL;
 
 	/**
-	 * A setup flag that internally calls if it's unboxing a new 3ds or formatting it and turning it on.
+	 * A setup flag that internally calls if it's unboxing a 3DS or formatting it and turning it on.
 	 * 
 	 * ### WARNING:
 	 * - It will erase the console's whole Mii Maker Data, including your personal MII!!! Use it with caution.
@@ -112,36 +112,26 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 enum abstract APTHookType(Int) {
 	/**
 	 * Suspend happens if user pressed the HOME Menu.
-	 * 
-	 * Value: `0`
 	 */
 	var SUSPEND;
 
 	/**
 	 * Resume happens while in the HOME Menu.
-	 * 
-	 * Value: `1`
 	 */
 	var RESUME;
 
 	/**
 	 * System is sleeping due to User's Request.
-	 * 
-	 * Value: `2`
 	 */
 	var SLEEP;
 
 	/**
 	 * System stops sleeping due to User's Request.
-	 * 
-	 * Value: `3`
 	 */
 	var WAKEUP;
 
 	/**
 	 * Exit happens if user exits this app, only works in CIA?
-	 * 
-	 * Value: `4`
 	 */
 	var EXIT;
 }
@@ -159,15 +149,14 @@ aptHookCookie cookie;
 void aptHookFunction(APT_HookType _hook, void* param) {
 	auto hook = haxe3ds::services::APT_obj::hookHandler;
 	if (hook != null()) {
-		const int arr[1] = {_hook};
-		hook->callEvents(Array_obj<int>::fromData(arr, 1));
+		hook->callEvents(_hook);
 	}
 }')
 class APT {
 	/**
 	 * Variable if the 3DS model is the NEW 3DS instead of OLD 3DS.
 	 */
-	public static var isNew3DS(get, null):Bool = false;
+	public static var isNew3DS(get, null):Bool;
 	static function get_isNew3DS():Bool {
 		return untyped __cpp__('API_GETTER(bool, APT_CheckNew3DS, false)');
 	}
@@ -179,7 +168,7 @@ class APT {
 	 * 
 	 * @since 1.4.0
 	 */
-	public static var programID(get, null):UInt64 = 0;
+	public static var programID(get, null):UInt64;
 	static function get_programID():UInt64 {
 		return untyped __cpp__('API_GETTER(u64, APT_GetProgramID, 0)');
 	}
@@ -189,7 +178,7 @@ class APT {
 	 * 
 	 * @since 1.6.0
 	 */
-	public static var hookHandler = new Event<APTHookType->Void>(() -> untyped __cpp__('aptHook(&cookie, aptHookFunction, nullptr)'));
+	public static var hookHandler = new Event<APTHookType>(() -> untyped __cpp__('aptHook(&cookie, aptHookFunction, nullptr)'));
 
 	/**
 	 * This gets/sets the amount of syscore CPU time available to the running application. It can range from 5% to 89%. Maximum value depends on the ExHeader. Setting a value higher than 30% does not seem to improve performance on Old 3DS, however it definitely does on New 3DS. 
@@ -289,6 +278,7 @@ class APT {
 	 * - Sometimes softlocks the 3DS for apparently no reason, even if system settings isn't launched.
 	 * - Emulators like AZAHAR has region set to `Auto-Select` instead of the proper region, and can cause a restart.
 	 * - Booting to System Settings is slow and takes ~10 seconds to launch.
+	 * - Having Artic Base would Boot Up, For some reason.
 	 * 
 	 * @param flag Flag to use for System Settings.
 	 * @return Result to indicate if something went wrong or not.

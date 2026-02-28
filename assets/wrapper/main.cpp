@@ -53,23 +53,20 @@ void HAXE3DS_CTRUException(ERRF_ExceptionInfo* excep, CpuRegisters* regs) {
 	fprintf(f, "FPEXC: 0x%08lX   FPI1:   0x%08lX\n", excep->fpexc, excep->fpinst);
 	fprintf(f, " FPI2: 0x%08lX", excep->fpinst2);
 
-	fprintf(f, "\n\npython build.py -e 0x%lX 0x%lX\nUse the command above to locate which line throws exception from.", regs->pc, regs->lr);
+	fprintf(f, "\n\nhaxelib run haxe3ds -e 0x%lX 0x%lX\nUse the command above to locate which line throws exception from.", regs->pc, regs->lr);
 	fclose(f);
 
-	hx::Throw(String("[!!] Application Error [!!]\n\nThis is caused by an Exception from this Application and NOT a Throw! See the logs file at sdmc:/haxe3ds_exception.log"));
+	hx::Throw(HX_CSTRING("[!!] Application Error [!!]\n\nThis is caused by an Exception from this Application and NOT a Throw! See the logs file at sdmc:/haxe3ds_exception.log"));
 }
 
 extern "C" EXPORT_EXTRA int main() {
 	threadOnException(HAXE3DS_CTRUException, RUN_HANDLER_ON_FAULTING_STACK, WRITE_DATA_TO_HANDLER_STACK);
 
-	_hxcpp_argc = 0;
-	_hxcpp_argv = nullptr;
 	HX_TOP_OF_STACK
 	hx::Boot();
 
-
 	u32* SOC_buffer = (u32*)memalign(0x1000, 0x100000);
-	if (R_FAILED(socInit(SOC_buffer, 0x100000))) svcBreak(USERBREAK_PANIC);
+	if R_FAILED(socInit(SOC_buffer, 0x100000)) svcBreak(USERBREAK_PANIC);
 	#ifdef HAXE3DS_LINKTO3DS
 	int sock = link3dsStdio();
 	#endif
@@ -84,15 +81,10 @@ extern "C" EXPORT_EXTRA int main() {
 		printf("[EXCEPTION OCCURRED!]\n%s\n\n", String(d).c_str());
 		__hx_dump_stack();
 		#ifdef HAXE3DS_LINKTO3DS
-		goto badexit;
-		#endif
-
-		printf("\nPress [START] to exit Haxe3DS");
-		while (hidScanInput(), (!(hidKeysDown() & KEY_START) && aptMainLoop()));
-
-		badexit:
-		#ifdef HAXE3DS_LINKTO3DS
 		if (sock > 0) closesocket(sock);
+		#else
+		printf("\nPress [START] to exit Haxe3DS");
+		while (hidScanInput(), !(hidKeysDown() & KEY_START) && aptMainLoop());
 		#endif
 
 		return EXIT_FAILURE;

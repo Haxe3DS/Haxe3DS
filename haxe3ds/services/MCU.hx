@@ -1,5 +1,6 @@
 package haxe3ds.services;
 
+import haxe3ds.Types.Result;
 import cpp.UInt8;
 
 /**
@@ -12,18 +13,8 @@ class MCUWUC {
 	/**
 	 * Initializes MCUHWC for other variables to work.
 	 */
-	public static function init() {
-		untyped __cpp__('
-			mcuHwcInit();
-
-			u8 a, b;
-			MCUHWC_GetFwVerHigh(&a);
-			MCUHWC_GetFwVerLow(&b);
-
-			char out[8];
-			std::snprintf(out, 8, "%u-%u", a, b);
-			mcuVersion = out;
-		');
+	public static function init():Result {
+		return untyped __cpp__('mcuHwcInit()');
 	}
 
 	/**
@@ -63,21 +54,31 @@ class MCUWUC {
 	 * Note:
 	 * - It starts with `HI-LO`.
 	 */
-	public static var mcuVersion(default, null):String = "";
+	public static var mcuVersion(get, null):Null<String>;
+	static function get_mcuVersion():Null<String> {
+		untyped __cpp__('
+			u8 a, b;
+			MCUHWC_GetFwVerHigh(&a);
+			MCUHWC_GetFwVerLow(&b);
+
+			char out[8];
+			std::snprintf(out, 8, "%u-%u", a, b);
+		');
+		return untyped __cpp__('String(out)');
+	}
 
 	/**
 	 * The current temperature for the 3DS, this can also be found in Luma3DS by holding down `L + DPAD DOWN + SELECT` and seeing the bottom screen.
 	 * @since 1.6.0
 	 */
-	public static var temperature(get, null):UInt8;
-	static function get_temperature():UInt8 {
+	public static var temperature(get, null):Null<UInt8>;
+	static function get_temperature():Null<UInt8> {
 		untyped __cpp__('
 			Result ret = 0;
 			u32 *cmdbuf = getThreadCommandBuffer();
 
 			cmdbuf[0] = IPC_MakeHeader(0xE,2,0);
-			if (R_FAILED(ret = svcSendSyncRequest(*mcuHwcGetSessionHandle())))
-				return ret;
+			RETURN_NULL_IF_FAILED(ret = svcSendSyncRequest(*mcuHwcGetSessionHandle()));
 		');
 
 		return untyped __cpp__('cmdbuf[2]');

@@ -574,18 +574,18 @@ class FSSMDH {
 	 * ```
 	 * INDEX | Language
 	 * ----------------
-	 * 0	 | Japanese
-	 * 1	 | English
-	 * 2	 | French
-	 * 3	 | German
-	 * 4	 | Italian
-	 * 5	 | Spanish
-	 * 6	 | Simplified Chinese
-	 * 7	 | Korean
-	 * 8	 | Dutch
-	 * 9	 | Portuguese
-	 * 10	| Russian
-	 * 11	| Traditional Chinese
+	 * 0     | Japanese
+	 * 1     | English
+	 * 2     | French
+	 * 3     | German
+	 * 4     | Italian
+	 * 5     | Spanish
+	 * 6     | Simplified Chinese
+	 * 7     | Korean
+	 * 8     | Dutch
+	 * 9     | Portuguese
+	 * 10    | Russian
+	 * 11    | Traditional Chinese
 	 * ```
 	 */
 	public var applicationTitles(default, null):Array<FSSMDHAppTitle> = [];

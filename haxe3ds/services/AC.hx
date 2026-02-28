@@ -82,37 +82,42 @@ class AC {
 	 * 
 	 * @since 1.3.0 (now uses `ACI_GetNetworkWirelessEssidSecuritySsid`)
 	 */
-	public static var ssid(default, null):String = "";
+	public static var ssid(get, null):Null<String>;
+	static function get_ssid():Null<String> {
+		untyped __cpp__('
+			char s[32] = { 0};
+			if (R_FAILED(ACI_GetNetworkWirelessEssidSecuritySsid(s))) return null();
+		');
+
+		return untyped __cpp__('String(s)');
+	}
 
 	/**
 	 * `(AC:U)` The proxy settings set from `AC.init`
 	 */
-	public static var proxy(default, null):ACProxy;
-
-	/**
-	 * Initializes AC and sets up everything.
-	 */
-	public static function init() {
+	public static var proxy(get, null):Null<ACProxy>;
+	static function get_proxy():Null<ACProxy> {
 		untyped __cpp__('
-			acInit();
-
-			char s[32] = { 0};
-			ACI_GetNetworkWirelessEssidSecuritySsid(s);
-			ssid = String(s);
-
 			char host[0x100], user[0x100], pass[0x100];
-			ACU_GetProxyHost(host);
-			ACU_GetProxyUserName(user);
-			ACU_GetProxyPassword(pass);
+			if R_FAILED(ACU_GetProxyHost(host)) return null();
+			if R_FAILED(ACU_GetProxyUserName(user)) return null();
+			if R_FAILED(ACU_GetProxyPassword(pass)) return null();
 		');
 
-		proxy = {
+		return {
 			enable: untyped __cpp__('API_GETTER(bool, ACU_GetProxyEnable, false)'),
 			host: untyped __cpp__('String(host)'),
 			port: untyped __cpp__('API_GETTER(bool, ACU_GetProxyPort, 0)'),
 			username: untyped __cpp__('String(user)'),
 			password: untyped __cpp__('String(pass)'),
 		}
+	}
+
+	/**
+	 * Initializes AC.
+	 */
+	public static function init():Result {
+		return untyped __cpp__('acInit()');
 	}
 
 	/**

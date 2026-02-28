@@ -65,7 +65,7 @@ HXCPP_LIB_PATH := $(TOPDIR)
 
 ARCH        := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 COMMON      := -Wall -mword-relocations -fomit-frame-pointer -ffunction-sections $(ARCH) $(INCLUDE) -D__3DS__
-CFLAGS      := $(COMMON) -I"$(HXCPP_PATH)/include/" -std=c++26 -Wno-unused-variable -g -fexceptions -fpermissive -fvisibility=hidden -static [HAXE3DS_3DSLINK]
+CFLAGS      := $(COMMON) -I"$(HXCPP_PATH)/include/" -std=c++26 -Wno-unused-variable -fexceptions -fpermissive -fvisibility=hidden -static [HAXE3DS_3DSLINK]
 CXXFLAGS    := $(CFLAGS) -w
 ASFLAGS     := $(ARCH)
 LDFLAGS     = -specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)

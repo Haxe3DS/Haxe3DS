@@ -1,7 +1,10 @@
 package haxe3ds;
 
-import haxe3ds.Types.Result;
+import cpp.UInt8;
+import cpp.UInt16;
 import cpp.UInt64;
+import haxe3ds.Types.NanoTime;
+import haxe3ds.Types.Result;
 
 /**
  * The reason on why the program has to break.
@@ -22,6 +25,84 @@ enum abstract SVCUserBreakType(Int) {
 	 * User.
 	 */
 	var USER;
+}
+
+/**
+ * The Concurrent Emulator that is currently using.
+ */
+enum abstract SVCEmulatorID(UInt8) {
+	/**
+	 * Application is being emulated by Citra.
+	 */
+	var CITRA = 1;
+
+	/**
+	 * Application is being emulated by Azahar.
+	 */
+	var AZAHAR;
+}
+
+/**
+ * The current Platform that's currently emulating.
+ * 
+ * @since 1.8.0
+ */
+enum abstract SVCEmulatorPlatform(UInt8) {
+	/**
+	 * Unknown Platform.
+	 */
+	var UNKNOWN;
+
+	/**
+	 * Emulation is running on Windows.
+	 */
+	var WINDOWS;
+
+	/**
+	 * Emulation is running on Linux.
+	 */
+	var LINUX;
+
+	/**
+	 * Emulation is running on Apple.
+	 */
+	var APPLE;
+
+	/**
+	 * Emulation is running on Android.
+	 */
+	var ANDROID;
+}
+
+/**
+ * A typedef for the Current Emulator Info.
+ * 
+ * @since 1.8.0
+ */
+typedef SVCEmulatorInfo = {
+	/**
+	 * Current Emulator ID, Can be 1 or 2.
+	 *
+	 * @see https://github.com/azahar-emu/azahar/blob/37e688f82d42917a8d232b8e9b49ecee814846b4/src/core/hle/kernel/svc.cpp#L309
+	 */
+	var emulatorID:SVCEmulatorID;
+
+	/**
+	 * `Tick reference from the host in ns, unaffected by lag or cpu speed.`
+	 */
+	var hostTick:NanoTime;
+
+	/**
+	 * The current Emulation Speed (Seen by `Speed: XXX% / XXX%`)
+	 */
+	var emulationSpeed:UInt16;
+
+	/**
+	 * The emulator that is running on.
+	 * 
+	 * @see https://github.com/azahar-emu/azahar/blob/37e688f82d42917a8d232b8e9b49ecee814846b4/src/core/hle/kernel/svc.cpp#L318
+	 */
+	var platform:SVCEmulatorPlatform;
 }
 
 /**
@@ -121,5 +202,29 @@ class SVC {
 		');
 
 		return out;
+	}
+
+	public static var emulator(get, null):Null<SVCEmulatorInfo>;
+	static function get_emulator():Null<SVCEmulatorInfo> {
+		untyped __cpp__('
+			#define SVC_PROPERTY(index) \\
+				([&]{ \\
+					s64 OUT; \\
+					svcGetSystemInfo(&OUT, 0x20000, (s32)index); \\
+					return OUT; \\
+				})()
+
+			s8 eID = SVC_PROPERTY(0);
+			if (eID == 0) {
+				return null();
+			}
+		');
+
+		return {
+			emulatorID: untyped __cpp__('eID'),
+			hostTick: untyped __cpp__('SVC_PROPERTY(1)'),
+			emulationSpeed: untyped __cpp__('SVC_PROPERTY(2)'),
+			platform: untyped __cpp__('SVC_PROPERTY(12)')
+		}
 	}
 }

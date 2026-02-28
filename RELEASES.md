@@ -1,3 +1,20 @@
+# 1.8.0
+
+MODULE       | CHANGES
+-------------|---------
+Some of Them | Optimized function calls for less usage and more speed.
+Builder      | Now migrated to Haxe for handling everything instead of Python
+BuildInfo    | Added Variable `DATE`, Fixed a bug where starting files/dirs is "." would just skip.
+Event        | Changed to handle adding more Arguments.
+FRD          | Added new Argument for `init` called `enableNotifications`, Optimized by adding a function for parsing FRDDetail, Added for Threads.
+GFX          | Renamed `initDefault` to `init`.
+HID          | Added function `waitForKeyPress(UInt32, Bool)`, renamed `Key` to `HIDKey` to not be confused with `sys.ssl.Key`
+News         | Added `OutOfBoundsException`, `NewsLampPattern` and `flashLEDPattern(NewsLampPattern)` with bounds checking, Reworked on `addNotification`
+PLGLDR       | Added Class.
+SVC          | Added `SVCEmulatorID`, `SVCEmulatorPlatform`, `SVCEmulatorInfo` and `emulator`
+
+The most effort i've worked on is News, I really like News. - nael2xd
+
 # 1.7.0
 
 MODULE     | CHANGES

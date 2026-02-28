@@ -20,7 +20,7 @@ class GFX {
 	 * 
 	 * This also replaces `haxe.Log.trace` to enable printing on SVC strings.
 	 */
-	public static function initDefault() {
+	public static function init() {
 		untyped __cpp__('gfxInitDefault()');
 
 		Log.trace = (v, ?infos) -> {
