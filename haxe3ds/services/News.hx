@@ -187,7 +187,6 @@ class News {
 		}
 
 		final success = untyped __cpp__('NEWS_AddNotification(OutTitle, tsize, OutMessage, msize, image, size, {0})', jpeg);
-		untyped __cpp__('if (image) free(image)');
 		return success;
 	}
 

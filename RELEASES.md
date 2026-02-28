@@ -1,3 +1,7 @@
+# 1.8.1
+
+Fixed a crash on News.addNotification about `_free_r_`
+
 # 1.8.0
 
 MODULE       | CHANGES
