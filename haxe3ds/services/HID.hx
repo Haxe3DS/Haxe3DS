@@ -189,28 +189,36 @@ class HID {
 	 * 
 	 * Automatically called from `APT.mainLoop()`
 	 */
-	public static inline function scanInput() untyped __cpp__("hidScanInput(); irrstScanInput()");
+	public static inline function scanInput() {
+		untyped __cpp__("hidScanInput(); irrstScanInput()");
+	}
 
 	/**
 	 * Checks Whether a key is pressed or not.
 	 * @param key The key from extern Button to check Whether it's pressed.
 	 * @return true if pressed, false if not.
 	 */
-	public static inline function keyPressed(key:UInt32):Bool return untyped __cpp__("hidKeysDown() & ({0})", key);
+	public static inline function keyPressed(key:UInt32):Bool {
+		return untyped __cpp__("(hidKeysDown() & ({0}))", key);
+	}
 
 	/**
 	 * Checks Whether a key is held or not.
 	 * @param key The key from extern Button to check Whether it's held.
 	 * @return true if held, false if not.
 	 */
-	public static inline function keyHeld(key:UInt32):Bool return untyped __cpp__("hidKeysHeld() & ({0})", key);
+	public static inline function keyHeld(key:UInt32):Bool {
+		return untyped __cpp__("(hidKeysHeld() & ({0}))", key);
+	}
 
 	/**
 	 * Checks Whether a key is up or not.
 	 * @param key The key from extern Button to check Whether it's up.
 	 * @return true if up, false if not.
 	 */
-	public static inline function keyUp(key:UInt32):Bool return untyped __cpp__("hidKeysUp() & ({0})", key);
+	public static inline function keyUp(key:UInt32):Bool {
+		return untyped __cpp__("(hidKeysUp() & ({0}))", key);
+	}
 
 	/**
 	 * Function that waits for a key press to continue again.
@@ -221,7 +229,7 @@ class HID {
 	 * @param up Whether or not it should wait until key is up, else waits until key is down
 	 * @since 1.8.0
 	 */
-	public static function waitForKeyPress(key:UInt32, up:Bool = false) {
+	public static inline function waitForKeyPress(key:UInt32, up:Bool = false) {
 		var handler = up ? HID.keyUp : HID.keyPressed;
 		while (APT.mainLoop()) {
 			if (handler(key)) {
@@ -318,7 +326,7 @@ class HID {
 	 * `Set` will call either `HIDUSER_EnableAccelerometer` if true, or `HIDUSER_DisableAccelerometer` if false.
 	 */
 	public static var accelerometer(null, set):Bool;
-	static function set_accelerometer(accelerometer:Bool):Bool {
+	static function set_accelerometer(accelerometer):Bool {
 		untyped __cpp__('accelerometer ? HIDUSER_EnableAccelerometer() : HIDUSER_DisableAccelerometer()');
 		return accelerometer;
 	}
@@ -329,7 +337,7 @@ class HID {
 	 * `Set` will call either `HIDUSER_EnableGyroscope` if true, or `HIDUSER_DisableGyroscope` if false.
 	 */
 	public static var gyroscope(null, set):Bool;
-	static function set_gyroscope(gyroscope:Bool):Bool {
+	static function set_gyroscope(gyroscope):Bool {
 		untyped __cpp__('gyroscope ? HIDUSER_EnableGyroscope() : HIDUSER_DisableGyroscope()');
 		return gyroscope;
 	}

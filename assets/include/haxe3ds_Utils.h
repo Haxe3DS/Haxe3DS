@@ -3,7 +3,7 @@
 #include <3ds.h>
 #include <stdio.h>
 
-#define CLAMP(var, x, y) var < x ? x : var > y ? y : var
+#define CLAMP(var, x, y) ((var) < (x) ? (x) : (var) > (y) ? (y) : (var))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 #define RETURN_NULL_IF_FAILED(x) \
@@ -12,6 +12,15 @@
 		if R_FAILED(code) { \
 			printf(#x " FAILED! Error Code: 0x%lX  L:%d M:%d S:%d D:%d", code, R_LEVEL(code), R_MODULE(code), R_SUMMARY(code), R_DESCRIPTION(code)); \
 			return null(); \
+		} \
+	}
+
+#define RETURN_RESULT_IF_FAILED(x) \
+	{ \
+		Result code = x; \
+		if R_FAILED(code) { \
+			printf(#x " FAILED! Error Code: 0x%lX  L:%d M:%d S:%d D:%d", code, R_LEVEL(code), R_MODULE(code), R_SUMMARY(code), R_DESCRIPTION(code)); \
+			return code; \
 		} \
 	}
 

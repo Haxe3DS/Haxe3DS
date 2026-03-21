@@ -193,7 +193,7 @@ class OS {
 	 * 
 	 * `Set` will both configure `osSetSpeedupEnable` and set the variable.
 	 */
-	@:isVar public static var speedup(null, set):Bool;
+	public static var speedup(null, set):Bool;
 	static function set_speedup(speedup:Bool):Bool {
 		untyped __cpp__('osSetSpeedupEnable(speedup)');
 		return speedup;
@@ -208,7 +208,7 @@ class OS {
 	 */
 	public static var version(get, null):String;
 	static function get_version():String {
-		var out:String = "";
+		var out = "";
 
 		untyped __cpp__('
 			char in[15];

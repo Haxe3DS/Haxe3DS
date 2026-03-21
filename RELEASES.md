@@ -1,3 +1,23 @@
+# 1.9.0
+
+MODULE       | CHANGES
+-------------|---------
+!            | Most functions are inlined.
+AC           | Added enum `ACWifiStatus`.
+APT          | Grammar fix. `Happend` => `Happened`.
+CFG          | Added enum `CFGSoundOutput`, Fix `username` by using the correct alignment, added `set_soundOutput` with bounds checking.
+Console      | Renamed a lot of variables, added `WIDTH`, `HEIGHT`, `WIDTH_BOTTOM`.
+Error Applet | Optimized for less lines.
+FRD          | Re-added `preference`, with getter and setter supported.
+FS           | Removed `FSFile`, Wrapped `mountSaveData` and `flushAndCommit` by `#if IS_CIA`
+GFX          | Made `current3D` and `isWide` a static variable, somehow it wasn't static so it wouldn't show.
+MCU          | Fix Compiler error from `temperature` involving not converting a Dynamic to UInt8
+News         | Replaced FS API to use STDIO API for FILE from `dumpImage`.
+Voice Sel    | Optimized for less lines.
+Haxe3DS      | Possible fix for when Trying to compile and that any of the resource directory isn't found.
+Tool         | Add defines to correspond if it uses 3DSX `IS_3DSX` or CIA `IS_CIA`.
+Types        | Moved all classes to the `types` directory.
+
 # 1.8.1
 
 Fixed a crash on News.addNotification about `_free_r_`

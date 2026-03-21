@@ -5,8 +5,8 @@ import cpp.UInt64;
 import cpp.UInt32;
 import sys.FileSystem;
 import sys.io.File;
-import haxe3ds.Types.OutOfBoundsException;
-import haxe3ds.Types.Result;
+import haxe3ds.types.OutOfBoundsException;
+import haxe3ds.types.Result;
 
 using StringTools;
 
@@ -137,15 +137,16 @@ class News {
 	/**
 	 * Initializes NEWS.
 	 */
-	public static function init():Result {
+	public static inline function init():Result {
 		return untyped __cpp__('newsInit()');
 	};
 
 	/**
 	 * Exits NEWS.
 	 */
-	@:native("newsExit")
-	public static function exit() {};
+	public static inline function exit() {
+		untyped __cpp__('newsExit');
+	}
 
 	/**
 	 * Function that adds a new notification with the specified arguments provided.
@@ -186,8 +187,7 @@ class News {
 			}
 		}
 
-		final success = untyped __cpp__('NEWS_AddNotification(OutTitle, tsize, OutMessage, msize, image, size, {0})', jpeg);
-		return success;
+		return untyped __cpp__('NEWS_AddNotification(OutTitle, tsize, OutMessage, msize, image, size, {0})', jpeg);
 	}
 
 	/**
@@ -259,34 +259,24 @@ class News {
 		var ret:Result = 0;
 
 		untyped __cpp__('
-			u32 total;
-			FS_Archive arch;
-			Handle h;
 			u32 size;
+			FILE* f;
 			void* data = malloc(0x10000);
-			u32 bw;
 
 			ret = NEWS_GetNotificationImage(newsID, data, &size);
-			if (R_FAILED(ret)) {
-				goto fail1;
+			if R_FAILED(ret) {
+				goto fail;
 			}
 
-			ret = FSUSER_OpenArchive(&arch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
-			if (R_FAILED(ret)) {
-				goto fail1;
+			if (!(f = fopen(dumpDest.c_str(), "wb"))) {
+				ret = -1;
+				goto fail;
 			}
 
-			ret = FSUSER_OpenFile(&h, arch, fsMakePath(PATH_ASCII, dumpDest.c_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
-			if (R_FAILED(ret)) {
-				goto fail2;
-			}
+			fwrite(data, 1, size, f);
+			fclose(f);
 
-			ret = FSFILE_Write(h, &bw, 0, data, size, FS_WRITE_FLUSH);
-
-			FSFILE_Close(h);
-			fail2:
-			FSUSER_CloseArchive(arch);
-			fail1:
+			fail:
 			free(data);
 		');
 
@@ -305,7 +295,7 @@ class News {
 	 * @since 1.8.0
 	 */
 	public static function flashLEDPattern(lamp:NewsLampPattern):Result {
-		var i:UInt8 = cast lamp;
+		var i = cast lamp;
 		if (i < 3 || i > 7) {
 			throw new OutOfBoundsException('Expected Value BOSS - FRIEND_ONLINE, Instead got a Out of Bound Value: $i');
 		}

@@ -1,6 +1,6 @@
 package haxe3ds.services.misc;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 
 /**
  * A Miscellaneous Plugin Loader Service for the 3DS.
@@ -25,7 +25,6 @@ class PLGLDR {
 				result = svcConnectToPort(&plgldr_handle, "plg:ldr");
 			}
 		');
-
 		return result;
 	}
 

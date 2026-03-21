@@ -20,7 +20,7 @@ class GFX {
 	 * 
 	 * This also replaces `haxe.Log.trace` to enable printing on SVC strings.
 	 */
-	public static function init() {
+	public static inline extern function init() {
 		untyped __cpp__('gfxInitDefault()');
 
 		Log.trace = (v, ?infos) -> {
@@ -41,11 +41,11 @@ class GFX {
 	 * 
 	 * `Set` will call `gfxSet3D` if variable is set.
 	 */
-	public var current3D(get, set):Bool;
-	function get_current3D():Bool {
+	public static var current3D(get, set):Bool;
+	static function get_current3D():Bool {
 		return untyped __cpp__('gfxIs3D()');
 	}
-	function set_current3D(current3D:Bool):Bool {
+	static function set_current3D(current3D):Bool {
 		untyped __cpp__('gfxSet3D(current3D)');
 		return current3D;
 	}
@@ -65,9 +65,11 @@ class GFX {
 	 * 
 	 * `Set` will call `gfxSetWide` with variable specified.
 	 */
-	public var isWide(get, set):Bool;
-	function get_isWide():Bool return untyped __cpp__('gfxIsWide()');
-	function set_isWide(isWide:Bool):Bool {
+	public static var isWide(get, set):Bool;
+	static function get_isWide():Bool {
+		return untyped __cpp__('gfxIsWide()');
+	}
+	static function set_isWide(isWide):Bool {
 		untyped __cpp__('gfxSetWide(isWide)');
 		return isWide;
 	}
@@ -77,6 +79,7 @@ class GFX {
 	 * 
 	 * This function internally calls gspExit.
 	 */
-	@:native("gfxExit")
-	public static function exit() {};
+	public static inline extern function exit() {
+		untyped __cpp__('gfxExit()');
+	}
 }

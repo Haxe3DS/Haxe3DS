@@ -67,9 +67,9 @@ extern "C" EXPORT_EXTRA int main() {
 
 	u32* SOC_buffer = (u32*)memalign(0x1000, 0x100000);
 	if R_FAILED(socInit(SOC_buffer, 0x100000)) svcBreak(USERBREAK_PANIC);
-	#ifdef HAXE3DS_LINKTO3DS
+#ifdef HAXE3DS_LINKTO3DS
 	int sock = link3dsStdio();
-	#endif
+#endif
 
 	try {
 		__boot_all();
@@ -80,12 +80,12 @@ extern "C" EXPORT_EXTRA int main() {
 
 		printf("[EXCEPTION OCCURRED!]\n%s\n\n", String(d).c_str());
 		__hx_dump_stack();
-		#ifdef HAXE3DS_LINKTO3DS
-		if (sock > 0) closesocket(sock);
-		#else
+#ifdef HAXE3DS_LINKTO3DS
+		if (sock > 0) closesocket(sock)
+#else
 		printf("\nPress [START] to exit Haxe3DS");
 		while (hidScanInput(), !(hidKeysDown() & KEY_START) && aptMainLoop());
-		#endif
+#endif
 
 		return EXIT_FAILURE;
 	}

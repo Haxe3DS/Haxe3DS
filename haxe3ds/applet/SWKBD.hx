@@ -198,7 +198,7 @@ class SWKBDHandler {
 	 * 
 	 * @see SWKBDType Enum
 	 */
-	public var type(default, null):Int = 0;
+	public var type(default, null):SWKBDType;
 
 	/**
 	 * Total buttons specified in argument. (will be `X-1`) (Read-Only)
@@ -235,38 +235,38 @@ class SWKBDHandler {
 	 * 
 	 * I don't even know what it does.
 	 */
-	public var multiline:Bool = false;
+	public var multiline:Bool;
 
 	/**
 	 * Fixed-width mode.
 	 * 
 	 * This basically sets the maximum character length to 32 instead of whatever's max length on `maxTextLen`.
 	 */
-	public var fixedWidth:Bool = false;
+	public var fixedWidth:Bool;
 
 	/**
 	 * Allow the usage of the HOME button.
 	 * 
 	 * If it's set to `false`, HOME Menu will be disabled and a HOME Menu Icon with a Forbidden Logo will appear.
 	 */
-	public var homeMenu:Bool = false;
+	public var homeMenu:Bool;
 
 	/**
 	 * Allow the usage of a software-reset combination.
 	 */
-	public var softwareReset:Bool = false;
+	public var softwareReset:Bool;
 
 	/**
 	 * Allow the usage of the POWER button.
 	 * 
 	 * If it's set to `false`, pressing the power button will not bring you to the "In Sleep Mode, the system can..." screen.
 	 */
-	public var powerButton:Bool = false;
+	public var powerButton:Bool;
 
 	/**
 	 * If it's set to true, the screen from above will be darken so that the SWKBD will be more focused.
 	 */
-	public var darkenTopScreen:Bool = false;
+	public var darkenTopScreen:Bool;
 
 	/**
 	 * The current text hint that shows when nothing is inputted.
@@ -322,7 +322,7 @@ class SWKBDHandler {
 	 * 
 	 * Example being if you're using AZERTY and this is enabled, it will be defaulted to QWERTY!
 	 */
-	public var defaultQWERTY:Bool = false;
+	public var defaultQWERTY:Bool;
 
 	/**
 	 * Lists of filters to use, don't use duplicate filter flags!
@@ -366,13 +366,9 @@ class SWKBDHandler {
 	 * @param maxTextLength Maximum number of UTF-16 code units that input text can have (or -1 to let Haxe3DS use a big default).
 	 */
 	public function new(type:SWKBDType = NORMAL, numButtons:Int = 1, maxTextLength:Int = -1) {
-		untyped __cpp__('
-			SwkbdState out;
-			swkbdInit(&out, (SwkbdType)type, numButtons, maxTextLength);
-			this->type = out.type;
-			this->numButtonsM1 = out.num_buttons_m1;
-			this->maxTextLen = out.max_text_len
-		');
+		this.type = type;
+		this.numButtonsM1 = numButtons - 1;
+		this.maxTextLen = maxTextLength > 0 ? maxTextLength : 0xFDE8; // FDE8 is the default value from libctru.
 	}
 
 	/**
@@ -386,7 +382,7 @@ class SWKBDHandler {
 	public function display():String {
 		var filter:UInt32 = 0;
 		for (flags in filterFlags) {
-			final f32:UInt32 = cast(flags, UInt32);
+			final f32:UInt32 = cast flags;
 			if ((filter & f32) == 0) {
 				filter += f32;
 			}
@@ -404,8 +400,8 @@ class SWKBDHandler {
 			out.allow_home = this->homeMenu;
 			out.allow_reset = this->softwareReset;
 			out.allow_power = this->powerButton;
-			out.darken_top_screen = this->darkenTopScreen ? 1 : 0;
-			out.default_qwerty = this->defaultQWERTY ? 1 : 0;
+			out.darken_top_screen = (u8)this->darkenTopScreen;
+			out.default_qwerty = (u8)this->defaultQWERTY;
 			out.predictive_input = this->predictiveInput;
 			swkbdSetHintText(&out, this->hintText.c_str());
 			swkbdSetInitialText(&out, this->initialText.c_str());
@@ -435,9 +431,8 @@ class SWKBDHandler {
 
 			untyped __cpp__('
 				swkbdSetDictionary(&out, words, len);
-				static const bool reload = false;
-				swkbdSetStatusData(&out, &swkbdStatus, reload, true);
-				swkbdSetLearningData(&out, &swkbdLearning, reload, true)
+				swkbdSetStatusData(&out, &swkbdStatus, false, true);
+				swkbdSetLearningData(&out, &swkbdLearning, false, true)
 			');
 		}
 

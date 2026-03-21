@@ -19,23 +19,23 @@ enum abstract GFXScreen(Int) {
  * Graphical ANSI Color.
  */
 enum abstract ConsoleColor(String) {
-	var textBlack = "\x1b[30;1m";
-	var textRed = "\x1b[31;1m";
-	var textGreen = "\x1b[32;1m";
-	var textYellow = "\x1b[33;1m";
-	var textBlue = "\x1b[34;1m";
-	var textMagenta = "\x1b[35;1m";
-	var textCyan = "\x1b[36;1m";
-	var textWhite = "\x1b[37;1m";
+	var BLACK_TEXT = "\x1b[30;1m";
+	var RED_TEXT = "\x1b[31;1m";
+	var GREEN_TEXT = "\x1b[32;1m";
+	var YELLOW_TEXT = "\x1b[33;1m";
+	var BLUE_TEXT = "\x1b[34;1m";
+	var MAGENTA_TEXT = "\x1b[35;1m";
+	var CYAN_TEXT = "\x1b[36;1m";
+	var WHITE_TEXT = "\x1b[37;1m";
 
-	var borderBlack = "\x1b[40;1m";
-	var borderRed = "\x1b[41;1m";
-	var borderGreen = "\x1b[42;1m";
-	var borderYellow = "\x1b[43;1m";
-	var borderBlue = "\x1b[44;1m";
-	var borderMagenta = "\x1b[45;1m";
-	var borderCyan = "\x1b[46;1m";
-	var borderWhite = "\x1b[47;1m";
+	var BLACK_BORDER = "\x1b[40;1m";
+	var RED_BORDER = "\x1b[41;1m";
+	var GREEN_BORDER = "\x1b[42;1m";
+	var YELLOW_BORDER = "\x1b[43;1m";
+	var BLUE_BORDER = "\x1b[44;1m";
+	var MAGENTA_BORDER = "\x1b[45;1m";
+	var CYAN_BORDER = "\x1b[46;1m";
+	var WHITE_BORDER = "\x1b[47;1m";
 }
 
 /**
@@ -44,32 +44,32 @@ enum abstract ConsoleColor(String) {
  * @see https://unicode-explorer.com/b/E000
  */
 enum abstract ConsolePUA(String) {
-	var buttonA = "\uE000";
-	var buttonB = "\uE001";
-	var buttonY = "\uE002";
-	var buttonX = "\uE003";
-	var buttonL = "\uE004";
-	var buttonR = "\uE005";
-	var dpad = "\uE006";
-	var target = "\uE01D";
-	var camera = "\uE01E";
-	var dpadAny = "\uE041";
-	var questionBlock = "\uE06B";
-	var close = "\uE070";
-	var closeHighlight = "\uE071";
-	var back = "\uE072";
-	var home = "\uE073";
-	var steps = "\uE074";
-	var playCoin = "\uE075";
-	var film = "\uE076";
-	var circlePad = "\uE077";
-	var power = "\uE078";
-	var dpadUp = "\uE079";
-	var dpadDown = "\uE07A";
-	var dpadLeft = "\uE07B";
-	var dpadRight = "\uE07C";
-	var dpadVert = "\uE07D";
-	var dpadHori = "\uE07E";
+	var A = "\uE000";
+	var B = "\uE001";
+	var Y = "\uE002";
+	var X = "\uE003";
+	var L = "\uE004";
+	var R = "\uE005";
+	var DPAD = "\uE006";
+	var TARGET = "\uE01D";
+	var CAMERA = "\uE01E";
+	var DPAD_ANY = "\uE041";
+	var QUESTION_BLOCK = "\uE06B";
+	var CLOSE = "\uE070";
+	var CLOSE_HIGHLIGHT = "\uE071";
+	var BACK = "\uE072";
+	var HOME = "\uE073";
+	var STEPS = "\uE074";
+	var PLAY_COIN = "\uE075";
+	var FILM = "\uE076";
+	var CIRCLE_PAD = "\uE077";
+	var POWER = "\uE078";
+	var DPAD_UP = "\uE079";
+	var DPAD_DOWN = "\uE07A";
+	var DPAD_LEFT = "\uE07B";
+	var DPAD_RIGHT = "\uE07C";
+	var DPAD_VERTICAL = "\uE07D";
+	var DPAD_HORIZONTAL = "\uE07E";
 }
 
 /**
@@ -80,13 +80,32 @@ enum abstract ConsolePUA(String) {
 @:cppInclude("haxe3ds_Utils.h")
 class Console {
 	/**
+	 * The width resolution from the 3DS for the top screen.
+	 */
+	public static inline final WIDTH_TOP = 400;
+
+	/**
+	 * The width resolution from the 3DS for the bottom screen.
+	 */
+	public static inline final WIDTH_BOTTOM = 320;
+
+	/**
+	 * The height resolution from the 3DS for all the two screens.
+	 */
+	public static inline final HEIGHT = 240;
+
+	/**
 	 * Initialise the console, enabling tracing or printing to the console.
 	 * @param screen The GFX Screen to use to initialize.
 	 */
-	public static function init(screen:GFXScreen = TOP) untyped __cpp__('consoleInit((gfxScreen_t)screen, NULL)');
+	public static inline function init(screen:GFXScreen = TOP) {
+		untyped __cpp__('consoleInit((gfxScreen_t)({0}), NULL)', screen);
+	}
 
 	/**
 	 * Clears the Console Screen by using the Built-In Function `printf("\x1b[2J")`
 	 */
-	public static function clear() untyped __cpp__('printf("\\x1b[2J")');
+	public static inline function clear() {
+		Sys.print("\\x1b[2J");
+	}
 }

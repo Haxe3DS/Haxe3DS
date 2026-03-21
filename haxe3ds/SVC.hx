@@ -3,8 +3,8 @@ package haxe3ds;
 import cpp.UInt8;
 import cpp.UInt16;
 import cpp.UInt64;
-import haxe3ds.Types.NanoTime;
-import haxe3ds.Types.Result;
+import haxe3ds.types.NanoTime;
+import haxe3ds.types.Result;
 
 /**
  * The reason on why the program has to break.
@@ -119,7 +119,7 @@ class SVC {
 	 * Sleeps the program passed by how many Nanoseconds, This does the same thing as [`Sys.sleep`](https://api.haxe.org/Sys.html#sleep).
 	 * @param ns Time to sleep in Nanoseconds.
 	 */
-	public static function sleep(ns:UInt64) {
+	public static inline function sleep(ns:UInt64) {
 		untyped __cpp__('svcSleepThread({0})', ns.toInt());
 	}
 
@@ -154,7 +154,7 @@ class SVC {
 	 * Breaks the Execution (And maybe throws an Uncatchable Exception).
 	 * @param type The reason on why you want to break.
 	 */
-	public static function breakExecution(type:SVCUserBreakType) {
+	public static inline function breakExecution(type:SVCUserBreakType) {
 		untyped __cpp__('svcBreak((UserBreakType)type)');
 	}
 
@@ -163,7 +163,7 @@ class SVC {
 	 * @param str String to trace in the console.
 	 * @return Result to indicate if something went wrong.
 	 */
-	public static function debugString(str:String):Result {
+	public static inline function debugString(str:String):Result {
 		return untyped __cpp__('svcOutputDebugString(str.c_str(), str.length)');
 	}
 

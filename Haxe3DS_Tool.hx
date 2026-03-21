@@ -41,9 +41,12 @@ class Haxe3DS_Tool {
 	static var HXML_TEMP = "-cp source
 -main Main
 
+# libs
 -lib hxcpp
-{}
+{1}
 
+# defines
+{2}
 -D loop_unroll_max_cost=0
 -D nx
 -D HAXE_OUTPUT_PART=HAXE3DS
@@ -134,7 +137,7 @@ class Haxe3DS_Tool {
 
 	static function incrementFile(file:String) {
 		try {
-			File.saveContent(file, Std.string(Std.parseInt(File.getContent(file)) + 1));
+			File.saveContent(file, '${Std.parseInt(File.getContent(file)) + 1}');
 		} catch(_) {
 			File.saveContent(file, "1");
 		}
@@ -210,7 +213,7 @@ class Haxe3DS_Tool {
 ============================ By Nael2xd ============================
 ');
 
-		static var args = Sys.args();
+		var args = Sys.args();
 		if (args.length == 1) {
 			trace("
 \tArgs (haxelib run haxe3ds [arg]):
@@ -230,7 +233,7 @@ class Haxe3DS_Tool {
 
 		cwd = Sys.getCwd().replace("\\", "/");
 		cwd = cwd.substr(0, cwd.length - 1);
-		switch (args[0]) {
+		switch args.shift() {
 			case "-g":
 				if (FileSystem.exists('3dsSettings.json') && !askForInput("3dsSettings.json EXISTS! Are you really sure you want to overwrite it?")) {
 					return;
@@ -295,14 +298,6 @@ class Haxe3DS_Tool {
 				sanityCheck("Checking if Project is Updated", () -> {
 					project.settings.optimizations != null;
 				}, 'This uses the Old Config, Please Update it using "haxelib run haxe3ds -g"');
-
-				var haxe3ds_romfspath = "assets/romfs/haxe3ds";
-				for (directories in ["export", haxe3ds_romfspath, "buildFiles"]) {
-					makeDirs(directories);
-				}
-				File.saveContent('$haxe3ds_romfspath/buildDate', Date.now().toString());
-				incrementFile('$haxe3ds_romfspath/build');
-				recursiveCopyFiles("assets", "export");
 
 				var goodHaxeLibs:Array<String> = [];
 				var attributes:Map<String, Array<String>> = [
@@ -379,7 +374,16 @@ class Haxe3DS_Tool {
 					return true;
 				}, "What??");
 
-				HXML_TEMP = HXML_TEMP.replace("{}", [for (lib in goodHaxeLibs) '-lib $lib\n-D ${lib.toUpperCase()}'].join("\n"));
+				final haxe3ds_romfspath = "assets/romfs/haxe3ds";
+				for (directories in ["export", haxe3ds_romfspath, "buildFiles"]) {
+					makeDirs(directories);
+				}
+				File.saveContent('$haxe3ds_romfspath/buildDate', Date.now().toString());
+				incrementFile('$haxe3ds_romfspath/build');
+				recursiveCopyFiles("assets", "export");
+
+				HXML_TEMP = HXML_TEMP.replace("{1}", [for (lib in goodHaxeLibs) '-lib $lib\n-D ${lib.toUpperCase()}'].join("\n"));
+				HXML_TEMP = HXML_TEMP.replace("{2}", project.settings.compileAsCIA ? "-D IS_CIA" : "-D IS_3DSX");
 				for (define in project.settings.defines) {
 					HXML_TEMP += '$define\n';
 					attributes["[HAXE3DS_FLAGS]"].push(define);
@@ -464,7 +468,6 @@ class Haxe3DS_Tool {
 				fileHandler();
 
 			case "-e":
-				args.shift();
 				execute(
 					toDKPPath(
 						'[DKP_PATH]/devkitARM/bin/arm-none-eabi-addr2line -i -p -s -f -C -r -a -e buildFiles/output.elf ${args.join(" ")}'

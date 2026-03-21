@@ -101,8 +101,6 @@ enum ErrorReturnCode {
 typedef ErrorResult = {
 	/**
 	 * Return code. Stores the return code that indicates the reason why the Error/EULA applet terminated.
-	 * 
-	 * Does return `UNKNOWN`?
 	 */
 	var returnCode:ErrorReturnCode;
 
@@ -120,33 +118,18 @@ typedef ErrorResult = {
  * 
  * @since 1.5.0
  */
-@:cppFileCode('
-#include <3ds.h>
-#include "haxe3ds_Utils.h"
-
-haxe3ds::applet::ErrorReturnCode rcToHX(errorReturnCode c) {
-	using ec = haxe3ds::applet::ErrorReturnCode_obj;
-	switch(c) {
-		case ERROR_UNKNOWN: ec::UNKNOWN_dyn();
-		case ERROR_NONE: ec::NONE_dyn();
-		case ERROR_SUCCESS: ec::SUCCESS_dyn();
-		case ERROR_NOT_SUPPORTED: ec::NOT_SUPPORTED_dyn();
-		case ERROR_HOME_BUTTON: ec::HOME_BUTTON_dyn();
-		case ERROR_SOFTWARE_RESET: ec::SOFTWARE_RESET_dyn();
-		case ERROR_POWER_BUTTON: ec::POWER_BUTTON_dyn();
-		default: ec::UNKNOWN_dyn(); // ????
-	}
-}')
+@:cppInclude("3ds.h")
+@:cppInclude("haxe3ds_Utils.h")
 class Error {
 	/**
 	 * The maximum number of characters in free text to display for the error.
 	 */
-	public static inline final MAX_TEXT_LENGTH:Int = 2048;
+	public static inline extern final MAX_TEXT_LENGTH = 2048;
 
 	/**
-	 * The current type of the error that will be displayed, this value cannot be modified except when creating in a constructor.
+	 * The current type of the error that will be displayed.
 	 */
-	public var type(default, null):ErrorType;
+	public var type:ErrorType;
 
 	/**
 	 * Which error code to use? Can range from `-32 Bit Integer Limit` (abstract.) to `32 Bit Integer Limit`
@@ -160,12 +143,12 @@ class Error {
 	/**
 	 * Language specified by `CFGLanguage` + 1, do not touch this as it can display in a foreign language.
 	 */
-	public var useLanguage:UInt16;
+	public var useLanguage(default, null):UInt16;
 
 	/**
 	 * Whether or not you want to lock the user to access home menu while applet is still active, false if you wanna lock it, true if you keep it unlocked.
 	 */
-	public var homeButton:Bool;
+	public var homeButton:Bool = true;
 
 	/**
 	 * Specifies whether to use software reset.
@@ -188,7 +171,7 @@ class Error {
 	 * 
 	 * Will not show custom text if `type`'s enum doesn't contain TEXT
 	 */
-	public var text:String = "An error has occurred.";
+	public var text = "An error has occurred.";
 
 	/**
 	 * Setups an error configuration so that the applet can understand it and displays it for you.
@@ -196,39 +179,44 @@ class Error {
 	 * @param language On which language do you want it say on.
 	 */
 	public function new(errType:ErrorType = TEXT, language:CFGLanguage = English) {
-		untyped __cpp__('
-			errorConf conf;
-			errorInit(&conf, (errorType)errType, (CFG_Language)language)
-		');
-
 		this.type = errType;
-		this.appJump = untyped __cpp__('conf.appJump');
-		this.softwareReset = untyped __cpp__('conf.softwareReset');
-		this.homeButton = untyped __cpp__('conf.homeButton');
-		this.useLanguage = untyped __cpp__('conf.useLanguage');
+		this.useLanguage = (cast language) + 1;
 	}
 
 	/**
-	 * Begins displaying the error applet configuration.
-	 * @return Result of the error, `returnCode` is null.
+	 * Function to display the Error Applet with their Metadata Class applied aswell.
+	 * 
+	 * This creates a new typedef stuct for error configuration, sets all the metadata to the configuration, then displays the error.
+	 * 
+	 * @return Error result indicating what the code has returned.
 	 */
 	public function display():ErrorResult {
-		this.text = this.text.substr(0, MAX_TEXT_LENGTH);
+		if (text.length > MAX_TEXT_LENGTH) {
+			text = text.substr(0, MAX_TEXT_LENGTH);
+		}
 
 		untyped __cpp__('
-			errorConf conf;
-			conf.type = this->type;
-			conf.errorCode = this->errorCode;
-			conf.useLanguage = this->useLanguage;
-			conf.homeButton = this->homeButton;
-			conf.softwareReset = this->softwareReset;
-			conf.appJump = this->appJump;
-			errorText(&conf, this->text.c_str());
+			errorConf conf = {0 };
+			conf.type = type;
+			conf.errorCode = errorCode;
+			conf.useLanguage = useLanguage;
+			conf.homeButton = homeButton;
+			conf.softwareReset = softwareReset;
+			conf.appJump = appJump;
+			errorText(&conf, text.c_str());
 			errorDisp(&conf)
 		');
 
 		return {
-			returnCode: untyped __cpp__('rcToHX(conf.returnCode)'),
+			returnCode: switch untyped __cpp__('conf.returnCode') {
+				case 0: NONE;
+				case 1: SUCCESS;
+				case 2: NOT_SUPPORTED;
+				case 10: HOME_BUTTON;
+				case 11: SOFTWARE_RESET;
+				case 12: POWER_BUTTON;
+				default: UNKNOWN;
+			},
 			eulaVersion: untyped __cpp__('conf.eulaVersion')
 		};
 	}

@@ -1,6 +1,7 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.OutOfBoundsException;
+import haxe3ds.types.Result;
 import cpp.UInt16;
 import cpp.UInt8;
 import cpp.UInt32;
@@ -222,12 +223,39 @@ typedef CFGBacklightControl = {
 };
 
 /**
+ * The Sound Output that has been Using from the 3DS.
+ * @since 1.9.0
+ */
+enum abstract CFGSoundOutput(UInt8) {
+	/**
+	 * Sound Output uses `MONO` where it uses 1 channel.
+	 */
+	var MONO;
+	
+	/**
+	 * Sound Output uses `STEREO` where it uses 2 channels.
+	 */
+	var STEREO;
+
+	/**
+	 * Sound Output uses `SURROUND` where it uses 2 channels with surrounding sounds.
+	 */
+	var SURROUND;
+}
+
+/**
  * CFG (Configuration) Service, home to system languge and the checker for 2DS Models
  */
 @:cppFileCode('
 #include "haxe3ds_Utils.h"
 #include <deque>
 #include <string>
+
+#define CFGU_UPDATE(size, blockID, block) \\
+	if ( \\
+		R_FAILED(CFG_SetConfigInfoBlk8(size, blockID, (void*)&block)) || \\
+		R_FAILED(CFG_UpdateConfigSavegame()) \\
+	) return null()
 
 typedef struct {
 	bool pse;
@@ -238,15 +266,16 @@ class CFG {
 	/**
 	 * Initializes CFG and sets up other variables for it to register.
 	 */
-	public static function init():Result {
+	public static inline function init():Result {
 		return untyped __cpp__('cfguInit()');
 	};
-	
+
 	/**
 	 * Exits CFG.
 	 */
-	@:native("cfguExit")
-	public static function exit() {};
+	public static inline function exit() {
+		untyped __cpp__('cfguExit()');
+	}
 
 	/**
 	 * Variable that gets the System's Current Username set by the user, can be modified by going to `System Settings` > `Other Settings` > `Profile` > `User Name`.
@@ -257,9 +286,10 @@ class CFG {
 	static function get_username():Null<CFGUsername> {
 		untyped __cpp__('
 			union {
-				u16 user[10];
-				u16 ngWord;
-				u32 ngWordv;
+				u16 user[11];
+				bool ngWord;
+				u8 pad;
+				u32 ngVersion;
 			} usern;
 
 			if R_FAILED(CFG_GetConfigInfoBlk8(28, 0x000A0000, &usern)) {
@@ -269,8 +299,8 @@ class CFG {
 
 		return {
 			name: untyped __cpp__('u16ToString(usern.user)'),
-			hasProfanity: untyped __cpp__('(bool)usern.ngWord'),
-			version: untyped __cpp__('(int)usern.ngWordv'),
+			hasProfanity: untyped __cpp__('usern.ngWord'),
+			version: untyped __cpp__('(int)usern.ngVersion'),
 		}
 	}
 
@@ -289,18 +319,12 @@ class CFG {
 	public static var birthday(get, null):Null<String>;
 	static function get_birthday():Null<String> {
 		untyped __cpp__('
-			union {
-				u8 month;
-				u8 day;
-			} birt;
-
-			if R_FAILED(CFG_GetConfigInfoBlk8(2, 0x000A0001, &birt)) {
-				return null();
-			}
+			u8 birt[2] = { 0};
+			RETURN_NULL_IF_FAILED(CFG_GetConfigInfoBlk8(2, 0x000A0001, birt));
 
 			std::deque<String> arr = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 			char date[15] = { 0 };
-			snprintf(date, 15, "%s %02d", arr[birt.month - 1].c_str(), birt.day);
+			snprintf(date, 15, "%s %02d", arr[birt[0]].c_str(), birt[1]);
 		');
 
 		return untyped __cpp__('String(date)');
@@ -325,7 +349,7 @@ class CFG {
 	static function get_model():Null<String> {
 		untyped __cpp__('
 			u8 r;
-			if R_FAILED(CFGU_GetSystemModel(&r)) return null();
+			RETURN_NULL_IF_FAILED(CFGU_GetSystemModel(&r));
 			std::deque<String> arr = {"CTR","SPR","KTR","FTR","RED","JAN"};
 		');
 
@@ -352,7 +376,7 @@ class CFG {
 	static function get_region():Null<String> {
 		untyped __cpp__('
 			u8 r;
-			if R_FAILED(CFGU_SecureInfoGetRegion(&r)) return null();
+			RETURN_NULL_IF_FAILED(CFGU_SecureInfoGetRegion(&r));
 			std::deque<String> arr = {"JPN","USA","EUR","AUS","CHN","KOR","TWN"};
 		');
 
@@ -386,7 +410,7 @@ class CFG {
 	static function get_language():Null<String> {
 		untyped __cpp__('
 			u8 r;
-			if R_FAILED(CFGU_GetSystemLanguage(&r)) return null();
+			RETURN_NULL_IF_FAILED(CFGU_GetSystemLanguage(&r));
 			std::deque<String> arr = {"Japanese","English","French","German","Italian","Spanish","Simplified Chinese","Korean","Dutch","Portuguese","Russian","Traditional Chinese"};
 		');
 
@@ -415,23 +439,29 @@ class CFG {
 
 	/**
 	 * The current sound output mode that's set by the user from `System Settings` > `Other Settings` > `Page 2`.
-	 * 
-	 * Possible Values:
-	 * - `0` - Mono.
-	 * - `1` - Stereo.
-	 * - `2` - 3D Surround Sound.
-	 * - `-1` - API Error.
-	 * 
+	 * @throws OutOfBoundsException Upon Setting a Out of Bound value will throw this Exception.
 	 * @since 1.5.0
 	 */
-	public static var soundOutput(default, null):UInt8;
-	static function get_soundOutput():UInt8 {
-		untyped __cpp__('
-			u8 r;
-			if R_FAILED(CFG_GetConfigInfoBlk8(1, 0x00070001, &r)) return -1;
-		');
+	public static var soundOutput(get, set):Null<CFGSoundOutput>;
 
-		return untyped __cpp__('r');
+	static function get_soundOutput():Null<CFGSoundOutput> {
+		var r:Null<CFGSoundOutput> = null;
+		untyped __cpp__('RETURN_NULL_IF_FAILED(CFG_GetConfigInfoBlk8(1, 0x00070001, &{0}))', r);
+		return r;
+	}
+
+	static function set_soundOutput(soundOutput):Null<CFGSoundOutput> {
+		if (soundOutput == null) {
+			return null;
+		}
+		
+		var i = cast soundOutput;
+		if (i < 0 || i > 2) {
+			throw new OutOfBoundsException('Expected Value MONO - SURROUND, Instead got a Out of Bound Value: $i');
+		}
+
+		untyped __cpp__('CFGU_UPDATE(1, 0x00070001, {0})', soundOutput);
+		return soundOutput;
 	}
 
 	/**
@@ -454,9 +484,7 @@ class CFG {
 				u8 pad2[104];
 			} out = { 0};
 
-			if (R_FAILED(CFG_GetConfigInfoBlk8(0xC0, 0x000C0000, &out))) {
-				return null();
-			}
+			RETURN_NULL_IF_FAILED(CFG_GetConfigInfoBlk8(0xC0, 0x000C0000, &out));
 
 			using m = haxe3ds::services::CFGRestrictBitmask_obj;
 			Array<Dynamic> bitmask = Array_obj<Dynamic>::__new(0);
@@ -518,9 +546,7 @@ class CFG {
 	static function get_backlightControl():Null<CFGBacklightControl> {
 		untyped __cpp__('
 			CFGBC block;
-			if R_FAILED(CFG_GetConfigInfoBlk8(2, 0x00050001, &block)) {
-				return null();
-			}
+			RETURN_NULL_IF_FAILED(CFG_GetConfigInfoBlk8(2, 0x00050001, &block))
 		');
 
 		return {
@@ -529,17 +555,14 @@ class CFG {
 		}
 	}
 
-	static function set_backlightControl(backlightControl:Null<CFGBacklightControl>):Null<CFGBacklightControl> {
+	static function set_backlightControl(backlightControl):Null<CFGBacklightControl> {
 		if (backlightControl == null) {
 			return null;
 		}
 
 		untyped __cpp__('
 			CFGBC block = {.pse = {0}, .bl = {1}};
-			if (
-				R_FAILED(CFG_SetConfigInfoBlk8(2, 0x00050001, (void*)&block)) ||
-				R_FAILED(CFG_UpdateConfigSavegame())
-			) return null();
+			CFGU_UPDATE(2, 0x00050001, block);
 		', backlightControl.powerSaving, backlightControl.brightness);
 
 		return backlightControl;

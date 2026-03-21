@@ -1,7 +1,7 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Event;
-import haxe3ds.Types.Result;
+import haxe3ds.types.Event;
+import haxe3ds.types.Result;
 
 import cpp.UInt8;
 import cpp.UInt32;
@@ -106,7 +106,7 @@ enum abstract APTSystemSettingsFlag(UInt8) {
 }
 
 /**
- * The hook type on how it happend by the system.
+ * The hook type on how it happened by the system.
  * @since 1.6.0
  */
 enum abstract APTHookType(Int) {
@@ -191,7 +191,7 @@ class APT {
 		untyped __cpp__('APT_GetAppCpuTimeLimit(&out)');
 		return out;
 	}
-	static function set_cpuTimeLimit(cpuTimeLimit:UInt32):UInt32 {
+	static function set_cpuTimeLimit(cpuTimeLimit):UInt32 {
 		return untyped __cpp__('APT_SetAppCpuTimeLimit(cpuTimeLimit)');
 	}
 
@@ -205,8 +205,10 @@ class APT {
 	 * `Set` will call function `aptSetHomeAllowed()` with home param.
 	 */
 	public static var homeMenu(get, set):Bool;
-	static function get_homeMenu():Bool return untyped __cpp__('aptIsHomeAllowed()');
-	static function set_homeMenu(homeMenu:Bool):Bool {
+	static function get_homeMenu():Bool {
+		return untyped __cpp__('aptIsHomeAllowed()');
+	}
+	static function set_homeMenu(homeMenu):Bool {
 		untyped __cpp__('aptSetHomeAllowed(homeMenu)');
 		return homeMenu;
 	}
@@ -214,14 +216,16 @@ class APT {
 	/**
 	 * Jumps back to the HOME menu by making the console think you've pressed the HOME Button.
 	 */
-	@:native("aptJumpToHomeMenu")
-	public static function jumpToHomeMenu() {};
+	public static inline function jumpToHomeMenu() {
+		untyped __cpp__('aptJumpToHomeMenu()');
+	}
 
 	/**
 	 * Returns true if there is an incoming HOME button press rejected by the policy set by `APT.homeMenu`
 	 */
-	@:native("aptCheckHomePressRejected")
-	public static function isHomePressed():Bool return false;
+	public static inline function isHomePressed():Bool {
+		return untyped __cpp__('aptCheckHomePressRejected()');
+	}
 
 	/**
 	 * Main function which handles sleep mode and HOME/power buttons.
@@ -244,8 +248,9 @@ class APT {
 	/**
 	 * Returns true if the application is currently in the foreground.
 	 */
-	@:native("aptIsActive")
-	public static function isActive():Bool return false;
+	public static function isActive():Bool {
+		return untyped __cpp__('aptIsActive()');
+	}
 
 	/**
 	 * Variable property for the sleeping functionality.
@@ -257,8 +262,10 @@ class APT {
 	 * `Set` will call function `aptSetSleepAllowed()` with sleep param.
 	 */
 	public static var canSleep(get, set):Bool;
-	static function get_canSleep():Bool return untyped __cpp__('aptIsSleepAllowed()');
-	static function set_canSleep(canSleep:Bool):Bool {
+	static function get_canSleep():Bool {
+		return untyped __cpp__('aptIsSleepAllowed()');
+	}
+	static function set_canSleep(canSleep):Bool {
 		untyped __cpp__('aptSetSleepAllowed(canSleep)');
 		return canSleep;
 	}
@@ -266,8 +273,9 @@ class APT {
 	/**
 	 * Returns true if the system requires the application to jump back to the HOME menu.
 	 */
-	@:native("aptShouldJumpToHome")
-	public static function shouldJumpToHome():Bool return false;
+	public static inline function shouldJumpToHome():Bool {
+		return untyped __cpp__('aptShouldJumpToHome()');
+	}
 
 	/**
 	 * Jumps to System Settings with region support and with flags!
@@ -304,8 +312,8 @@ class APT {
 			u32 sceneParam = (u32)flag;
 			memcpy(paramBuffer, &sceneParam, 4U);
 
-			if (R_FAILED(ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | {0}, MEDIATYPE_NAND))) goto fail;
-			if (R_FAILED(ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer))) goto fail;
+			if R_FAILED(ret = APT_PrepareToDoApplicationJump(0, 0x00040010ULL << 32 | {0}, MEDIATYPE_NAND)) goto fail;
+			if R_FAILED(ret = APT_DoApplicationJump(paramBuffer, 4, workBuffer)) goto fail;
 
 			fail:
 		', lowTID);

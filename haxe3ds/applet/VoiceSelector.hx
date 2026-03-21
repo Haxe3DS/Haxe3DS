@@ -1,6 +1,6 @@
 package haxe3ds.applet;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 
 /**
  * The Voice Selector Filtering, Values can only be 0 to 4.
@@ -150,12 +150,12 @@ class VoiceSelector {
 	/**
 	 * The length maximum for the voice selector.
 	 */
-	public static inline final MAX_TITLE_LENGTH:Int = 64;
+	public static inline final MAX_TITLE_LENGTH = 64;
 
 	/**
 	 * The text to be displayed on the bottom screen above, maximum `MAX_TITLE_LENGTH`.
 	 */
-	public var text:String = "Choose a sound.";
+	public var text = "Choose a sound.";
 
 	/**
 	 * The filter to use for the audio.
@@ -165,12 +165,12 @@ class VoiceSelector {
 	/**
 	 * Whether or not you want to enable the HOME Menu.
 	 */
-	public var homeMenu:Bool = true;
+	public var homeMenu = true;
 
 	/**
 	 * Whether or not you want to enable the Software Reset Key Combination.
 	 */
-	public var softwareReset:Bool = false;
+	public var softwareReset:Bool;
 
 	/**
 	 * Constructor for the voice selector.
@@ -182,20 +182,19 @@ class VoiceSelector {
 	 * @return The result from SNOTE that was spewed out.
 	 */
 	public function display():VoiceSelResult {
-		text = text.substr(0, MAX_TITLE_LENGTH);
+		if (text.length > MAX_TITLE_LENGTH) {
+			text = text.substr(0, MAX_TITLE_LENGTH);
+		}
+
 		var ret:Result = 0;
-
 		untyped __cpp__('
-			VCSELParameter param;
-			memset(&param, 0, sizeof(VCSELParameter));
-
+			VCSELParameter param = { 0};
 			param.homeButton = this->homeMenu;
 			param.softwareReset = this->softwareReset;
 			param.filterFillType = this->filter;
 			TRANSFER(this->text.c_str(), param.titleText);
 
-			ret = APT_PrepareToStartLibraryApplet(APPID_SNOTE_AP);
-			if (R_FAILED(ret)) {
+			if R_FAILED(ret = APT_PrepareToStartLibraryApplet(APPID_SNOTE_AP)) {
 				goto cleanup;
 			}
 

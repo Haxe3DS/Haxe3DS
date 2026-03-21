@@ -3,7 +3,7 @@ package haxe3ds.services;
 import cpp.UInt16;
 import haxe3ds.services.FS.FSSMDH;
 import haxe3ds.services.FS.FSMediaType;
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 import cpp.UInt32;
 import cpp.UInt64;
 
@@ -175,9 +175,9 @@ class AM {
 				}
 			}
 
-			final titleID:UInt64 = untyped __cpp__('tids[i]');
-			final smdh:FSSMDH = new FSSMDH(untyped __cpp__('titleID >> 32'), untyped __cpp__('titleID & 0xFFFFFFFF'), media);
-			inline function get(data:Void->String):String {
+			final titleID = untyped __cpp__('tids[i]');
+			final smdh = new FSSMDH(untyped __cpp__('titleID >> 32'), untyped __cpp__('titleID & 0xFFFFFFFF'), media);
+			inline function get(data:Void->String) {
 				return smdh.valid ? data() : "???";
 			}
 

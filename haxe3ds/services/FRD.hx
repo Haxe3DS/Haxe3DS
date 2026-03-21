@@ -1,15 +1,15 @@
 package haxe3ds.services;
 
 import sys.thread.Thread;
-import haxe3ds.Types.Event;
-import haxe3ds.Types.NanoTime;
-import haxe3ds.Types.Result;
+import haxe3ds.types.Event;
+import haxe3ds.types.NanoTime;
+import haxe3ds.types.Result;
 import cpp.UInt8;
 import cpp.UInt32;
 import cpp.UInt64;
 
 /**
- * Documentation on the relationship that has happend.
+ * Documentation on the relationship that has happened.
  */
 enum FRDRelationship {
 	/**
@@ -124,7 +124,7 @@ typedef FRDFriendDetail = {
 	var principalID:UInt32;
 
 	/**
-	 * Whatever or not his/their mii is a male.
+	 * Whether or not his/their mii is a male.
 	 */
 	var male:Bool;
 
@@ -206,7 +206,7 @@ enum abstract FRDNotifTypes(Int) {
 Handle frd_Handle;
 bool   frd_ShouldExit = false;
 
-Dynamic fiToFD(FriendInfo f) {
+Dynamic fiToFD(FriendInfo& f) {
 	using r = haxe3ds::services::FRDRelationship_obj;
 	haxe3ds::services::FRDRelationship relation = null();
 
@@ -239,7 +239,7 @@ Dynamic fiToFD(FriendInfo f) {
 void NotificationThread() {
 	using f = haxe3ds::services::FRDRelationship_obj;
 	while (!frd_ShouldExit) {
-		if (svcWaitSynchronization(frd_Handle, 100000000) == 0) {
+		if (svcWaitSynchronization(frd_Handle, 1e9) == 0) {
 			auto caller = haxe3ds::services::FRD_obj::notifCallback;
 			if (caller == null()) {
 				continue;
@@ -249,10 +249,10 @@ void NotificationThread() {
 			FriendInfo f;
 			u32 totalNotifs;
 
-			if (R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs))) continue;
-			if (R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false))) continue;
+			if R_FAILED(FRD_GetEventNotification(&event, 1, &totalNotifs)) continue;
+			if R_FAILED(FRD_GetFriendInfo(&f, &event.sender, 1, false, false)) continue;
 
-			caller->callEvents(Dynamic(::hx::Anon_obj::Create(2)->setFixed(0,String("types"),event.type)->setFixed(1,String("detail"),fiToFD(f))));
+			caller->callEvents(Dynamic(hx::Anon_obj::Create(2)->setFixed(0,String("types"),event.type)->setFixed(1,String("detail"),fiToFD(f))));
 		}
 	}
 }')
@@ -319,17 +319,18 @@ class FRD {
 	 * @param enableNotifications Whether or not you want to enable for `notifCallback`
 	 */
 	public static function init(enableNotifications:Bool = true):Result {
+		var res:Result = 0;
 		untyped __cpp__('
-			Result res = frdInit(false);
+			res = frdInit(false);
 
 			if (R_SUCCEEDED(res) && enableNotifications) {
 				if R_FAILED(res = svcCreateEvent(&frd_Handle, RESET_ONESHOT)) return res;
 				if R_FAILED(res = FRD_AttachToEventNotification(frd_Handle)) return res;
 				{0};
-			}
-		', Thread.create(() -> untyped __cpp__('NotificationThread()')));
+			} // {1}
+		', Thread.create(() -> untyped __cpp__('NotificationThread()')), UNKNOWN);
 
-		return untyped __cpp__('res');
+		return res;
 	}
 
 	/**
@@ -381,38 +382,44 @@ class FRD {
 			FriendInfo prof[100] = {};
 
 			u32 l = 0;
-			if (R_FAILED(FRD_GetFriendKeyList(list, &l, 0, 100))) return null();
-			if (R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false))) return null();
+			if R_FAILED(FRD_GetFriendKeyList(list, &l, 0, 100)) return null();
+			if R_FAILED(FRD_GetFriendInfo(prof, list, l, false, false)) return null();
 		');
 
 		for (i in 0...untyped __cpp__('l')) {
-			untyped __cpp__('FriendInfo f = prof[{0}]', i);
-
-			out.push({
-				comment: untyped __cpp__('u16ToString(f.friendProfile.personalMessage)'),
-				displayName: untyped __cpp__('u16ToString(f.screenName)'),
-				profile: {
-					region: untyped __cpp__('f.friendProfile.profile.region'),
-					country: untyped __cpp__('f.friendProfile.profile.country'),
-					area: untyped __cpp__('f.friendProfile.profile.area'),
-					language: untyped __cpp__('f.friendProfile.profile.language')
-				},
-				addedTimestamp: untyped __cpp__('f.addedTimestamp'),
-				principalID: untyped __cpp__('f.friendKey.principalId'),
-				male: untyped __cpp__('!f.mii.miiData.mii_details.sex'),
-				relationship: switch(untyped __cpp__('f.relationship')) {
-					case 0: NOT_REGISTERED;
-					case 1: REGISTERED;
-					case 2: NOT_FOUND;
-					case 3: DELETED;
-					case 4: LOCAL_ADDED;
-					default: UNKNOWN;
-				},
-				favoriteGameTID: untyped __cpp__('f.friendProfile.favoriteGame.titleId')
-			});
+			out.push(untyped __cpp__('fiToFD(prof[{0}])', i));
 		}
 
 		return out;
+	}
+
+	/**
+	 * Variable about your current User's Preference about yourself.
+	 * 
+	 * This was randomly removed a while ago, its now back.
+	 * 
+	 * @since 1.9.0
+	 */
+	public static var preference(get, set):Null<FRDPreference>;
+
+	static function get_preference():Null<FRDPreference> {
+		var publicP = false, gameName = false, showPlayed = false;
+
+		untyped __cpp__('RETURN_NULL_IF_FAILED(FRD_GetMyPreference(&publicP, &gameName, &showPlayed))');
+		return {
+			publicMode: publicP,
+			showPlayedGame: showPlayed,
+			showGameName: gameName
+		}
+	}
+
+	static function set_preference(preference):Null<FRDPreference> {
+		if (preference == null) {
+			return null;
+		}
+
+		untyped __cpp__('RETURN_NULL_IF_FAILED(FRDA_UpdatePreference({0}, {1}, {2}))', preference.publicMode, preference.showGameName, preference.showPlayedGame);
+		return preference;
 	}
 
 	/**

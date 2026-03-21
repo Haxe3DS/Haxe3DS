@@ -3,7 +3,7 @@ package haxe3ds.services;
 import cpp.UInt8;
 import cpp.UInt16;
 import cpp.UInt32;
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 
 /**
  * PTMU service.

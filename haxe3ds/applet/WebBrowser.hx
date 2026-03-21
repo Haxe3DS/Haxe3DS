@@ -1,6 +1,6 @@
 package haxe3ds.applet;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 import haxe3ds.services.CFG;
 
 using StringTools;

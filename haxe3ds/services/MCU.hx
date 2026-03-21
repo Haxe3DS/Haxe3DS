@@ -1,6 +1,6 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 import cpp.UInt8;
 
 /**
@@ -43,7 +43,7 @@ class MCUWUC {
 	 * Variable if you wanna set the wifi led state to on or off.
 	 */
 	public static var wifiLEDState(null, set):Bool;
-	static function set_wifiLEDState(wifiLEDState:Bool):Bool {
+	static function set_wifiLEDState(wifiLEDState):Bool {
 		untyped __cpp__('MCUHWC_SetWifiLedState(wifiLEDState)');
 		return wifiLEDState;
 	}
@@ -74,13 +74,12 @@ class MCUWUC {
 	public static var temperature(get, null):Null<UInt8>;
 	static function get_temperature():Null<UInt8> {
 		untyped __cpp__('
-			Result ret = 0;
 			u32 *cmdbuf = getThreadCommandBuffer();
-
 			cmdbuf[0] = IPC_MakeHeader(0xE,2,0);
-			RETURN_NULL_IF_FAILED(ret = svcSendSyncRequest(*mcuHwcGetSessionHandle()));
+			RETURN_NULL_IF_FAILED(svcSendSyncRequest(*mcuHwcGetSessionHandle()));
 		');
 
-		return untyped __cpp__('cmdbuf[2]');
+		var ret:UInt8 = untyped __cpp__('cmdbuf[2]');
+		return ret;
 	}
 }

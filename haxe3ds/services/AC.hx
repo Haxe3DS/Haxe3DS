@@ -1,6 +1,6 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 import cpp.UInt16;
 import cpp.UInt32;
 
@@ -32,6 +32,62 @@ typedef ACProxy = {
 }
 
 /**
+ * The Current Wi-Fi Status.
+ * @since 1.9.0
+ */
+enum abstract ACWifiStatus(UInt32) {
+	/**
+	 * No access point/none allowed.
+	 */
+	var NONE;
+
+	/**
+	 * Slot 1 in System Settings.
+	 */
+	var SLOT_1;
+
+	/**
+	 * Slot 2 in System Settings.
+	 */
+	var SLOT_2;
+
+	/**
+	 * Slot 3 in System Settings.
+	 */
+	var SLOT_3 = 4;
+
+	/**
+	 * Nintendo Wi-Fi USB Connector.
+	 */
+	var USB_CONNECTOR = 8;
+
+	/**
+	 * Nintendo Zone AP.
+	 */
+	var NINTENDO_ZONE_AP = 16;
+
+	/**
+	 * Wi-Fi Station.
+	 */
+	var WIFI_STATION = 32;
+
+	/**
+	 * FreeSpot.
+	 */
+	var FREESPOT = 64;
+
+	/**
+	 * Hotspot.
+	 */
+	var HOTSPOT = 128;
+
+	/**
+	 * Application-specified temporary settings.
+	 */
+	var TEMP_APP_SETTINGS = 256;
+}
+
+/**
  * AC service.
  * 
  * Lists of error codes:
@@ -40,27 +96,14 @@ typedef ACProxy = {
 @:cppInclude("haxe3ds_Utils.h")
 class AC {
 	/**
-	 * `(AC:U)` Current Wifi Status.
-	 * 
-	 * List of Point Types:
-	 * - `0`: No access point/none allowed.
-	 * - `1`: Slot 1 in System Settings.
-	 * - `2`: Slot 2 in System Settings.
-	 * - `4`: Slot 3 in System Settings.
-	 * - `8`: Nintendo Wi-Fi USB Connector.
-	 * - `16`: Nintendo Zone AP.
-	 * - `32`: Wi-Fi Station.
-	 * - `64`: FreeSpot.
-	 * - `128`: Hotspot.
-	 * - `256`: Application-specified temporary settings.
-	 * 
-	 * If none of the value in `wifiStatus` match, it's likely intended to be a error code.
-	 * 
+	 * Current Wifi Status.
+	 *
 	 * @see https://www.3dbrew.org/wiki/ACU:GetWifiStatus
+	 * @see `ACWifiStatus` enum
 	 */
-	public static var wifiStatus(get, null):UInt32 = 0;
-	static function get_wifiStatus():UInt32 {
-		return untyped __cpp__('API_GETTER(u32, ACU_GetWifiStatus, 0)');
+	public static var wifiStatus(get, null):ACWifiStatus;
+	static function get_wifiStatus():ACWifiStatus {
+		return untyped __cpp__('API_GETTER(u32, ACU_GetWifiStatus, -1)');
 	}
 
 	/**
@@ -86,7 +129,7 @@ class AC {
 	static function get_ssid():Null<String> {
 		untyped __cpp__('
 			char s[32] = { 0};
-			if (R_FAILED(ACI_GetNetworkWirelessEssidSecuritySsid(s))) return null();
+			RETURN_NULL_IF_FAILED(ACI_GetNetworkWirelessEssidSecuritySsid(s)) ;
 		');
 
 		return untyped __cpp__('String(s)');
@@ -99,15 +142,15 @@ class AC {
 	static function get_proxy():Null<ACProxy> {
 		untyped __cpp__('
 			char host[0x100], user[0x100], pass[0x100];
-			if R_FAILED(ACU_GetProxyHost(host)) return null();
-			if R_FAILED(ACU_GetProxyUserName(user)) return null();
-			if R_FAILED(ACU_GetProxyPassword(pass)) return null();
+			RETURN_NULL_IF_FAILED(ACU_GetProxyHost(host));
+			RETURN_NULL_IF_FAILED(ACU_GetProxyUserName(user));
+			RETURN_NULL_IF_FAILED(ACU_GetProxyPassword(pass));
 		');
 
 		return {
 			enable: untyped __cpp__('API_GETTER(bool, ACU_GetProxyEnable, false)'),
 			host: untyped __cpp__('String(host)'),
-			port: untyped __cpp__('API_GETTER(bool, ACU_GetProxyPort, 0)'),
+			port: untyped __cpp__('API_GETTER(u16, ACU_GetProxyPort, 0)'),
 			username: untyped __cpp__('String(user)'),
 			password: untyped __cpp__('String(pass)'),
 		}
@@ -131,6 +174,7 @@ class AC {
 	/**
 	 * Exits AC
 	 */
-	@:native("acExit")
-	public static function exit() {}
+	public static function exit() {
+		untyped __cpp__('acExit()');
+	}
 }

@@ -8,6 +8,9 @@ Transpile and then Compile Haxe Code to 3DS Applications (3DSX or CIA) with easy
 
 The goal is to implement every single libctru functions to here and make as fewer functions and as more documentive to make homebrew applications easier, some will be in separate functions, because libctru are just pure lazy slog 🐌
 
+> [!NOTE] 
+> APIs can change in some updates, if you're about to update Haxe3DS, you would need to change the Function Calls.
+
 # How does it work?
 
 This makes use of ~~[reflaxe](https://github.com/SomeRanDev/reflaxe) && [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP)~~ [HXCPP](https://github.com/Haxe3DS/hxcpp) which can *Read* and *Transpile* Haxe Code to C++ Code so that the G++ Compiler can Understand and Compile to 3DSX or CIA! This was done with lots of love (and rage) to make this library so I hope I can get some support.
@@ -27,7 +30,7 @@ Note: 5.0.0 tested, This fails to compile because of marshal, Recommended Versio
 # Credits:
 
 - [DSHaxe](https://github.com/MochaIcedTea/DSHaxe) for some of the example reflaxe code.
-- ~~[reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.~~ [hxcpp_nx](https://github.com/Slushi-Github/hxcpp-nx) for its support, Had to modify a bunch of
+- ~~[reflaxe](https://github.com/SomeRanDev/reflaxe) and [reflaxe.CPP](https://github.com/SomeRanDev/reflaxe.CPP) for making this possible.~~ [hxcpp_nx](https://github.com/Slushi-Github/hxcpp-nx) for its support, Had to modify a bunch of the code itself to get it working.
 - [devkitPro](https://github.com/devkitPro/libctru) for making homebrew amazing (and for [libctru](https://github.com/devkitPro/libctru)).
 - [HaxeCompileU](https://github.com/Slushi-Github/hxCompileU) for a really great wii u compiler that i got interested for it.
 - [3DBrew](https://www.3dbrew.org/) for the amount of documentation done to this system!

@@ -1,7 +1,7 @@
 package haxe3ds.services;
 
-import haxe3ds.Types.Result;
-import haxe3ds.Types.NanoTime;
+import haxe3ds.types.Result;
+import haxe3ds.types.NanoTime;
 import cpp.UInt32;
 import cpp.UInt16;
 import cpp.UInt8;
@@ -157,7 +157,7 @@ class ACT {
 	/**
 	 * Initializes ACT services and sets up other variables.
 	 */
-	public static function init():Result {
+	public static inline function init():Result {
 		return untyped __cpp__('actInit(false)');
 	}
 
@@ -166,7 +166,7 @@ class ACT {
 	 * @param isPretendo If you want it to check if it's from pretendo or not.
 	 * @return true if logged in (as if length of `username` is *not* 0), false if account is null or equals to 0.
 	 */
-	public static function isConnected(isPretendo:Bool = true):Bool {
+	public static inline function isConnected(isPretendo:Bool = true):Bool {
 		final account:Null<ACTAccountInfo> = isPretendo ? pnid : nnid;
 		if (account == null) return false;
 		return account.username.length != 0;
@@ -175,6 +175,7 @@ class ACT {
 	/**
 	 * Exits AC service
 	 */
-	@:native("actExit")
-	public static function exit() {}
+	public static inline function exit() {
+		untyped __cpp__('actExit()');
+	}
 }

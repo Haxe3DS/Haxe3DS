@@ -1,9 +1,7 @@
 package haxe3ds.services;
 
-import cpp.UInt64;
 import cpp.UInt16;
-import cpp.UInt32;
-import haxe3ds.Types.Result;
+import haxe3ds.types.Result;
 
 /**
  * Media Type for File System.
@@ -59,8 +57,8 @@ int getHashTableLength(int numEntries) {
 #include "haxe3ds_Utils.h"
 
 namespace FSD {
-static FS_Archive sdmcRoot;
-static FS_Archive get_sdmcRoot() {
+FS_Archive sdmcRoot;
+FS_Archive get_sdmcRoot() {
 	if (sdmcRoot == 0) {
 		FSUSER_OpenArchive(&sdmcRoot, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 	}
@@ -89,6 +87,7 @@ class FS {
 		return untyped __cpp__('API_GETTER(bool, FSUSER_IsSdmcWritable, 0)');
 	}
 
+	#if IS_CIA
 	/**
 	 * Mounts a save data from the console, will format the whole save data in this app if something has gone wrong!
 	 * 
@@ -106,16 +105,13 @@ class FS {
 		var res:Result = 0;
 
 		untyped __cpp__('
-			bool retry = false;
 			const char* p = partition.c_str();
 
 			FS_Path path = fsMakePath(PATH_EMPTY, "");
-			res = archiveMount(ARCHIVE_SAVEDATA, path, p);
-			if (res == 0xC8A04554) { // save format error
-				res = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, getHashTableLength(dirs), getHashTableLength(files), false);
-				if (R_FAILED(res)) {
-					return res;
-				}
+			if ((res = archiveMount(ARCHIVE_SAVEDATA, path, p)) == 0xC8A04554) { // save format error
+				if R_FAILED(
+					res = FSUSER_FormatSaveData(ARCHIVE_SAVEDATA, path, 0x200, dirs, files, getHashTableLength(dirs), getHashTableLength(files), false)
+				) return res;
 
 				res = archiveMount(ARCHIVE_SAVEDATA, path, p);
 			}
@@ -136,6 +132,7 @@ class FS {
 	public static function flushAndCommit(partition:String = "ext"):Result {
 		return untyped __cpp__('archiveCommitSaveData(partition.c_str())');
 	}
+	#end
 
 	/**
 	 * Variable for the concurrent Play Coins in your system found by `/gamecoin.dat`.
@@ -173,7 +170,7 @@ class FS {
 		return out;
 	}
 	
-	static function set_playCoins(playCoins:UInt16):UInt16 {
+	static function set_playCoins(playCoins):UInt16 {
 		playCoins = playCoins > 300 ? 300 : playCoins < 0 ? 0 : playCoins;
 
 		untyped __cpp__('
@@ -189,9 +186,8 @@ class FS {
 			if (R_FAILED(FSUSER_OpenFile(&fileHandle, archive, fsMakePath(PATH_UTF16, u"/gamecoin.dat"), FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE))) {
 				goto end2;
 			}
-			
-			u32 _;
 
+			u32 _;
 			fail = R_FAILED(FSFILE_Write(fileHandle, &_, 4, coinBytes, sizeof(coinBytes), FS_WRITE_FLUSH));
 
 			FSFILE_Close(fileHandle);
@@ -266,109 +262,6 @@ class FS {
 			FSUSER_CloseArchive(FSD::get_sdmcRoot());
 			fsExit()
 		');
-	}
-}
-
-/**
- * File Handler for reading/writing file.
- * 
- * ## Warning:
- * - Not working at the moment, use `sys.io.File` at the moment.
- * 
- * @since 1.3.0
- */
-@:headerInclude("haxe3ds/services/FS.h")
-@:headerClassCode('Handle h = 0;')
-class FSFile {
-	var path:String;
-
-	/**
-	 * The error for Whether something went wrong for this service.
-	 * 
-	 * @since 1.4.0
-	 */
-	public var result:Result = 0;
-
-	/**
-	 * The current size get from for readed file.
-	 * 
-	 * This is also the offset of the amount of bytes.
-	 */
-	public var byteSize:UInt32 = 0;
-
-	/**
-	 * Creates a new file handler from `SDMC`.
-	 * @param path Path to open in.
-	 */
-	public function new(path:String) {
-		this.path = path;
-
-		untyped __cpp__('
-			this->result = FSUSER_OpenFile(&h, FSD::get_sdmcRoot(), fsMakePath(PATH_ASCII, path.utf8_str()), FS_OPEN_CREATE | FS_OPEN_READ | FS_OPEN_WRITE, FS_ATTRIBUTE_ARCHIVE);
-			if (R_SUCCEEDED(this->result)) {
-				u64 by = 0;
-				FSFILE_GetSize(h, &by);
-				this->byteSize = (u32)by;
-			}
-		');
-	}
-
-	/**
-	 * Writes the current file handle running by using a string variable, this will overwrite the result code from this class.
-	 * @param str String to write.
-	 * @param offset Offset of the string to use, if a number is negative then uses `this.byteSize`.
-	 */
-	public function write(str:String, offset:UInt32 = -1) {
-		if (offset < 0) {
-			offset = byteSize;
-		}
-
-		untyped __cpp__('
-			u32 bw = 0;
-			result = FSFILE_Write(h, &bw, offset, str.c_str(), str.length, FS_WRITE_FLUSH);
-			byteSize += bw
-		');
-	}
-
-	/**
-	 * Reads a file from the handle, also updates the result code.
-	 * @param offset Offset to use
-	 * @param len Length to read, if `-1` then uses `this.byteSize`.
-	 * @return String read from file.
-	 */
-	public function read(offset:UInt32 = 0, len:UInt32 = -1):String {
-		if (len == -1) {
-			len = byteSize;
-		}
-		len = Std.int(Math.abs(len));
-
-		var out:String = "";
-		untyped __cpp__('
-			u32 r = 0;
-			const char* shit = "";
-			result = FSFILE_Read(h, &r, offset, (char*)(shit), len);
-			out = String((char*)shit)
-		');
-		return out;
-	}
-
-	/**
-	 * Resize the file to whatever you want, also resizes `this.byteSize`! It will also update the result code.
-	 * @param amount The amount to resize.
-	 * @since 1.4.0
-	 */
-	public function resize(amount:UInt64) {
-		byteSize = amount.toInt();
-		result = untyped __cpp__('FSFILE_SetSize(h, amount)');
-	}
-
-	/**
-	 * Closes a file and closes the archive (saves memory?).
-	 * 
-	 * Also updates the result code.
-	 */
-	public function close() {
-		result = untyped __cpp__('FSFILE_Close(h)');
 	}
 }
 
@@ -635,9 +528,7 @@ class FSSMDH {
 			#undef RETURN_IF_FAILED
 		');
 
-		var x:Int = 11;
-		x++;
-		for (i in 0...x) {
+		for (i in 0...12) {
 			applicationTitles.push({
 				shortDescription: untyped __cpp__('u16ToString(smdhData.applicationTitles[{0}].shortDescription)', i),
 				longDescription: untyped __cpp__('u16ToString(smdhData.applicationTitles[{0}].longDescription)', i),
@@ -646,7 +537,7 @@ class FSSMDH {
 		}
 
 		final flags:Array<FSSMDHAppGameRatingsFlag> = [CERO, ESRB, USK, PEGI_GEN, PEGI_PRT, PEGI_BBFC, COB, GRB, CGSRR];
-		for (i in 0...x) {
+		for (i in 0...12) {
 			if (i == 2 || i == 5) continue; // reserved flag
 
 			if (untyped __cpp__('smdhData.settings.gameRatings[{0}]', i)) {
@@ -657,9 +548,8 @@ class FSSMDH {
 			}
 		}
 
-		x = 7;
 		final Lflags:Array<FSSMDHAppRegionLockout> = [JAPAN, NORTH_AMERICA, EUROPE, AUSTRALIA, CHINA, KOREA, TAIWAN];
-		for (i in 0...x) {
+		for (i in 0...7) {
 			if (untyped __cpp__('BIT({0}) & smdhData.settings.regionLock', i)) {
 				this.appSettings.regionLock.push(Lflags[i]);
 			}
