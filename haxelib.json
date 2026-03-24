@@ -4,8 +4,8 @@
     "license":      "Public",
     "tags":         ["3DS", "devkitPro", "Homebrew", "libctru", "CPP", "C++", "HXCPP", "HXC++"],
     "description":  "Compile Haxe Code to 3DS Applications Easily!",
-    "version":      "1.9.0",
-    "releasenote":  "See https://github.com/Haxe3DS/Haxe3DS/blob/main/RELEASES.md#190 for release notes.",
+    "version":      "1.9.1",
+    "releasenote":  "See https://github.com/Haxe3DS/Haxe3DS/blob/main/RELEASES.md#191 for release notes.",
     "contributors": ["NAEL2XD"],
     "dependencies": {},
     "main":         "Haxe3DS_Tool"

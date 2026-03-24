@@ -1,3 +1,7 @@
+# 1.9.1
+
+Fixed bug where it throws error about romfs path variable not found, this is what happens if i don't test it after release
+
 # 1.9.0
 
 MODULE       | CHANGES

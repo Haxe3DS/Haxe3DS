@@ -332,6 +332,7 @@ class Haxe3DS_Tool {
 					project.settings.libraries.insert(0, "haxe3ds");
 				}
 
+				final haxe3ds_romfspath = "assets/romfs/haxe3ds";
 				sanityCheck('Parsing all ${project.settings.libraries.length} libraries', () -> {
 					for (lib in project.settings.libraries) {
 						var path = '.haxelib/$lib';
@@ -374,7 +375,6 @@ class Haxe3DS_Tool {
 					return true;
 				}, "What??");
 
-				final haxe3ds_romfspath = "assets/romfs/haxe3ds";
 				for (directories in ["export", haxe3ds_romfspath, "buildFiles"]) {
 					makeDirs(directories);
 				}
